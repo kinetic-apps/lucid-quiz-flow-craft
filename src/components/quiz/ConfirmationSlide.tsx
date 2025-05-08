@@ -16,10 +16,10 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
       className="flex flex-col items-center justify-center h-full text-center"
     >
       <div className="p-4 max-w-sm mx-auto">
-        <h2 className="text-3xl font-semibold text-emerald-600 mb-2">
+        <h2 className="text-3xl font-semibold text-emerald-600 whitespace-nowrap">
           Over 1,000,000 people
         </h2>
-        <p className="text-gray-800 mb-8">have chosen Liven</p>
+        <p className="text-gray-900 font-bold mb-8">have chosen Lucid</p>
         
         <div className="relative my-12">
           {/* Circle visualization with profile images */}
@@ -78,7 +78,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
         
         <Button 
           onClick={onContinue}
-          className="w-full py-6 text-lg bg-emerald-600 hover:bg-emerald-700 text-white rounded-full"
+          className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700 text-white rounded-full"
         >
           Continue
         </Button>

@@ -10,6 +10,10 @@ const ProgressBar = () => {
   const progressPercentage = totalSteps > 0 ? (currentStep / (totalSteps - 1)) * 100 : 0;
   const navigate = useNavigate();
   
+  // Calculate the question number - we add 1 to currentStep since it's zero-indexed
+  const questionNumber = currentStep + 1;
+  const totalQuestions = totalSteps > 0 ? totalSteps - 1 : 0; // Subtract 1 as the last step is typically the results page
+  
   const handleBackNavigation = () => {
     if (currentStep > 0) {
       goToPrevStep();
@@ -31,6 +35,11 @@ const ProgressBar = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <span>Progress</span>
+          {totalQuestions > 0 && (
+            <span className="ml-2 font-medium">
+              {questionNumber}/{totalQuestions}
+            </span>
+          )}
         </div>
         <span>{Math.round(progressPercentage)}%</span>
       </div>
