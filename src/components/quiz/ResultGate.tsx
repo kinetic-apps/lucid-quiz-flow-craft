@@ -4,7 +4,7 @@ import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft } from 'lucide-react';
-import { submitQuizResults, Result } from '@/lib/supabase';
+import { submitQuizResults, storeUserEmail, Result } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import WellbeingChart from './WellbeingChart';
 
@@ -45,6 +45,9 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
     setIsSubmitting(true);
     
     try {
+      // Store user email in the database
+      await storeUserEmail(email, visitorId);
+      
       // Submit results and get insight
       const response: QuizResult = await submitQuizResults(
         quizId, 
@@ -109,8 +112,8 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   };
 
   const handleContinue = () => {
-    setShowWellbeingChart(false);
-    // Show actual result content after viewing the chart
+    // Navigate to checkout page instead of showing result content
+    navigate('/checkout');
   };
 
   return (

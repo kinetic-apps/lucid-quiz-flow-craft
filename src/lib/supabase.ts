@@ -3,7 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://bsqmlzocdhummisrouzs.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzcW1sem9jZGh1bW1pc3JvdXpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MTg0OTYsImV4cCI6MjA2MjI5NDQ5Nn0.nHz1lXvEjSQnllLeXVJy8u7hiWsEZHmfk0JYyxKTXgg';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  }
+});
 
 export type Quiz = {
   id: string;
@@ -225,5 +235,91 @@ export async function submitQuizResults(
   } catch (error) {
     console.error('Failed to submit quiz results:', error);
     throw error;
+  }
+}
+
+export async function storeUserEmail(email: string, visitorId: string) {
+  try {
+    // Check if user with this email already exists
+    const { data: existingUser, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    // PostgreSQL error code for "no rows returned" is PGRST116
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error checking for existing user:', fetchError);
+      return null;
+    }
+
+    // If user exists, update the visitor_id
+    if (existingUser) {
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ visitor_id: visitorId, updated_at: new Date().toISOString() })
+        .eq('id', existingUser.id);
+      
+      if (updateError) {
+        console.error('Error updating user:', updateError);
+        return null;
+      }
+      
+      return existingUser.id;
+    }
+
+    // Create new user
+    const { data: newUser, error: insertError } = await supabase
+      .from('users')
+      .insert({
+        email,
+        visitor_id: visitorId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('Error inserting user:', insertError);
+      return null;
+    }
+
+    return newUser.id;
+  } catch (error) {
+    console.error('Failed to store user email:', error);
+    return null;
+  }
+}
+
+export async function updateUserSubscription(
+  userId: string, 
+  subscriptionId: string,
+  plan: string,
+  startDate: string,
+  endDate: string
+) {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({
+        subscription_id: subscriptionId,
+        subscription_plan: plan,
+        subscription_start_date: startDate,
+        subscription_end_date: endDate,
+        is_premium: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Error updating user subscription:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to update user subscription:', error);
+    return false;
   }
 }

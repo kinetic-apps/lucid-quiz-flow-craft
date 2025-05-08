@@ -9,6 +9,8 @@ import MindfulnessQuiz from "./pages/MindfulnessQuiz";
 import NotFound from "./pages/NotFound";
 import QuizLayout from "./pages/quiz/layout";
 import QuizPage from "./pages/quiz/[slug]/page";
+import CheckoutPage from "./pages/checkout/page";
+import { QuizProvider } from "./context/QuizContext";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +24,11 @@ const App = () => (
           <Route path="/" element={<GenderSelect />} />
           <Route path="/mindfulness" element={<MindfulnessQuiz />} />
           <Route path="/home" element={<Index />} />
+          <Route path="/checkout" element={
+            <QuizProvider>
+              <CheckoutPage />
+            </QuizProvider>
+          } />
           <Route path="/quiz" element={<QuizLayout />}>
             <Route path=":slug" element={<QuizPage />} />
           </Route>
