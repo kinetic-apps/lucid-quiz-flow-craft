@@ -10,6 +10,8 @@ import InfoSlide from '@/components/quiz/InfoSlide';
 import ExpertReviewSlide from '@/components/quiz/ExpertReviewSlide';
 import CommunitySlide from '@/components/quiz/CommunitySlide';
 import SummarySlide from '@/components/quiz/SummarySlide';
+import PlanSlide from '@/components/quiz/PlanSlide';
+import TipSlide from '@/components/quiz/TipSlide';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -70,11 +72,14 @@ type StepData = {
     title: string;
     description: string;
   };
+} | {
+  quizId: string;
+  predictedMonth: string;
 };
 
 // Using our own Step type here to avoid conflicts with QuizStep
 type Step = {
-  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary';
+  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary' | 'plan';
   data: StepData;
 };
 
@@ -182,6 +187,15 @@ export default function QuizPage() {
           title: "Productivity Assessment",
           description: "Your personalized assessment is ready."
         }
+      }
+    });
+
+    // Add plan slide after summary
+    steps.push({
+      type: 'plan',
+      data: {
+        quizId: quiz.id,
+        predictedMonth: "July 2025" // Default predicted month
       }
     });
 
@@ -314,7 +328,7 @@ export default function QuizPage() {
 
   return (
     <div 
-      className="quiz-container animate-slide-right p-4 max-w-md mx-auto"
+      className="quiz-container animate-slide-right h-full p-2 max-w-md mx-auto flex flex-col"
       style={{ 
         '--quiz-gradient-from': quiz.gradient_from,
         '--quiz-gradient-to': quiz.gradient_to,
@@ -353,6 +367,17 @@ export default function QuizPage() {
           quizId={quiz.id}
           score={currentStepData.data.score}
           result={currentStepData.data.result}
+        />
+      )}
+      
+      {currentStepData?.type === 'plan' && 'quizId' in currentStepData.data && (
+        <PlanSlide 
+          quizId={currentStepData.data.quizId}
+          predictedMonth={
+            'predictedMonth' in currentStepData.data 
+              ? String(currentStepData.data.predictedMonth) 
+              : "July 2025"
+          }
         />
       )}
       

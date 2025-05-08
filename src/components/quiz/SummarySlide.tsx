@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { motion, useAnimation, Variants } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
@@ -57,140 +57,292 @@ const getLevelInfo = (score: number) => {
   };
 };
 
+// Animation variants
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      when: "beforeChildren",
+      staggerChildren: 0.1,
+      delayChildren: 0.3
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 24 }
+  }
+};
+
+const sliderVariants: Variants = {
+  hidden: { width: 0, opacity: 0 },
+  visible: {
+    width: "100%",
+    opacity: 1,
+    transition: { duration: 0.8, ease: "easeOut", delay: 0.5 }
+  }
+};
+
+const dotVariants: Variants = {
+  hidden: { scale: 0, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 500, damping: 25, delay: 1.3 }
+  }
+};
+
+const imageVariants: Variants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 25, delay: 0.2 }
+  }
+};
+
+const statsCardVariants: Variants = {
+  hidden: { y: 15, opacity: 0 },
+  visible: (custom) => ({
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24,
+      delay: 1.4 + (custom * 0.1)
+    }
+  })
+};
+
 const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
   const { goToNextStep } = useQuiz();
   const levelInfo = getLevelInfo(score);
+  const controls = useAnimation();
   
   // Calculate slider position (0-100)
   const sliderPosition = Math.min(Math.max((score / 100) * 100, 0), 100);
   
   // Determine level indicator position
   const levelIndicatorLeft = sliderPosition + '%';
+
+  useEffect(() => {
+    controls.start("visible");
+  }, [controls]);
   
   return (
     <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      transition={{ duration: 0.4 }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className="summary-slide bg-gray-50 h-full flex flex-col"
     >
-      <div className="flex flex-col p-6">
-        <h1 className="text-2xl font-bold mb-6">Summary of your Well-being Profile</h1>
+      <motion.div 
+        className="flex flex-col p-4 h-full"
+        variants={containerVariants}
+        initial="hidden"
+        animate={controls}
+      >
+        <motion.h1 
+          className="text-xl font-bold mb-3"
+          variants={itemVariants}
+        >
+          Summary of your Well-being Profile
+        </motion.h1>
         
         {/* Negative effects level */}
-        <div className="flex justify-between items-center mb-2">
+        <motion.div 
+          className="flex justify-between items-center mb-2"
+          variants={itemVariants}
+        >
           <div className="text-gray-800 font-medium">Negative effects level</div>
-          <div className={`text-white text-xs px-3 py-1 rounded-full ${
-            levelInfo.level === "High" ? "bg-red-400" :
-            levelInfo.level === "Medium" ? "bg-orange-400" : "bg-green-400"
-          }`}>
+          <motion.div 
+            className={`text-white text-xs px-3 py-1 rounded-full ${
+              levelInfo.level === "High" ? "bg-red-400" :
+              levelInfo.level === "Medium" ? "bg-orange-400" : "bg-green-400"
+            }`}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ 
+              type: "spring",
+              stiffness: 500,
+              damping: 10,
+              delay: 0.8
+            }}
+          >
             {levelInfo.level}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
         
         {/* Profile image */}
-        <div className="relative my-4 flex justify-center">
-          <img 
+        <motion.div 
+          className="relative my-2 flex justify-center"
+          variants={itemVariants}
+        >
+          <motion.img 
             src="/stressed-person.png" 
             alt="Profile" 
-            className="h-48 object-contain"
+            className="h-36 object-contain"
+            variants={imageVariants}
             onError={(e) => {
               // Fallback to a colored box if image fails to load
               const target = e.target as HTMLImageElement;
               target.style.backgroundColor = "#4ade80";
               target.style.width = "100%";
-              target.style.height = "180px";
+              target.style.height = "140px";
               target.alt = "";
             }}
           />
           
           {/* Level indicator */}
-          <div className="absolute bottom-4 right-4 bg-gray-800 text-white text-xs px-3 py-1 rounded-full">
+          <motion.div 
+            className="absolute bottom-2 right-2 bg-gray-800 text-white text-xs px-2 py-0.5 rounded-full"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.2, duration: 0.3 }}
+          >
             Your level
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
         
         {/* Level slider */}
-        <div className="mt-4 mb-6">
-          <div className="relative h-2 w-full bg-gradient-to-r from-green-300 via-yellow-300 to-red-400 rounded-full">
-            <div 
+        <motion.div 
+          className="mt-2 mb-3"
+          variants={itemVariants}
+        >
+          <div className="relative h-2 w-full rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full w-full bg-gradient-to-r from-green-300 via-yellow-300 to-red-400"
+              variants={sliderVariants}
+            />
+            <motion.div 
               className="absolute -top-1 h-4 w-4 bg-white border-2 border-gray-300 rounded-full"
               style={{ left: levelIndicatorLeft, transform: 'translateX(-50%)' }}
+              variants={dotVariants}
+              initial={{ top: "100%" }}
+              animate={{ top: "-4px" }}
+              transition={{ 
+                delay: 1.3,
+                duration: 0.4,
+                type: "spring",
+                stiffness: 400,
+                damping: 25
+              }}
             />
           </div>
-          <div className="flex justify-between mt-1 text-xs text-gray-500">
+          <motion.div 
+            className="flex justify-between mt-1 text-xs text-gray-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.1, duration: 0.3 }}
+          >
             <span>Low</span>
             <span>Normal</span>
             <span>Medium</span>
             <span>High</span>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
         
         {/* Alert box */}
-        <div className="bg-red-50 p-4 rounded-lg mb-6">
+        <motion.div 
+          className="bg-red-50 p-3 rounded-lg mb-3"
+          variants={itemVariants}
+        >
           <div className="flex items-start">
-            <AlertCircle className="text-red-500 mr-2 w-5 h-5 flex-shrink-0 mt-0.5" />
+            <motion.div
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              transition={{ delay: 1.2, duration: 0.4 }}
+            >
+              <AlertCircle className="text-red-500 mr-2 w-4 h-4 flex-shrink-0 mt-0.5" />
+            </motion.div>
             <div>
-              <div className="font-bold text-gray-800">{levelInfo.levelText}</div>
-              <p className="text-sm text-gray-700">
+              <div className="font-bold text-gray-800 text-sm">{levelInfo.levelText}</div>
+              <p className="text-xs text-gray-700">
                 High levels of negative effects can lead to constant procrastination, increased worrying, reduced energy and well-being
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
         
         {/* Stats grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-gray-100 p-3 rounded-lg">
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <motion.div 
+            className="bg-gray-100 p-2 rounded-lg"
+            custom={0}
+            variants={statsCardVariants}
+          >
             <div className="flex items-center mb-1">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-2">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">★</span>
               </div>
               <span className="text-xs text-gray-500">Main difficulty</span>
             </div>
-            <div className="font-semibold">{levelInfo.mainDifficulty}</div>
-          </div>
+            <div className="font-semibold text-sm">{levelInfo.mainDifficulty}</div>
+          </motion.div>
           
-          <div className="bg-gray-100 p-3 rounded-lg">
+          <motion.div 
+            className="bg-gray-100 p-2 rounded-lg"
+            custom={1}
+            variants={statsCardVariants}
+          >
             <div className="flex items-center mb-1">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-2">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">📅</span>
               </div>
               <span className="text-xs text-gray-500">Challenging period</span>
             </div>
-            <div className="font-semibold">{levelInfo.challengingPeriod}</div>
-          </div>
+            <div className="font-semibold text-sm">{levelInfo.challengingPeriod}</div>
+          </motion.div>
           
-          <div className="bg-gray-100 p-3 rounded-lg">
+          <motion.div 
+            className="bg-gray-100 p-2 rounded-lg"
+            custom={2}
+            variants={statsCardVariants}
+          >
             <div className="flex items-center mb-1">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-2">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">⚡</span>
               </div>
               <span className="text-xs text-gray-500">Trigger</span>
             </div>
-            <div className="font-semibold">{levelInfo.trigger}</div>
-          </div>
+            <div className="font-semibold text-sm">{levelInfo.trigger}</div>
+          </motion.div>
           
-          <div className="bg-gray-100 p-3 rounded-lg">
+          <motion.div 
+            className="bg-gray-100 p-2 rounded-lg"
+            custom={3}
+            variants={statsCardVariants}
+          >
             <div className="flex items-center mb-1">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-2">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">🔋</span>
               </div>
               <span className="text-xs text-gray-500">Energy level</span>
             </div>
-            <div className="font-semibold">{levelInfo.energyLevel}</div>
-          </div>
+            <div className="font-semibold text-sm">{levelInfo.energyLevel}</div>
+          </motion.div>
         </div>
         
         {/* Continue Button */}
-        <Button
-          onClick={goToNextStep}
-          className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full mt-auto"
+        <motion.div
+          variants={itemVariants}
+          className="mt-auto"
         >
-          Continue
-        </Button>
-      </div>
+          <Button
+            onClick={goToNextStep}
+            className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-full"
+          >
+            Continue
+          </Button>
+        </motion.div>
+      </motion.div>
     </motion.div>
   );
 };
