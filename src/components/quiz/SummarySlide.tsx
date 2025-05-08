@@ -165,7 +165,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
           <motion.div 
             className={`text-white text-xs px-3 py-1 rounded-full ${
               levelInfo.level === "High" ? "bg-red-400" :
-              levelInfo.level === "Medium" ? "bg-orange-400" : "bg-green-400"
+              levelInfo.level === "Medium" ? "bg-orange-400" : "bg-lucid-violet-600"
             }`}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -193,7 +193,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             onError={(e) => {
               // Fallback to a colored box if image fails to load
               const target = e.target as HTMLImageElement;
-              target.style.backgroundColor = "#4ade80";
+              target.style.backgroundColor = "#7c3aed";
               target.style.width = "100%";
               target.style.height = "140px";
               target.alt = "";
@@ -218,7 +218,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
         >
           <div className="relative h-2 w-full rounded-full overflow-hidden">
             <motion.div 
-              className="h-full w-full bg-gradient-to-r from-green-300 via-yellow-300 to-red-400"
+              className="h-full w-full bg-gradient-to-r from-lucid-violet-600 via-yellow-300 to-red-400"
               variants={sliderVariants}
             />
             <motion.div 
@@ -279,7 +279,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-lucid-violet-600 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">★</span>
               </div>
               <span className="text-xs text-gray-500">Main difficulty</span>
@@ -293,7 +293,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-lucid-violet-600 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">📅</span>
               </div>
               <span className="text-xs text-gray-500">Challenging period</span>
@@ -307,7 +307,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-lucid-violet-600 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">⚡</span>
               </div>
               <span className="text-xs text-gray-500">Trigger</span>
@@ -321,7 +321,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-lucid-violet-600 flex items-center justify-center mr-1">
                 <span className="text-white text-xs">🔋</span>
               </div>
               <span className="text-xs text-gray-500">Energy level</span>
@@ -337,7 +337,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
         >
           <Button
             onClick={goToNextStep}
-            className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-full"
+            className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white py-2 rounded-full"
           >
             Continue
           </Button>

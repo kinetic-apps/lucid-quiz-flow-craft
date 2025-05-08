@@ -68,7 +68,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
                   fill="none" stroke="#DDD" strokeWidth="2" />
                 <g transform="translate(25, 25)">
                   <path d="M25,0 C35,0 50,20 50,35 C50,50 35,50 25,50 C15,50 0,50 0,35 C0,20 15,0 25,0" 
-                    fill="#f8a4a4" opacity="0.5" />
+                    fill="#7c3aed" opacity="0.2" />
                 </g>
               </svg>
             </div>
@@ -76,7 +76,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
 
           {/* Expert Review Text */}
           <h2 className="text-xl font-bold text-center mb-1">
-            Your plan will be reviewed by <span className="text-green-600">an expert</span>
+            Your plan will be reviewed by <span className="text-lucid-violet-600">an expert</span>
           </h2>
 
           {/* Quote */}
@@ -86,11 +86,11 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
 
           {/* Expert Card */}
           <div className="w-full max-w-md">
-            <div className="bg-green-100 py-0.5 px-4 text-xs text-center rounded-t-lg">
+            <div className="bg-lucid-violet-600/10 py-0.5 px-4 text-xs text-center rounded-t-lg">
               Content reviewed by an expert
             </div>
             <div className="bg-white border border-gray-200 rounded-b-lg p-3 flex items-center">
-              <div className="bg-green-500 rounded-full p-1.5 mr-2">
+              <div className="bg-lucid-violet-600 rounded-full p-1.5 mr-2">
                 <CheckCircle className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -113,7 +113,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
           </Button>
           <Button
             onClick={goToNextStep}
-            className="bg-green-500 hover:bg-green-600 text-white flex items-center"
+            className="bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white flex items-center"
             size="sm"
           >
             Continue <ChevronRight className="w-4 h-4 ml-1" />

@@ -136,7 +136,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
             >
               {isSubmitting ? 
                 <span className="flex items-center">
@@ -179,9 +179,9 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
                 
                 {score !== null && (
                   <div className="my-4 text-center">
-                    <div className="inline-block p-4 bg-purple-100 rounded-full">
-                      <div className="text-3xl font-bold text-purple-700">{score}</div>
-                      <div className="text-sm text-purple-600">Your Score</div>
+                    <div className="inline-block p-4 bg-lucid-violet-600/10 rounded-full">
+                      <div className="text-3xl font-bold text-lucid-violet-700">{score}</div>
+                      <div className="text-sm text-lucid-violet-600">Your Score</div>
                     </div>
                   </div>
                 )}
@@ -192,7 +192,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
             
             <div className="mt-8 text-center">
               <Button 
-                className="bg-purple-600 hover:bg-purple-700 text-white"
+                className="bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
                 onClick={() => window.location.href = '/'}
               >
                 Return Home

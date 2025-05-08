@@ -79,7 +79,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
 
   // Chart data - progressive heights for bars (in pixels)
   const barHeights = [50, 70, 90, 110, 130, 145];
-  const greenBarIndex = 4; // Index of the green bar
+  const highlightBarIndex = 4; // Index of the highlighted bar
   const startMonth = "May";
   const endMonth = predictedMonth.split(" ")[0]; // Extract month from "July 2025"
   const yearText = predictedMonth.split(" ")[1] || "2025"; // Extract year or default to 2025
@@ -125,12 +125,12 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
           variants={itemVariants}
           className="flex-1 flex items-end justify-between gap-1 px-6 mb-1 mt-8 relative"
         >
-          {/* Goal label positioned above the green bar */}
+          {/* Goal label positioned above the highlighted bar */}
           <div 
             className="absolute z-10"
             style={{
-              left: `calc(${(greenBarIndex / (barHeights.length - 1)) * 100}% - 9px)`,
-              bottom: `calc(${barHeights[greenBarIndex]}px + 20px)`
+              left: `calc(${(highlightBarIndex / (barHeights.length - 1)) * 100}% - 9px)`,
+              bottom: `calc(${barHeights[highlightBarIndex]}px + 20px)`
             }}
           >
             <motion.div 
@@ -139,11 +139,11 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
               initial="hidden"
               animate="visible"
             >
-              <div className="bg-green-400 text-white text-xs px-3 py-1 rounded-full whitespace-nowrap">
+              <div className="bg-lucid-violet-600 text-white text-xs px-3 py-1 rounded-full whitespace-nowrap">
                 Goal
               </div>
               <motion.div 
-                className="h-6 w-1 bg-green-400"
+                className="h-6 w-1 bg-lucid-violet-600"
                 variants={connectorVariants}
                 initial="hidden"
                 animate="visible"
@@ -169,7 +169,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
                       index === 1 ? "bg-red-200" :
                       index === 2 ? "bg-orange-200" :
                       index === 3 ? "bg-yellow-200" :
-                      index === 4 ? "bg-green-300" : "bg-blue-300"
+                      index === 4 ? "bg-lucid-violet-600" : "bg-blue-300"
                     } rounded-md`}
                   />
                 </div>
@@ -202,7 +202,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         >
           <Button
             onClick={goToNextStep}
-            className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-full"
+            className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white py-2 rounded-full"
           >
             Continue
           </Button>

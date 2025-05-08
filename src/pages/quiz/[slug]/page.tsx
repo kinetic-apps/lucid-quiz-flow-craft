@@ -11,6 +11,7 @@ import ExpertReviewSlide from '@/components/quiz/ExpertReviewSlide';
 import CommunitySlide from '@/components/quiz/CommunitySlide';
 import SummarySlide from '@/components/quiz/SummarySlide';
 import PlanSlide from '@/components/quiz/PlanSlide';
+import ProgressSlide from '@/components/quiz/ProgressSlide';
 import TipSlide from '@/components/quiz/TipSlide';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -79,7 +80,7 @@ type StepData = {
 
 // Using our own Step type here to avoid conflicts with QuizStep
 type Step = {
-  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary' | 'plan';
+  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary' | 'plan' | 'progress';
   data: StepData;
 };
 
@@ -115,8 +116,8 @@ export default function QuizPage() {
           setQuizData(data);
           
           // Set the total number of steps (questions + special slides + summary + result)
-          // Adding 5 for: 1) info slide, 2) expert review, 3) community, 4) summary, 5) result
-          const totalSteps = data.questions.length + 5;
+          // Adding 7 for: 1) info slide, 2) expert review, 3) community, 4) summary, 5) plan, 6) progress, 7) result
+          const totalSteps = data.questions.length + 7;
           setTotalSteps(totalSteps);
         } else {
           setError("Quiz not found");
@@ -196,6 +197,14 @@ export default function QuizPage() {
       data: {
         quizId: quiz.id,
         predictedMonth: "July 2025" // Default predicted month
+      }
+    });
+    
+    // Add progress slide after plan slide
+    steps.push({
+      type: 'progress',
+      data: {
+        quizId: quiz.id
       }
     });
 
@@ -378,6 +387,12 @@ export default function QuizPage() {
               ? String(currentStepData.data.predictedMonth) 
               : "July 2025"
           }
+        />
+      )}
+      
+      {currentStepData?.type === 'progress' && 'quizId' in currentStepData.data && (
+        <ProgressSlide 
+          quizId={currentStepData.data.quizId}
         />
       )}
       

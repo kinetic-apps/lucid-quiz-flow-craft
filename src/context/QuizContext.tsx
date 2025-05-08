@@ -17,7 +17,7 @@ export type Answer = {
   selected_option_id?: string;
 };
 
-export type StepType = 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary';
+export type StepType = 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary' | 'plan' | 'progress';
 
 // Define various step data types
 export type QuestionStepData = {

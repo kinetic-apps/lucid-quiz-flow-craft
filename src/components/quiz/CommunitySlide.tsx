@@ -32,14 +32,14 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
 
   // User avatars positioning data for the world map
   const avatarPositions = [
-    { top: '20%', left: '15%', color: '#34D399' }, // North America
-    { top: '25%', left: '35%', color: '#10B981' }, // Europe
-    { top: '20%', left: '55%', color: '#059669' }, // Asia
-    { top: '35%', left: '25%', color: '#047857' }, // Africa
-    { top: '45%', left: '20%', color: '#065F46' }, // South America
-    { top: '15%', left: '42%', color: '#047857' }, // Northern Europe
-    { top: '50%', left: '75%', color: '#059669' }, // Australia
-    { top: '30%', left: '65%', color: '#10B981' }  // East Asia
+    { top: '20%', left: '15%', color: '#7c3aed' }, // North America
+    { top: '25%', left: '35%', color: '#6d28d9' }, // Europe
+    { top: '20%', left: '55%', color: '#7c3aed' }, // Asia
+    { top: '35%', left: '25%', color: '#6d28d9' }, // Africa
+    { top: '45%', left: '20%', color: '#7c3aed' }, // South America
+    { top: '15%', left: '42%', color: '#6d28d9' }, // Northern Europe
+    { top: '50%', left: '75%', color: '#7c3aed' }, // Australia
+    { top: '30%', left: '65%', color: '#6d28d9' }  // East Asia
   ];
 
   return (
@@ -98,7 +98,7 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
         {/* Continue Button */}
         <Button
           onClick={goToNextStep}
-          className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full py-4 mt-8"
+          className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white rounded-full py-4 mt-8"
         >
           Continue
         </Button>
