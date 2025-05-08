@@ -92,7 +92,7 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    overflow: hidden; /* Prevent body scrolling */
+    /* Don't prevent scrolling on the body globally */
   }
   
   /* Ensure quiz slides fit in viewport */
@@ -105,6 +105,11 @@
     max-height: 100%;
     display: flex;
     flex-direction: column;
+  }
+
+  /* Allow specific containers to control overflow as needed instead of the body */
+  .overflow-container {
+    overflow: hidden;
   }
 }
 
@@ -133,9 +138,26 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Fix for iOS Safari scrolling issues */
+body.has-scroll-issues {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: scroll;
+}
+
 /* Make sure the continue button is always visible */
 @media (max-height: 667px) {
   .quiz-slide {
     padding-bottom: 100px;
+  }
+}
+
+/* Ensure bottom content is always accessible on mobile */
+@media (max-width: 767px) {
+  .page-content {
+    padding-bottom: 120px; /* Provide extra space at the bottom */
   }
 }

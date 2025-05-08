@@ -178,8 +178,8 @@ const CheckoutPage = () => {
       </div>
       
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-md mx-auto bg-[#f9f7f3] pb-8">
+      <div className="flex-1 overflow-y-auto -webkit-overflow-scrolling-touch pb-16">
+        <div className="max-w-md mx-auto bg-[#f9f7f3]">
           {/* Before/After Section */}
           <div className="flex mb-2">
             <div className="flex-1 p-4 border-r border-gray-200">
