@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -14,16 +13,12 @@ const Hero = () => {
       
       <div className="container relative max-w-6xl mx-auto px-4 text-center">
         <motion.h1 
-          className="text-4xl md:text-6xl font-bold text-gray-900 mb-6"
+          className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Discover Your Perfect 
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-500 to-purple-600">
-            {" "}Mindfulness{" "}
-          </span> 
-          Practice
+          A PERSONALIZED WELL-BEING MANAGEMENT PLAN
         </motion.h1>
         
         <motion.p 
@@ -32,8 +27,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Take our personalized quiz and discover the perfect mindfulness techniques 
-          tailored specifically to your lifestyle, preferences, and goals.
+          IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN
         </motion.p>
         
         <motion.div
@@ -43,12 +37,9 @@ const Hero = () => {
         >
           <Link to="/quiz/mindfulness">
             <Button className="bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white text-lg px-8 py-6 h-auto rounded-lg">
-              Start Your Free Quiz
+              3-MINUTE QUIZ
             </Button>
           </Link>
-          <p className="text-sm text-gray-500 mt-4">
-            Takes only 2 minutes • No sign-up required
-          </p>
         </motion.div>
         
         <motion.div 

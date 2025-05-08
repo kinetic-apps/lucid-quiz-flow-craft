@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
 const GenderSelect = () => {
+  const handleQuizStart = () => {
+    // Remove the age range directly from localStorage instead of using the context
+    localStorage.removeItem('lucid_age_range');
+    localStorage.removeItem('lucid_answers');
+    localStorage.removeItem('lucid_progress');
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
@@ -24,11 +31,11 @@ const GenderSelect = () => {
       <main className="flex-grow flex flex-col items-center p-4 pt-10">
         <div className="max-w-xl w-full">
           <h1 className="text-4xl font-bold text-center mb-6 text-gray-900">
-            A PERSONALIZED ONBOARDING PLAN
+            A PERSONALIZED WELL-BEING MANAGEMENT PLAN
           </h1>
           
           <p className="text-xl text-center mb-8 text-gray-800 px-6">
-            IMPROVE YOUR PRODUCTIVITY WITH OUR PERSONALIZED PLAN
+            IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN
           </p>
           
           <p className="text-2xl font-medium text-center mb-10 text-gray-900">
@@ -46,7 +53,8 @@ const GenderSelect = () => {
               </div>
               <Link 
                 to="/quiz/male" 
-                className="bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-b-lg flex items-center justify-between px-8 text-xl"
+                className="bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-b-lg flex items-center justify-between px-8 text-xl"
+                onClick={handleQuizStart}
               >
                 <span>Male</span> <ChevronRight className="w-6 h-6" />
               </Link>
@@ -62,7 +70,8 @@ const GenderSelect = () => {
               </div>
               <Link 
                 to="/quiz/female" 
-                className="bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-b-lg flex items-center justify-between px-8 text-xl"
+                className="bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-b-lg flex items-center justify-between px-8 text-xl"
+                onClick={handleQuizStart}
               >
                 <span>Female</span> <ChevronRight className="w-6 h-6" />
               </Link>

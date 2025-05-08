@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft } from 'lucide-react';
 import { submitQuizResults, Result } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 type ResultGateProps = {
   quizId: string;
@@ -16,8 +17,18 @@ type QuizResult = {
   result: Result;
 };
 
+// Use Window interface augmentation to define amplitude
+declare global {
+  interface Window {
+    amplitude?: {
+      track: (eventName: string, eventProperties: Record<string, string>) => void;
+    };
+  }
+}
+
 const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
-  const { visitorId, answers, goToPrevStep, utmParams } = useQuiz();
+  const { visitorId, answers, goToPrevStep, utmParams, currentStep, userAgeRange } = useQuiz();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -33,7 +44,16 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
     
     try {
       // Submit results and get insight
-      const response: QuizResult = await submitQuizResults(quizId, visitorId, answers, email, utmParams);
+      const response: QuizResult = await submitQuizResults(
+        quizId, 
+        visitorId, 
+        answers, 
+        email, 
+        Object.fromEntries(
+          Object.entries(utmParams).map(([key, value]) => [key, String(value)])
+        ),
+        userAgeRange
+      );
       
       // Show result and hide email form
       setResult(response.result);
@@ -43,11 +63,13 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       // Track completion event if analytics available
       try {
         if (typeof window !== 'undefined' && 'amplitude' in window) {
-          (window as any).amplitude.track('quiz_complete', { 
+          window.amplitude?.track('quiz_complete', { 
             visitor_id: visitorId,
             quiz_id: quizId,
             email: email,
-            ...utmParams
+            ...Object.fromEntries(
+              Object.entries(utmParams).map(([key, value]) => [key, String(value)])
+            )
           });
         }
       } catch (e) {
@@ -70,6 +92,15 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       setShowEmailForm(false);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleBack = () => {
+    // If we're somehow on the first step, navigate back to home
+    if (currentStep === 0) {
+      navigate('/');
+    } else {
+      goToPrevStep();
     }
   };
 
@@ -128,7 +159,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={goToPrevStep}
+              onClick={handleBack}
               className="flex items-center"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> Back

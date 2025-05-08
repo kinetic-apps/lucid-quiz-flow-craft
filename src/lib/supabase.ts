@@ -136,7 +136,8 @@ export async function submitQuizResults(
   visitorId: string,
   answers: Answer[],
   email?: string,
-  utmParams?: Record<string, string>
+  utmParams?: Record<string, string>,
+  ageRange?: string | null
 ) {
   try {
     // Calculate total score
@@ -147,7 +148,8 @@ export async function submitQuizResults(
       session_id: visitorId,
       quiz_id: quizId,
       question_id: answer.question_id,
-      selected_option_id: answer.selected_option_id
+      selected_option_id: answer.selected_option_id,
+      age_range: ageRange || null
     }));
 
     for (const response of userResponses) {

@@ -1,6 +1,15 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+// Define the Window interface extension for amplitude
+declare global {
+  interface Window {
+    amplitude?: {
+      track: (eventName: string, eventProperties: Record<string, string>) => void;
+    };
+  }
+}
+
 export type Answer = {
   step: number;
   value: string | boolean | number;
@@ -13,6 +22,9 @@ type QuizContextType = {
   answers: Answer[];
   progress: number;
   currentStep: number;
+  userAgeRange: string | null;
+  setUserAgeRange: (ageRange: string) => void;
+  resetUserAgeRange: () => void;
   setAnswer: (step: number, value: string | boolean | number, question_id?: string, selected_option_id?: string) => void;
   goToNextStep: () => void;
   goToPrevStep: () => void;
@@ -20,6 +32,7 @@ type QuizContextType = {
   totalSteps: number;
   setTotalSteps: (steps: number) => void;
   utmParams: Record<string, string>;
+  resetQuiz: () => void;
 };
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -31,6 +44,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0);
   const [utmParams, setUtmParams] = useState<Record<string, string>>({});
+  const [userAgeRange, setUserAgeRange] = useState<string | null>(null);
 
   // Initialize visitor ID and load saved data from localStorage
   useEffect(() => {
@@ -54,6 +68,12 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     if (storedProgress) {
       setProgress(JSON.parse(storedProgress));
       setCurrentStep(JSON.parse(storedProgress));
+    }
+
+    // Load saved age range
+    const storedAgeRange = localStorage.getItem('lucid_age_range');
+    if (storedAgeRange) {
+      setUserAgeRange(storedAgeRange);
     }
 
     // Extract and store UTM parameters
@@ -87,6 +107,13 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('lucid_progress', JSON.stringify(progress));
   }, [progress]);
+
+  // Save age range to localStorage when it changes
+  useEffect(() => {
+    if (userAgeRange) {
+      localStorage.setItem('lucid_age_range', userAgeRange);
+    }
+  }, [userAgeRange]);
 
   const setAnswer = (step: number, value: string | boolean | number, question_id?: string, selected_option_id?: string) => {
     setAnswers(prev => {
@@ -132,18 +159,38 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetUserAgeRange = () => {
+    setUserAgeRange(null);
+    localStorage.removeItem('lucid_age_range');
+  };
+
+  const resetQuiz = () => {
+    setAnswers([]);
+    setProgress(0);
+    setCurrentStep(0);
+    setUserAgeRange(null);
+    localStorage.removeItem('lucid_answers');
+    localStorage.removeItem('lucid_progress');
+    localStorage.removeItem('lucid_age_range');
+    // Don't reset visitor ID
+  };
+
   const value = {
     visitorId,
     answers,
     progress,
     currentStep,
+    userAgeRange,
+    setUserAgeRange,
+    resetUserAgeRange,
     setAnswer,
     goToNextStep,
     goToPrevStep,
     setCurrentStep,
     totalSteps,
     setTotalSteps,
-    utmParams
+    utmParams,
+    resetQuiz
   };
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;

@@ -1,18 +1,66 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
-import { getQuizBySlug } from '@/lib/supabase';
+import { getQuizBySlug, Question } from '@/lib/supabase';
 import QuizSlide from '@/components/quiz/QuizSlide';
+import AgeSelect from '@/components/quiz/AgeSelect';
 import ResultGate from '@/components/quiz/ResultGate';
+import ConfirmationSlide from '@/components/quiz/ConfirmationSlide';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+// Define types for better type safety
+type QuestionOption = {
+  id: string;
+  text: string;
+  value: number;
+  order_number: number;
+};
+
+type EnhancedQuestion = Question & {
+  type: 'radio' | 'boolean' | 'likert';
+  options: string[];
+  optionsData: QuestionOption[];
+};
+
+type QuizData = {
+  quiz: {
+    id: string;
+    slug: string;
+    title: string;
+    description: string;
+    gradient_from: string;
+    gradient_to: string;
+    created_at: string;
+  };
+  questions: EnhancedQuestion[];
+  tips: [];
+};
+
+type StepData = {
+  question: EnhancedQuestion;
+} | {
+  quiz_id: string;
+};
+
+type Step = {
+  type: 'question' | 'result';
+  data: StepData;
+};
 
 export default function QuizPage() {
   const { slug } = useParams();
-  const { currentStep, setTotalSteps } = useQuiz();
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [quizData, setQuizData] = React.useState<any>(null);
+  const { currentStep, setTotalSteps, userAgeRange, setUserAgeRange, goToPrevStep } = useQuiz();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [quizData, setQuizData] = useState<QuizData | null>(null);
+  const [showAgeSelect, setShowAgeSelect] = useState(true);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [progress, setProgress] = useState(0); // Separate progress state for display
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -24,11 +72,16 @@ export default function QuizPage() {
 
       try {
         const data = await getQuizBySlug(slug);
-        setQuizData(data);
+        setQuizData(data as QuizData);
         
         // Calculate total steps (questions + 1 for result)
         const totalSteps = data.questions.length + 1;
         setTotalSteps(totalSteps);
+        
+        // If age is already set, skip the age selection screen
+        if (userAgeRange) {
+          setShowAgeSelect(false);
+        }
         
         setLoading(false);
       } catch (err) {
@@ -44,7 +97,31 @@ export default function QuizPage() {
     };
 
     fetchQuiz();
-  }, [slug, setTotalSteps, toast]);
+  }, [slug, setTotalSteps, toast, userAgeRange]);
+
+  // Calculate progress percentage
+  useEffect(() => {
+    if (!quizData) return;
+
+    if (showAgeSelect) {
+      setProgress(0); // Age selection screen is 0% progress
+    } else {
+      // Calculate progress based on current step relative to total questions + result
+      const totalSteps = quizData.questions.length + 1;
+      const currentProgress = Math.round((currentStep / totalSteps) * 100);
+      setProgress(currentProgress);
+    }
+  }, [currentStep, quizData, showAgeSelect]);
+
+  const handleAgeSelectComplete = (ageRange: string) => {
+    setUserAgeRange(ageRange);
+    setShowAgeSelect(false);
+    setShowConfirmation(true); // Show confirmation slide after age selection
+  };
+
+  const handleConfirmationComplete = () => {
+    setShowConfirmation(false); // Hide confirmation and proceed to questions
+  };
 
   if (loading) {
     return (
@@ -82,23 +159,55 @@ export default function QuizPage() {
     );
   }
 
+  // Show age selection screen first
+  if (showAgeSelect) {
+    return (
+      <div className="p-4 max-w-md mx-auto">
+        <AgeSelect onComplete={handleAgeSelectComplete} />
+      </div>
+    );
+  }
+
+  // Show confirmation slide after age selection
+  if (showConfirmation) {
+    return (
+      <div className="p-4 max-w-md mx-auto">
+        <ConfirmationSlide onContinue={handleConfirmationComplete} />
+      </div>
+    );
+  }
+
   // Determine what slide to show based on current step
   const { quiz, questions } = quizData;
-  
+    
   // All questions as a list of steps
-  const allSteps = [
-    ...questions.map((q: any) => ({ type: 'question', data: q }))
-  ];
+  const allSteps: Step[] = questions.map((q) => ({ 
+    type: 'question', 
+    data: { question: q } 
+  }));
 
   // Add result as the final step
-  allSteps.push({ type: 'result', data: { quiz_id: quiz.id } });
+  allSteps.push({ 
+    type: 'result', 
+    data: { quiz_id: quiz.id } 
+  });
 
   // Get the current step data
   const currentStepData = allSteps[currentStep];
 
+  // Handle back navigation
+  const handleBackNavigation = () => {
+    if (currentStep > 0) {
+      goToPrevStep();
+    } else {
+      // If we're at the first question, go back to confirmation
+      setShowConfirmation(true);
+    }
+  };
+
   return (
     <div 
-      className="quiz-container animate-slide-right p-4 max-w-2xl mx-auto"
+      className="quiz-container animate-slide-right p-4 max-w-md mx-auto"
       style={{ 
         '--quiz-gradient-from': quiz.gradient_from,
         '--quiz-gradient-to': quiz.gradient_to,
@@ -106,7 +215,7 @@ export default function QuizPage() {
     >
       {currentStepData?.type === 'question' && (
         <QuizSlide 
-          question={currentStepData.data} 
+          question={'question' in currentStepData.data ? currentStepData.data.question : questions[0]} 
           quizId={quiz.id}
           stepIndex={currentStep}
         />
