@@ -1,0 +1,43 @@
+<svg width="200" height="300" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head -->
+  <circle cx="100" cy="70" r="50" fill="#fad9c5" />
+  
+  <!-- Hair -->
+  <path d="M80,30 Q70,20 60,30 Q50,40 50,60 Q50,80 60,90 L70,90 L80,80 L90,80 Z" fill="#c9bb8e" />
+  <path d="M120,30 Q130,20 140,30 Q150,40 150,60 Q150,80 140,90 L130,90 L120,80 L110,80 Z" fill="#c9bb8e" />
+  <path d="M80,30 Q90,20 100,20 Q110,20 120,30 L120,40 L80,40 Z" fill="#c9bb8e" />
+  
+  <!-- Face -->
+  <ellipse cx="80" cy="60" rx="5" ry="7" fill="#333" />
+  <ellipse cx="120" cy="60" rx="5" ry="7" fill="#333" />
+  <path d="M85,85 Q100,95 115,85" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Eyebrows - troubled expression -->
+  <path d="M75,45 Q80,40 85,45" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" />
+  <path d="M115,45 Q120,40 125,45" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Neck -->
+  <path d="M90,120 L90,140 L110,140 L110,120" fill="#fad9c5" />
+  
+  <!-- Shirt - green like in the image -->
+  <path d="M60,140 L60,240 L140,240 L140,140 Q130,150 100,150 Q70,150 60,140 Z" fill="#4ade80" />
+  
+  <!-- Arms -->
+  <path d="M60,150 L30,200 L40,210 L70,170 Z" fill="#4ade80" />
+  <path d="M140,150 L170,200 L160,210 L130,170 Z" fill="#4ade80" />
+  
+  <!-- Hands -->
+  <ellipse cx="40" cy="210" rx="10" ry="10" fill="#fad9c5" />
+  <ellipse cx="160" cy="210" rx="10" ry="10" fill="#fad9c5" />
+  
+  <!-- Worried expression lines -->
+  <path d="M80,50 L70,45" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round" />
+  <path d="M120,50 L130,45" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round" />
+  <path d="M95,70 L105,70" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round" />
+  
+  <!-- Stress lines -->
+  <path d="M50,50 L40,45" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round" />
+  <path d="M150,50 L160,45" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round" />
+  <path d="M60,30 L55,20" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round" />
+  <path d="M140,30 L145,20" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round" />
+</svg> 
