@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { useNavigate } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, HelpCircle, XCircle, AlertCircle, Clock } from 'lucide-react';
 
 type QuizSlideProps = {
   question: {
@@ -19,6 +19,66 @@ type QuizSlideProps = {
   };
   quizId: string;
   stepIndex: number;
+};
+
+type QuestionOption = {
+  id: string;
+  text: string;
+  value: number;
+  order_number: number;
+};
+
+// Function to determine which icon to use based on the option text
+const getOptionIcon = (text: string, isSelected: boolean, isAnimating: boolean) => {
+  const iconColor = isSelected || isAnimating ? '#7c3aed' : '#9ca3af';
+  const iconSize = 24;
+  
+  const lowerText = text.toLowerCase();
+  
+  if (lowerText.includes('often') || lowerText.includes('always')) {
+    return <Check size={iconSize} className="text-emerald-500" />;
+  } else if (lowerText.includes('sometimes')) {
+    return <HelpCircle size={iconSize} className="text-violet-500" />;
+  } else if (lowerText.includes('rarely') || lowerText.includes('never')) {
+    return <XCircle size={iconSize} className="text-emerald-500" />;
+  } else if (lowerText.includes('yes')) {
+    return <Check size={iconSize} className="text-emerald-500" />;
+  } else if (lowerText.includes('no')) {
+    return <XCircle size={iconSize} className="text-red-500" />;
+  } else if (lowerText.includes('neutral')) {
+    return <HelpCircle size={iconSize} className="text-amber-500" />;
+  } else if (lowerText.includes('morning') || lowerText.includes('night')) {
+    return <Clock size={iconSize} color={iconColor} />;
+  } else {
+    return <AlertCircle size={iconSize} color={iconColor} />;
+  }
+};
+
+// Function to sort options in the desired order: Always/Often first, Sometimes in the middle, Rarely/Never last
+const sortOptions = (options: QuestionOption[]): QuestionOption[] => {
+  return [...options].sort((a, b) => {
+    const textA = a.text.toLowerCase();
+    const textB = b.text.toLowerCase();
+    
+    // Always should be first
+    if (textA.includes('always')) return -1;
+    if (textB.includes('always')) return 1;
+    
+    // Often should be second
+    if (textA.includes('often')) return -1;
+    if (textB.includes('often')) return 1;
+    
+    // Sometimes should be in the middle
+    if (textA.includes('sometimes') && (textB.includes('rarely') || textB.includes('never'))) return -1;
+    if (textB.includes('sometimes') && (textA.includes('rarely') || textA.includes('never'))) return 1;
+    
+    // Rarely before Never
+    if (textA.includes('rarely') && textB.includes('never')) return -1;
+    if (textB.includes('rarely') && textA.includes('never')) return 1;
+    
+    // Default to original order
+    return a.order_number - b.order_number;
+  });
 };
 
 const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
@@ -78,11 +138,15 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
 
   // Render different question types
   const renderQuestionContent = () => {
+    // Sort the options in the desired order for radio type questions
+    const sortedOptions = question.type === 'radio' && question.optionsData ? 
+      sortOptions(question.optionsData) : [];
+      
     switch (question.type) {
       case 'radio':
         return (
           <div className="space-y-3 mt-6">
-            {question.optionsData?.map((option) => {
+            {sortedOptions.map((option) => {
               const isSelected = selectedOptionId === option.id;
               const isAnimating = animatingSelection === option.id;
               
@@ -114,36 +178,10 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                   )}
                   
                   <div className="flex items-center z-10 relative w-full">
-                    <div
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 transition-all ${
-                        isSelected || isAnimating
-                          ? 'border-purple-600'
-                          : 'border-gray-300'
-                      }`}
-                    >
-                      <AnimatePresence>
-                        {(isSelected || isAnimating) && (
-                          <motion.div 
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            exit={{ scale: 0 }}
-                            className="w-3 h-3 rounded-full bg-purple-600" 
-                          />
-                        )}
-                      </AnimatePresence>
+                    <div className="mr-3 flex-shrink-0">
+                      {getOptionIcon(option.text, isSelected, isAnimating)}
                     </div>
                     <span className="text-lg">{option.text}</span>
-                    
-                    {isAnimating && (
-                      <motion.div 
-                        className="ml-auto"
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.1, type: "spring", stiffness: 500 }}
-                      >
-                        <Check className="h-5 w-5 text-purple-600" />
-                      </motion.div>
-                    )}
                   </div>
                 </motion.div>
               );
@@ -185,18 +223,12 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                     />
                   )}
                   
-                  <span className="text-lg z-10 relative">{option.text}</span>
-                  
-                  {isAnimating && (
-                    <motion.div 
-                      className="absolute right-3"
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.1, type: "spring", stiffness: 500 }}
-                    >
-                      <Check className="h-5 w-5 text-purple-600" />
-                    </motion.div>
-                  )}
+                  <div className="flex items-center gap-2 z-10 relative">
+                    <div className="flex-shrink-0">
+                      {getOptionIcon(option.text, isSelected, isAnimating)}
+                    </div>
+                    <span className="text-lg">{option.text}</span>
+                  </div>
                 </motion.div>
               );
             })}
