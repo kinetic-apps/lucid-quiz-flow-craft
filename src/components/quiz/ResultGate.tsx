@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft } from 'lucide-react';
 import { submitQuizResults, Result } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import WellbeingChart from './WellbeingChart';
 
 type ResultGateProps = {
   quizId: string;
@@ -34,6 +35,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   const [result, setResult] = useState<Result | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [showEmailForm, setShowEmailForm] = useState(true);
+  const [showWellbeingChart, setShowWellbeingChart] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,10 +57,11 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
         userAgeRange
       );
       
-      // Show result and hide email form
+      // Show wellbeing chart and hide email form
       setResult(response.result);
       setScore(response.score);
       setShowEmailForm(false);
+      setShowWellbeingChart(true);
       
       // Track completion event if analytics available
       try {
@@ -90,6 +93,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       });
       setScore(0);
       setShowEmailForm(false);
+      setShowWellbeingChart(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -104,104 +108,127 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
     }
   };
 
+  const handleContinue = () => {
+    setShowWellbeingChart(false);
+    // Show actual result content after viewing the chart
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      transition={{ duration: 0.4 }}
-      className="result-gate"
-    >
+    <AnimatePresence mode="wait">
       {showEmailForm ? (
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Almost there!
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Enter your email to receive your personalized {quizTitle} results.
-          </p>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Input
-                type="email"
-                placeholder="Your email address"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
-            >
-              {isSubmitting ? 
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </span> : 
-                'Get My Results'
-              }
-            </Button>
-            
-            <p className="text-xs text-gray-500 mt-2">
-              We respect your privacy. Your email will never be shared.
-            </p>
-          </form>
-          
-          <div className="mt-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBack}
-              className="flex items-center"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" /> Back
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div className="result-content">
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-              Your {quizTitle} Results
+        <motion.div
+          key="email-form"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 }}
+          transition={{ duration: 0.4 }}
+          className="result-gate"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              Almost there!
             </h2>
+            <p className="text-gray-600 mb-6">
+              Enter your email to receive your personalized {quizTitle} results.
+            </p>
             
-            {result && (
-              <div className="prose max-w-none">
-                <h3 className="text-xl font-semibold mb-2">{result.title}</h3>
-                
-                {score !== null && (
-                  <div className="my-4 text-center">
-                    <div className="inline-block p-4 bg-lucid-violet-600/10 rounded-full">
-                      <div className="text-3xl font-bold text-lucid-violet-700">{score}</div>
-                      <div className="text-sm text-lucid-violet-600">Your Score</div>
-                    </div>
-                  </div>
-                )}
-                
-                <p className="text-gray-700 mb-4">{result.description}</p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Your email address"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full"
+                />
               </div>
-            )}
-            
-            <div className="mt-8 text-center">
-              <Button 
-                className="bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
-                onClick={() => window.location.href = '/'}
+              
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
               >
-                Return Home
+                {isSubmitting ? 
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </span> : 
+                  'Get My Results'
+                }
+              </Button>
+              
+              <p className="text-xs text-gray-500 mt-2">
+                We respect your privacy. Your email will never be shared.
+              </p>
+            </form>
+            
+            <div className="mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBack}
+                className="flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
+      ) : showWellbeingChart ? (
+        <motion.div 
+          key="wellbeing-chart"
+          className="result-gate"
+        >
+          <WellbeingChart onContinue={handleContinue} />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="result-content"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
+          className="result-gate"
+        >
+          <div className="result-content">
+            <div className="bg-white rounded-lg p-6 shadow-lg">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Your {quizTitle} Results
+              </h2>
+              
+              {result && (
+                <div className="prose max-w-none">
+                  <h3 className="text-xl font-semibold mb-2">{result.title}</h3>
+                  
+                  {score !== null && (
+                    <div className="my-4 text-center">
+                      <div className="inline-block p-4 bg-lucid-violet-600/10 rounded-full">
+                        <div className="text-3xl font-bold text-lucid-violet-700">{score}</div>
+                        <div className="text-sm text-lucid-violet-600">Your Score</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <p className="text-gray-700 mb-4">{result.description}</p>
+                </div>
+              )}
+              
+              <div className="mt-8 text-center">
+                <Button 
+                  className="bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
+                  onClick={() => window.location.href = '/'}
+                >
+                  Return Home
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       )}
-    </motion.div>
+    </AnimatePresence>
   );
 };
 
