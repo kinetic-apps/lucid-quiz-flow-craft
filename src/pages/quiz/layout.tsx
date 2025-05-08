@@ -1,9 +1,9 @@
-
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { QuizProvider } from '@/context/QuizContext';
 import ProgressBar from '@/components/quiz/ProgressBar';
 
-export default function QuizLayout({ children }: { children: React.ReactNode }) {
+export default function QuizLayout() {
   return (
     <QuizProvider>
       <div className="min-h-screen flex flex-col">
@@ -14,7 +14,7 @@ export default function QuizLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="flex-1 safe-paddings">
           <div className="container max-w-md mx-auto py-8">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>
