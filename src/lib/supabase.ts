@@ -101,8 +101,31 @@ export async function getQuizBySlug(slug: string) {
 
       // Add type property based on question pattern
       let type = 'radio';
+      
+      // Check for likert scale questions
       if (question.text.includes('agree') || question.text.includes('rate')) {
         type = 'likert';
+      }
+      
+      // Check for multi-select questions
+      const multiSelectIndicators = [
+        'choose all',
+        'select all',
+        'all that apply',
+        'aspects of your well-being',
+        'habits that you\'d like to quit',
+        'improve about your sleep',
+        'caused you to struggle',
+        'need to improve',
+        'like to start working on'
+      ];
+      
+      const isMultiSelect = multiSelectIndicators.some(indicator => 
+        question.text.toLowerCase().includes(indicator.toLowerCase())
+      );
+      
+      if (isMultiSelect) {
+        type = 'multiselect';
       }
 
       return {

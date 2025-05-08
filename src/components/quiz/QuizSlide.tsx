@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { useNavigate } from 'react-router-dom';
-import { Check, HelpCircle, XCircle, AlertCircle, Clock } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, HelpCircle, Battery, Brain, Heart, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 type QuizSlideProps = {
   question: {
     id: string;
-    type: 'radio' | 'boolean' | 'likert';
+    type: 'radio' | 'boolean' | 'likert' | 'multiselect';
     text: string;
     options?: string[];
     optionsData?: {
@@ -28,29 +28,35 @@ type QuestionOption = {
   order_number: number;
 };
 
-// Function to determine which icon to use based on the option text
-const getOptionIcon = (text: string, isSelected: boolean, isAnimating: boolean) => {
-  const iconColor = isSelected || isAnimating ? '#7c3aed' : '#9ca3af';
-  const iconSize = 24;
-  
+// Function to get the appropriate icon for Likert scale
+const getLikertIcon = (value: number) => {
+  if (value === 1 || value === 2) {
+    return <ThumbsDown size={24} className="text-red-500" />;
+  } else if (value === 3) {
+    return <HelpCircle size={24} className="text-gray-500" />;
+  } else {
+    return <ThumbsUp size={24} className="text-green-500" />;
+  }
+};
+
+// Function to get icon for multi-select options
+const getOptionIcon = (text: string) => {
   const lowerText = text.toLowerCase();
   
-  if (lowerText.includes('often') || lowerText.includes('always')) {
-    return <Check size={iconSize} className="text-emerald-500" />;
-  } else if (lowerText.includes('sometimes')) {
-    return <HelpCircle size={iconSize} className="text-violet-500" />;
-  } else if (lowerText.includes('rarely') || lowerText.includes('never')) {
-    return <XCircle size={iconSize} className="text-emerald-500" />;
-  } else if (lowerText.includes('yes')) {
-    return <Check size={iconSize} className="text-emerald-500" />;
-  } else if (lowerText.includes('no')) {
-    return <XCircle size={iconSize} className="text-red-500" />;
-  } else if (lowerText.includes('neutral')) {
-    return <HelpCircle size={iconSize} className="text-amber-500" />;
-  } else if (lowerText.includes('morning') || lowerText.includes('night')) {
-    return <Clock size={iconSize} color={iconColor} />;
+  if (lowerText.includes('energy') || lowerText.includes('tired')) {
+    return <Battery size={24} className="text-green-500" />;
+  } else if (lowerText.includes('worry')) {
+    return <Brain size={24} className="text-green-500" />;
+  } else if (lowerText.includes('emotional') || lowerText.includes('exhaustion')) {
+    return <Heart size={24} className="text-green-500" />;
+  } else if (lowerText.includes('overthinking')) {
+    return <Brain size={24} className="text-green-500" />;
+  } else if (lowerText.includes('irritability')) {
+    return <AlertTriangle size={24} className="text-green-500" />;
+  } else if (lowerText.includes('fine')) {
+    return <CheckCircle2 size={24} className="text-green-500" />;
   } else {
-    return <AlertCircle size={iconSize} color={iconColor} />;
+    return <Zap size={24} className="text-green-500" />;
   }
 };
 
@@ -85,6 +91,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
   const { setAnswer, goToNextStep, answers, currentStep } = useQuiz();
   const [selectedOption, setSelectedOption] = useState<string | boolean | number | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(new Set());
   const [animatingSelection, setAnimatingSelection] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -95,9 +102,16 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     if (savedAnswer) {
       setSelectedOption(savedAnswer.value);
       setSelectedOptionId(savedAnswer.selected_option_id);
+      
+      // Handle multi-select answers if they're stored as a comma-separated string
+      if (typeof savedAnswer.value === 'string' && savedAnswer.value.includes(',')) {
+        const selectedIds = savedAnswer.value.split(',');
+        setSelectedOptions(new Set(selectedIds));
+      }
     } else {
       setSelectedOption(null);
       setSelectedOptionId(null);
+      setSelectedOptions(new Set());
     }
     setAnimatingSelection(null);
   }, [stepIndex, answers]);
@@ -115,6 +129,28 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       goToNextStep();
       setAnimatingSelection(null);
     }, 600);
+  };
+
+  // Handle multi-select option toggle
+  const handleToggleOption = (optionId: string) => {
+    setSelectedOptions(prev => {
+      const newSelectedOptions = new Set(prev);
+      if (newSelectedOptions.has(optionId)) {
+        newSelectedOptions.delete(optionId);
+      } else {
+        newSelectedOptions.add(optionId);
+      }
+      return newSelectedOptions;
+    });
+  };
+
+  // Handle continue for multi-select questions
+  const handleMultiSelectContinue = () => {
+    if (selectedOptions.size > 0) {
+      const selectedIds = Array.from(selectedOptions).join(',');
+      setAnswer(stepIndex, selectedIds, question.id);
+      goToNextStep();
+    }
   };
 
   // Handle swipe back gesture
@@ -142,7 +178,73 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     const sortedOptions = question.type === 'radio' && question.optionsData ? 
       sortOptions(question.optionsData) : [];
       
+    // Sort the options by order_number for likert scale
+    const likertOptions = question.optionsData ? 
+      [...question.optionsData].sort((a, b) => a.order_number - b.order_number) : [];
+      
     switch (question.type) {
+      case 'multiselect':
+        return (
+          <div>
+            <div className="space-y-3 mt-6">
+              {question.optionsData?.map((option) => {
+                const isSelected = selectedOptions.has(option.id);
+                
+                return (
+                  <motion.div
+                    key={option.id}
+                    className={`p-4 border rounded-lg flex items-center justify-between cursor-pointer transition-all relative overflow-hidden ${
+                      isSelected
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 bg-white'
+                    }`}
+                    onClick={() => handleToggleOption(option.id)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    animate={{
+                      borderColor: isSelected ? '#22c55e' : '#e5e7eb',
+                      backgroundColor: isSelected ? '#f0fdf4' : 'white',
+                    }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        {getOptionIcon(option.text)}
+                      </div>
+                      <span className="text-lg">{option.text}</span>
+                    </div>
+                    <div className={`w-6 h-6 rounded border flex items-center justify-center ${
+                      isSelected 
+                        ? 'bg-green-500 border-green-500' 
+                        : 'border-gray-300'
+                    }`}>
+                      {isSelected && (
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+            
+            <motion.button
+              className={`w-full mt-8 py-4 rounded-lg text-white font-medium ${
+                selectedOptions.size > 0 
+                  ? 'bg-green-500 hover:bg-green-600' 
+                  : 'bg-gray-300 cursor-not-allowed'
+              }`}
+              disabled={selectedOptions.size === 0}
+              onClick={handleMultiSelectContinue}
+              whileHover={selectedOptions.size > 0 ? { scale: 1.02 } : {}}
+              whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
+            >
+              Continue
+            </motion.button>
+          </div>
+        );
+        
       case 'radio':
         return (
           <div className="space-y-3 mt-6">
@@ -178,9 +280,6 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                   )}
                   
                   <div className="flex items-center z-10 relative w-full">
-                    <div className="mr-3 flex-shrink-0">
-                      {getOptionIcon(option.text, isSelected, isAnimating)}
-                    </div>
                     <span className="text-lg">{option.text}</span>
                   </div>
                 </motion.div>
@@ -223,10 +322,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                     />
                   )}
                   
-                  <div className="flex items-center gap-2 z-10 relative">
-                    <div className="flex-shrink-0">
-                      {getOptionIcon(option.text, isSelected, isAnimating)}
-                    </div>
+                  <div className="flex items-center justify-center z-10 relative">
                     <span className="text-lg">{option.text}</span>
                   </div>
                 </motion.div>
@@ -237,36 +333,40 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
 
       case 'likert':
         return (
-          <div className="mt-6">
-            <div className="flex justify-between text-sm text-gray-500 px-1 mb-2">
-              <span>Strongly Disagree</span>
-              <span>Strongly Agree</span>
-            </div>
-            <div className="flex justify-between">
-              {question.optionsData?.map((option) => {
+          <div className="mt-8">
+            {/* Likert scale in the style of the second image */}
+            <div className="flex w-full justify-between">
+              {likertOptions.map((option) => {
                 const isSelected = selectedOptionId === option.id;
                 const isAnimating = animatingSelection === option.id;
                 
                 return (
-                  <motion.div
-                    key={option.id}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                      isSelected
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`}
-                    onClick={() => !isSelected && handleSelectOption(option.value, option.id)}
-                    whileHover={!isSelected ? { scale: 1.1, backgroundColor: '#ddd6fe' } : {}}
-                    whileTap={!isSelected ? { scale: 0.9 } : {}}
-                    animate={{
-                      backgroundColor: isAnimating ? '#7c3aed' : isSelected ? '#7c3aed' : '#f3f4f6',
-                      color: isAnimating || isSelected ? 'white' : '#374151',
-                      scale: isAnimating ? 1.1 : 1
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <span className="text-lg">{option.order_number}</span>
-                  </motion.div>
+                  <div key={option.id} className="flex flex-col items-center">
+                    <motion.div
+                      className={`w-14 h-14 border border-gray-200 rounded-md flex items-center justify-center cursor-pointer transition-all mb-2 ${
+                        isSelected
+                          ? 'border-green-500 bg-green-50'
+                          : 'hover:border-gray-300 hover:bg-gray-50 bg-white'
+                      }`}
+                      onClick={() => !isSelected && handleSelectOption(option.value, option.id)}
+                      whileHover={!isSelected ? { scale: 1.1 } : {}}
+                      whileTap={!isSelected ? { scale: 0.9 } : {}}
+                      animate={{
+                        borderColor: isAnimating || isSelected ? '#22c55e' : '#e5e7eb',
+                        backgroundColor: isAnimating || isSelected ? '#f0fdf4' : 'white',
+                        scale: isAnimating ? 1.1 : 1
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {getLikertIcon(option.value)}
+                    </motion.div>
+                    {option.order_number === 1 && (
+                      <span className="text-xs text-gray-600">Strongly disagree</span>
+                    )}
+                    {option.order_number === 5 && (
+                      <span className="text-xs text-gray-600">Strongly agree</span>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -276,6 +376,14 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       default:
         return null;
     }
+  };
+
+  // Determine instruction text based on question type
+  const getInstructionText = () => {
+    if (question.type === 'multiselect') {
+      return "Choose all that apply";
+    }
+    return "Do you agree with the following statement?";
   };
 
   return (
@@ -290,7 +398,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     >
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-center mb-2">{question.text}</h2>
-        <p className="text-gray-600 text-center mb-6">Select an option to continue</p>
+        <p className="text-gray-600 text-center mb-6">{getInstructionText()}</p>
       </div>
 
       {renderQuestionContent()}
