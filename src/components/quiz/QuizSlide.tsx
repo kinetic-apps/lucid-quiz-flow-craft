@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
@@ -11,6 +10,12 @@ type QuizSlideProps = {
     type: 'radio' | 'boolean' | 'likert';
     text: string;
     options?: string[];
+    optionsData?: {
+      id: string;
+      text: string;
+      value: number;
+      order_number: number;
+    }[];
   };
   quizId: string;
   stepIndex: number;
@@ -19,6 +24,7 @@ type QuizSlideProps = {
 const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
   const { setAnswer, goToNextStep, goToPrevStep, answers } = useQuiz();
   const [selectedOption, setSelectedOption] = useState<string | boolean | number | null>(null);
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
   // Initialize selected option from saved answers
@@ -26,14 +32,17 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     const savedAnswer = answers.find(a => a.step === stepIndex);
     if (savedAnswer) {
       setSelectedOption(savedAnswer.value);
+      setSelectedOptionId(savedAnswer.selected_option_id);
     } else {
       setSelectedOption(null);
+      setSelectedOptionId(null);
     }
   }, [stepIndex, answers]);
 
-  const handleSelectOption = (value: string | boolean | number) => {
+  const handleSelectOption = (value: string | boolean | number, optionId: string) => {
     setSelectedOption(value);
-    setAnswer(stepIndex, value);
+    setSelectedOptionId(optionId);
+    setAnswer(stepIndex, value, question.id, optionId);
   };
 
   const handleNext = () => {
@@ -71,28 +80,28 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       case 'radio':
         return (
           <div className="space-y-3 mt-6">
-            {question.options?.map((option, idx) => (
+            {question.optionsData?.map((option) => (
               <div
-                key={idx}
+                key={option.id}
                 className={`p-4 border rounded-lg h-12 flex items-center cursor-pointer transition-all ${
-                  selectedOption === option
+                  selectedOptionId === option.id
                     ? 'border-lucid-violet-600 bg-violet-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
-                onClick={() => handleSelectOption(option)}
+                onClick={() => handleSelectOption(option.text, option.id)}
               >
                 <div
                   className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 ${
-                    selectedOption === option
+                    selectedOptionId === option.id
                       ? 'border-lucid-violet-600'
                       : 'border-gray-300'
                   }`}
                 >
-                  {selectedOption === option && (
+                  {selectedOptionId === option.id && (
                     <div className="w-3 h-3 rounded-full bg-lucid-violet-600" />
                   )}
                 </div>
-                <span>{option}</span>
+                <span>{option.text}</span>
               </div>
             ))}
           </div>
@@ -101,26 +110,19 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       case 'boolean':
         return (
           <div className="grid grid-cols-2 gap-4 mt-6">
-            <div
-              className={`p-4 border rounded-lg flex items-center justify-center cursor-pointer h-12 transition-all ${
-                selectedOption === true
-                  ? 'border-lucid-violet-600 bg-violet-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => handleSelectOption(true)}
-            >
-              <span>Yes</span>
-            </div>
-            <div
-              className={`p-4 border rounded-lg flex items-center justify-center cursor-pointer h-12 transition-all ${
-                selectedOption === false
-                  ? 'border-lucid-violet-600 bg-violet-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => handleSelectOption(false)}
-            >
-              <span>No</span>
-            </div>
+            {question.optionsData?.filter(o => o.text === 'Yes' || o.text === 'No').map((option) => (
+              <div
+                key={option.id}
+                className={`p-4 border rounded-lg flex items-center justify-center cursor-pointer h-12 transition-all ${
+                  selectedOptionId === option.id
+                    ? 'border-lucid-violet-600 bg-violet-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => handleSelectOption(option.text, option.id)}
+              >
+                <span>{option.text}</span>
+              </div>
+            ))}
           </div>
         );
 
@@ -132,17 +134,17 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
               <span>Strongly Agree</span>
             </div>
             <div className="flex justify-between">
-              {[1, 2, 3, 4, 5].map(value => (
+              {question.optionsData?.map((option) => (
                 <div
-                  key={value}
+                  key={option.id}
                   className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                    selectedOption === value
+                    selectedOptionId === option.id
                       ? 'bg-lucid-violet-600 text-white'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                   }`}
-                  onClick={() => handleSelectOption(value)}
+                  onClick={() => handleSelectOption(option.value, option.id)}
                 >
-                  {value}
+                  {option.order_number}
                 </div>
               ))}
             </div>

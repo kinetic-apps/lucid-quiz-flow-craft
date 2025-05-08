@@ -1,23 +1,27 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
-import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft } from 'lucide-react';
-import { submitQuizResults } from '@/lib/supabase';
+import { submitQuizResults, Result } from '@/lib/supabase';
 
 type ResultGateProps = {
   quizId: string;
   quizTitle: string;
 };
 
+type QuizResult = {
+  score: number;
+  result: Result;
+};
+
 const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   const { visitorId, answers, goToPrevStep, utmParams } = useQuiz();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [insight, setInsight] = useState<string | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [score, setScore] = useState<number | null>(null);
   const [showEmailForm, setShowEmailForm] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,26 +33,20 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
     
     try {
       // Submit results and get insight
-      const result = await submitQuizResults(quizId, visitorId, answers, email, utmParams);
+      const response: QuizResult = await submitQuizResults(quizId, visitorId, answers, email, utmParams);
       
-      // Show insight and hide email form
-      setInsight(result.insight_md);
+      // Show result and hide email form
+      setResult(response.result);
+      setScore(response.score);
       setShowEmailForm(false);
       
-      // Track completion event
+      // Track completion event if analytics available
       try {
-        if (window.amplitude) {
-          window.amplitude.track('quiz_complete', { 
+        if (typeof window !== 'undefined' && 'amplitude' in window) {
+          (window as any).amplitude.track('quiz_complete', { 
             visitor_id: visitorId,
             quiz_id: quizId,
             email: email,
-            ...utmParams
-          });
-          
-          window.amplitude.track('insight_view', {
-            visitor_id: visitorId,
-            quiz_id: quizId,
-            insight_id: result.insight_id,
             ...utmParams
           });
         }
@@ -58,8 +56,17 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       
     } catch (error) {
       console.error('Error submitting quiz:', error);
-      // Show a default insight if submission fails
-      setInsight("We're having trouble generating your personalized results. Please try again later or contact support.");
+      // Show a default result if submission fails
+      setResult({
+        id: '',
+        quiz_id: quizId,
+        title: "Something went wrong",
+        description: "We're having trouble generating your personalized results. Please try again later or contact support.",
+        min_score: 0,
+        max_score: 0,
+        created_at: new Date().toISOString()
+      });
+      setScore(0);
       setShowEmailForm(false);
     } finally {
       setIsSubmitting(false);
@@ -98,7 +105,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
             >
               {isSubmitting ? 
                 <span className="flex items-center">
@@ -135,15 +142,26 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
               Your {quizTitle} Results
             </h2>
             
-            {insight && (
+            {result && (
               <div className="prose max-w-none">
-                <ReactMarkdown>{insight}</ReactMarkdown>
+                <h3 className="text-xl font-semibold mb-2">{result.title}</h3>
+                
+                {score !== null && (
+                  <div className="my-4 text-center">
+                    <div className="inline-block p-4 bg-purple-100 rounded-full">
+                      <div className="text-3xl font-bold text-purple-700">{score}</div>
+                      <div className="text-sm text-purple-600">Your Score</div>
+                    </div>
+                  </div>
+                )}
+                
+                <p className="text-gray-700 mb-4">{result.description}</p>
               </div>
             )}
             
             <div className="mt-8 text-center">
               <Button 
-                className="bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
+                className="bg-purple-600 hover:bg-purple-700 text-white"
                 onClick={() => window.location.href = '/'}
               >
                 Return Home

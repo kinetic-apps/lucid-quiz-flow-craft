@@ -1,10 +1,11 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export type Answer = {
   step: number;
   value: string | boolean | number;
+  question_id?: string;
+  selected_option_id?: string;
 };
 
 type QuizContextType = {
@@ -12,7 +13,7 @@ type QuizContextType = {
   answers: Answer[];
   progress: number;
   currentStep: number;
-  setAnswer: (step: number, value: string | boolean | number) => void;
+  setAnswer: (step: number, value: string | boolean | number, question_id?: string, selected_option_id?: string) => void;
   goToNextStep: () => void;
   goToPrevStep: () => void;
   setCurrentStep: (step: number) => void;
@@ -87,18 +88,18 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('lucid_progress', JSON.stringify(progress));
   }, [progress]);
 
-  const setAnswer = (step: number, value: string | boolean | number) => {
+  const setAnswer = (step: number, value: string | boolean | number, question_id?: string, selected_option_id?: string) => {
     setAnswers(prev => {
       const existingAnswerIndex = prev.findIndex(a => a.step === step);
       
       if (existingAnswerIndex !== -1) {
         // Update existing answer
         const newAnswers = [...prev];
-        newAnswers[existingAnswerIndex] = { step, value };
+        newAnswers[existingAnswerIndex] = { step, value, question_id, selected_option_id };
         return newAnswers;
       } else {
         // Add new answer
-        return [...prev, { step, value }];
+        return [...prev, { step, value, question_id, selected_option_id }];
       }
     });
   };

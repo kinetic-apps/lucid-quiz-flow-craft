@@ -1,8 +1,13 @@
 {
-    "mcpServers": {
-      "supabase": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://postgres.bsqmlzocdhummisrouzs:Lucid123@#@aws-0-us-east-2.pooler.supabase.com:5432/postgres"]
-      }
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "sbp_69ced6d8cce1ed9df6c7372a931412145b51941e"
+      ]
     }
-  } 
+  }
+}
