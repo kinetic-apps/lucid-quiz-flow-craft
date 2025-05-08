@@ -186,14 +186,14 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       case 'multiselect':
         return (
           <div>
-            <div className="space-y-3 mt-6">
+            <div className="space-y-2 mb-6">
               {question.optionsData?.map((option) => {
                 const isSelected = selectedOptions.has(option.id);
                 
                 return (
                   <motion.div
                     key={option.id}
-                    className={`p-4 border rounded-lg flex items-center justify-between cursor-pointer transition-all relative overflow-hidden ${
+                    className={`p-3 border rounded-lg flex items-center justify-between cursor-pointer transition-all relative overflow-hidden ${
                       isSelected
                         ? 'border-green-500 bg-green-50'
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 bg-white'
@@ -230,7 +230,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
             </div>
             
             <motion.button
-              className={`w-full mt-8 py-4 rounded-lg text-white font-medium ${
+              className={`w-full my-4 py-3 rounded-lg text-white font-medium ${
                 selectedOptions.size > 0 
                   ? 'bg-green-500 hover:bg-green-600' 
                   : 'bg-gray-300 cursor-not-allowed'
@@ -392,13 +392,13 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="quiz-slide"
+      className="quiz-slide pb-6"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className="text-2xl font-bold text-center mb-2">{question.text}</h2>
-        <p className="text-gray-600 text-center mb-6">{getInstructionText()}</p>
+        <p className="text-gray-600 text-center">{getInstructionText()}</p>
       </div>
 
       {renderQuestionContent()}
