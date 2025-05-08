@@ -17,6 +17,42 @@ export type Answer = {
   selected_option_id?: string;
 };
 
+export type StepType = 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary';
+
+// Define various step data types
+export type QuestionStepData = {
+  question: {
+    id: string;
+    type: string;
+    text: string;
+    [key: string]: unknown;
+  };
+};
+
+export type InfoStepData = {
+  title: string;
+  content: string;
+  quizId: string;
+};
+
+export type OtherStepData = {
+  quizId?: string;
+  quiz_id?: string;
+  score?: number;
+  result?: {
+    title: string;
+    description: string;
+  };
+  [key: string]: unknown;
+};
+
+export type StepData = QuestionStepData | InfoStepData | OtherStepData;
+
+export type Step = {
+  type: StepType;
+  data: StepData;
+};
+
 type QuizContextType = {
   visitorId: string;
   answers: Answer[];
@@ -33,6 +69,8 @@ type QuizContextType = {
   setTotalSteps: (steps: number) => void;
   utmParams: Record<string, string>;
   resetQuiz: () => void;
+  allSteps: Step[];
+  setAllSteps: (steps: Step[]) => void;
 };
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -45,6 +83,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   const [totalSteps, setTotalSteps] = useState(0);
   const [utmParams, setUtmParams] = useState<Record<string, string>>({});
   const [userAgeRange, setUserAgeRange] = useState<string | null>(null);
+  const [allSteps, setAllSteps] = useState<Step[]>([]);
 
   // Initialize visitor ID and load saved data from localStorage
   useEffect(() => {
@@ -190,7 +229,9 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     totalSteps,
     setTotalSteps,
     utmParams,
-    resetQuiz
+    resetQuiz,
+    allSteps,
+    setAllSteps
   };
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;

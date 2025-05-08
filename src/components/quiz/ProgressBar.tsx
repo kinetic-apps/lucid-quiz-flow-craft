@@ -4,15 +4,54 @@ import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Step } from '@/context/QuizContext';
+
+// Function to determine if a step should display the progress bar
+const isQuestionStep = (currentStep: number, allSteps: Step[]): boolean => {
+  if (!allSteps || allSteps.length === 0) return true;
+  
+  // If we can access the step data, check if it's a 'question' type
+  const currentStepData = allSteps[currentStep];
+  return currentStepData?.type === 'question';
+};
 
 const ProgressBar = () => {
-  const { currentStep, totalSteps, goToPrevStep } = useQuiz();
+  const { currentStep, totalSteps, goToPrevStep, allSteps } = useQuiz();
   const progressPercentage = totalSteps > 0 ? (currentStep / (totalSteps - 1)) * 100 : 0;
   const navigate = useNavigate();
   
+  // Check if this step should show the progress bar
+  const shouldShowProgress = isQuestionStep(currentStep, allSteps);
+  
+  // If this isn't a question step, don't show the progress bar
+  if (!shouldShowProgress) {
+    return (
+      <div className="w-full">
+        <div className="flex justify-start items-center mb-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => goToPrevStep()}
+            className="p-0 h-8 w-8"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
   // Calculate the question number - we add 1 to currentStep since it's zero-indexed
   const questionNumber = currentStep + 1;
-  const totalQuestions = totalSteps > 0 ? totalSteps - 1 : 0; // Subtract 1 as the last step is typically the results page
+  
+  // Count only question steps for the total questions display
+  const totalQuestions = allSteps.filter(step => step.type === 'question').length;
+  
+  // Calculate the current question number (count only previous questions)
+  const currentQuestionNumber = allSteps
+    .slice(0, currentStep + 1)
+    .filter(step => step.type === 'question')
+    .length;
   
   const handleBackNavigation = () => {
     if (currentStep > 0) {
@@ -37,7 +76,7 @@ const ProgressBar = () => {
           <span>Progress</span>
           {totalQuestions > 0 && (
             <span className="ml-2 font-medium">
-              {questionNumber}/{totalQuestions}
+              {currentQuestionNumber}/{totalQuestions}
             </span>
           )}
         </div>
