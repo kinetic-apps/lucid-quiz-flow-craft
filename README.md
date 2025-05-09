@@ -59,6 +59,45 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase
+- Stripe (for payments)
+
+## Stripe Integration
+
+This project includes a Stripe integration for subscription payments. The integration works as follows:
+
+1. Users complete the quiz and provide their email
+2. They're directed to a checkout page with subscription options
+3. Upon selecting a plan, they're redirected to Stripe Checkout
+4. After payment, their subscription details are stored in Supabase
+5. A Supabase Edge Function or Express server handles Stripe webhooks
+
+### Setup
+
+To set up the Stripe integration:
+
+1. Run the setup script: `sh setup-stripe.sh`
+2. Update your environment variables:
+   ```
+   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
+   VITE_STRIPE_SECRET_KEY=sk_test_your_secret_key
+   VITE_STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+   ```
+3. For local testing with webhooks, use Stripe CLI:
+   ```
+   stripe listen --forward-to http://localhost:5001/api/webhook
+   ```
+4. For production, set up a Supabase Edge Function to handle webhook events
+
+### Supabase Schema
+
+The user table includes the following fields for Stripe integration:
+- `stripe_customer_id`: The Stripe customer ID
+- `subscription_id`: The Stripe subscription ID
+- `subscription_plan`: The name of the plan
+- `subscription_start_date`: When the subscription starts
+- `subscription_end_date`: When the subscription ends
+- `is_premium`: Boolean flag indicating if the user has an active subscription
 
 ## How can I deploy this project?
 

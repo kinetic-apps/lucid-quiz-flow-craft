@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import QuizLayout from "./pages/quiz/layout";
 import QuizPage from "./pages/quiz/[slug]/page";
 import CheckoutPage from "./pages/checkout/page";
+import CheckoutSuccessPage from "./pages/checkout/success";
 import { QuizProvider } from "./context/QuizContext";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,11 @@ const App = () => (
           <Route path="/checkout" element={
             <QuizProvider>
               <CheckoutPage />
+            </QuizProvider>
+          } />
+          <Route path="/checkout/success" element={
+            <QuizProvider>
+              <CheckoutSuccessPage />
             </QuizProvider>
           } />
           <Route path="/quiz" element={<QuizLayout />}>

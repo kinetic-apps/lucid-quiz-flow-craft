@@ -46,7 +46,13 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
     
     try {
       // Store user email in the database
-      await storeUserEmail(email, visitorId);
+      const userId = await storeUserEmail(email, visitorId);
+      
+      // Store email and user ID in localStorage for checkout page
+      if (userId) {
+        localStorage.setItem('user_email', email);
+        localStorage.setItem('user_id', userId);
+      }
       
       // Submit results and get insight
       const response: QuizResult = await submitQuizResults(
