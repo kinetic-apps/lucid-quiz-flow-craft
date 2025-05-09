@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { usePostHog } from './PostHogContext';
 
-// Define the Window interface extension for amplitude
+// Define the Window interface extension for amplitude (legacy, will be removed later)
 declare global {
   interface Window {
     amplitude?: {
@@ -84,6 +85,9 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   const [utmParams, setUtmParams] = useState<Record<string, string>>({});
   const [userAgeRange, setUserAgeRange] = useState<string | null>(null);
   const [allSteps, setAllSteps] = useState<Step[]>([]);
+  
+  // Get PostHog context
+  const { track, identify } = usePostHog();
 
   // Initialize visitor ID and load saved data from localStorage
   useEffect(() => {
@@ -91,10 +95,12 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     const storedVisitorId = localStorage.getItem('lucid_visitor_id');
     if (storedVisitorId) {
       setVisitorId(storedVisitorId);
+      identify(storedVisitorId); // Identify user in PostHog
     } else {
       const newVisitorId = uuidv4();
       localStorage.setItem('lucid_visitor_id', newVisitorId);
       setVisitorId(newVisitorId);
+      identify(newVisitorId); // Identify user in PostHog
     }
 
     // Load saved answers and progress
@@ -134,7 +140,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, []);
+  }, [identify]);
 
   // Save answers and progress to localStorage whenever they change
   useEffect(() => {
@@ -151,8 +157,11 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (userAgeRange) {
       localStorage.setItem('lucid_age_range', userAgeRange);
+      
+      // Track user age range in PostHog
+      track('age_range_set', { age_range: userAgeRange });
     }
-  }, [userAgeRange]);
+  }, [userAgeRange, track]);
 
   const setAnswer = (step: number, value: string | boolean | number, question_id?: string, selected_option_id?: string) => {
     setAnswers(prev => {
@@ -168,6 +177,14 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
         return [...prev, { step, value, question_id, selected_option_id }];
       }
     });
+    
+    // Track question answer in PostHog
+    track('question_answered', {
+      step,
+      question_id: question_id || `question_${step}`,
+      selected_option_id,
+      value: String(value)
+    });
   };
 
   const goToNextStep = () => {
@@ -176,7 +193,18 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
       setCurrentStep(nextStep);
       setProgress(nextStep);
       
-      // Fire analytics event if window.amplitude exists
+      // Track step navigation in PostHog
+      const stepPercentage = Math.round((nextStep / totalSteps) * 100);
+      track('step_navigation', {
+        direction: 'next',
+        from_step: currentStep,
+        to_step: nextStep,
+        progress_percentage: stepPercentage,
+        visitor_id: visitorId,
+        ...utmParams
+      });
+      
+      // For backward compatibility, still support Amplitude if it exists
       try {
         if (window.amplitude && currentStep === 0) {
           window.amplitude.track('quiz_start', { 
@@ -187,6 +215,23 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.error('Analytics error:', e);
       }
+      
+      // Fire specific PostHog events for key milestones
+      if (currentStep === 0) {
+        track('quiz_start', {
+          visitor_id: visitorId,
+          ...utmParams
+        });
+      }
+      
+      // Track progress milestones
+      if (stepPercentage === 25) {
+        track('quiz_progress_25_percent', { visitor_id: visitorId });
+      } else if (stepPercentage === 50) {
+        track('quiz_progress_50_percent', { visitor_id: visitorId });
+      } else if (stepPercentage === 75) {
+        track('quiz_progress_75_percent', { visitor_id: visitorId });
+      }
     }
   };
 
@@ -195,12 +240,24 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
       const prevStep = currentStep - 1;
       setCurrentStep(prevStep);
       setProgress(prevStep);
+      
+      // Track step navigation in PostHog
+      track('step_navigation', {
+        direction: 'previous',
+        from_step: currentStep,
+        to_step: prevStep,
+        progress_percentage: Math.round((prevStep / totalSteps) * 100),
+        visitor_id: visitorId
+      });
     }
   };
 
   const resetUserAgeRange = () => {
     setUserAgeRange(null);
     localStorage.removeItem('lucid_age_range');
+    
+    // Track reset age range event
+    track('reset_age_range', { visitor_id: visitorId });
   };
 
   const resetQuiz = () => {
@@ -211,6 +268,10 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('lucid_answers');
     localStorage.removeItem('lucid_progress');
     localStorage.removeItem('lucid_age_range');
+    
+    // Track quiz reset event
+    track('quiz_reset', { visitor_id: visitorId });
+    
     // Don't reset visitor ID
   };
 

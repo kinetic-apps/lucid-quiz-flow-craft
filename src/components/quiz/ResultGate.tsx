@@ -7,6 +7,7 @@ import { ChevronLeft } from 'lucide-react';
 import { submitQuizResults, storeUserEmail, Result } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import WellbeingChart from './WellbeingChart';
+import { usePostHog } from '@/context/PostHogContext';
 
 type ResultGateProps = {
   quizId: string;
@@ -18,7 +19,7 @@ type QuizResult = {
   result: Result;
 };
 
-// Use Window interface augmentation to define amplitude
+// Use Window interface augmentation to define amplitude (legacy)
 declare global {
   interface Window {
     amplitude?: {
@@ -29,6 +30,7 @@ declare global {
 
 const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   const { visitorId, answers, goToPrevStep, utmParams, currentStep, userAgeRange } = useQuiz();
+  const { track, identify } = usePostHog();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +54,12 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       if (userId) {
         localStorage.setItem('user_email', email);
         localStorage.setItem('user_id', userId);
+        
+        // Identify user in PostHog with both visitor ID and email
+        identify(visitorId, {
+          email,
+          user_id: userId
+        });
       }
       
       // Submit results and get insight
@@ -72,7 +80,22 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       setShowEmailForm(false);
       setShowWellbeingChart(true);
       
-      // Track completion event if analytics available
+      // Track completion event in PostHog
+      track('quiz_complete', {
+        visitor_id: visitorId,
+        quiz_id: quizId,
+        quiz_title: quizTitle,
+        email,
+        score: response.score,
+        result_id: response.result.id,
+        result_title: response.result.title,
+        total_questions: answers.length,
+        ...Object.fromEntries(
+          Object.entries(utmParams).map(([key, value]) => [key, String(value)])
+        )
+      });
+      
+      // For backward compatibility, still support Amplitude if it exists
       try {
         if (typeof window !== 'undefined' && 'amplitude' in window) {
           window.amplitude?.track('quiz_complete', { 
@@ -103,12 +126,27 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       setScore(0);
       setShowEmailForm(false);
       setShowWellbeingChart(true);
+      
+      // Track error event
+      track('quiz_submission_error', {
+        visitor_id: visitorId,
+        quiz_id: quizId,
+        quiz_title: quizTitle,
+        email
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleBack = () => {
+    // Track back button usage
+    track('quiz_back_button_clicked', {
+      visitor_id: visitorId,
+      quiz_id: quizId,
+      from_step: currentStep
+    });
+    
     // If we're somehow on the first step, navigate back to home
     if (currentStep === 0) {
       navigate('/');
@@ -118,6 +156,16 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   };
 
   const handleContinue = () => {
+    // Track checkout navigation
+    track('checkout_navigation', {
+      visitor_id: visitorId,
+      quiz_id: quizId,
+      quiz_title: quizTitle,
+      source: 'wellbeing_chart',
+      score: score !== null ? score : undefined,
+      result_id: result?.id
+    });
+    
     // Navigate to checkout page instead of showing result content
     navigate('/checkout');
   };

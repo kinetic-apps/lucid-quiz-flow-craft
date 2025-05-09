@@ -6,6 +6,7 @@ import { updateUserSubscription } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { STRIPE_PRODUCTS } from '@/integrations/stripe/client';
 import { loadStripe } from '@stripe/stripe-js';
+import { usePostHog } from '@/context/PostHogContext';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -88,6 +89,7 @@ const PAYMENT_METHODS = [
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { visitorId } = useQuiz();
+  const { track } = usePostHog();
   const [selectedPlan, setSelectedPlan] = useState('1month');
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
@@ -106,12 +108,33 @@ const CheckoutPage = () => {
     if (storedUserId) {
       setUserId(storedUserId);
     }
-  }, []);
+    
+    // Track checkout page view
+    track('checkout_page_viewed', {
+      visitor_id: visitorId,
+      user_id: storedUserId || undefined,
+      user_email: storedEmail || undefined
+    });
+  }, [visitorId, track]);
 
   const getPlanDetails = () => {
     const plan = STRIPE_PRODUCTS[selectedPlan];
     if (!plan) return STRIPE_PRODUCTS['1month']; // Default to 1-month
     return plan;
+  };
+
+  // Track when user selects a plan
+  const handlePlanSelect = (planId: string) => {
+    setSelectedPlan(planId);
+    
+    const plan = STRIPE_PRODUCTS[planId];
+    track('plan_selected', {
+      visitor_id: visitorId,
+      user_id: userId || undefined,
+      plan_id: planId,
+      plan_name: plan.name,
+      plan_price: plan.totalPrice
+    });
   };
 
   const handleGetPlan = async () => {
@@ -122,6 +145,16 @@ const CheckoutPage = () => {
     try {
       const plan = getPlanDetails();
       
+      // Track checkout initiated
+      track('checkout_initiated', {
+        visitor_id: visitorId,
+        user_id: userId || undefined,
+        user_email: userEmail || undefined,
+        plan_id: selectedPlan,
+        plan_name: plan.name,
+        plan_price: plan.totalPrice
+      });
+      
       if (!userEmail) {
         toast({
           title: "Email Required",
@@ -130,6 +163,14 @@ const CheckoutPage = () => {
           duration: 5000,
         });
         setIsProcessing(false);
+        
+        // Track checkout error
+        track('checkout_error', {
+          visitor_id: visitorId,
+          error_type: 'missing_email',
+          plan_id: selectedPlan
+        });
+        
         return;
       }
 
@@ -155,6 +196,14 @@ const CheckoutPage = () => {
 
       const { sessionId } = await response.json();
       
+      // Track redirect to stripe
+      track('redirect_to_stripe', {
+        visitor_id: visitorId,
+        user_id: userId || undefined,
+        session_id: sessionId,
+        plan_id: selectedPlan
+      });
+      
       // Redirect to Stripe Checkout
       const stripe = await stripePromise;
       const { error } = await stripe!.redirectToCheckout({ sessionId });
@@ -172,6 +221,14 @@ const CheckoutPage = () => {
         duration: 5000,
       });
       setIsProcessing(false);
+      
+      // Track checkout error
+      track('checkout_error', {
+        visitor_id: visitorId,
+        error_type: 'stripe_error',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        plan_id: selectedPlan
+      });
     }
   };
 
@@ -287,7 +344,7 @@ const CheckoutPage = () => {
                       ? 'border-[#7c3aed] bg-purple-50' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
-                  onClick={() => setSelectedPlan(id)}
+                  onClick={() => handlePlanSelect(id)}
                 >
                   <div className="flex justify-between items-center">
                     <div>

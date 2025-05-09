@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { useNavigate } from 'react-router-dom';
 import { ThumbsUp, ThumbsDown, HelpCircle, Battery, Brain, Heart, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { usePostHog } from '@/context/PostHogContext';
 
 type QuizSlideProps = {
   question: {
@@ -89,12 +90,44 @@ const sortOptions = (options: QuestionOption[]): QuestionOption[] => {
 
 const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
   const { setAnswer, goToNextStep, answers, currentStep } = useQuiz();
+  const { track } = usePostHog();
   const [selectedOption, setSelectedOption] = useState<string | boolean | number | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Set<string>>(new Set());
   const [animatingSelection, setAnimatingSelection] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [questionViewTime, setQuestionViewTime] = useState<number>(Date.now());
   const navigate = useNavigate();
+
+  // Track when question is viewed
+  useEffect(() => {
+    const timestamp = Date.now();
+    setQuestionViewTime(timestamp);
+    
+    // Track question view
+    track('question_viewed', {
+      question_id: question.id,
+      question_text: question.text,
+      question_type: question.type,
+      step_index: stepIndex,
+      quiz_id: quizId,
+      timestamp
+    });
+    
+    // Cleanup function that will run when component unmounts or when deps change
+    return () => {
+      const timeSpent = Date.now() - timestamp;
+      
+      // Track time spent on question when leaving
+      track('question_time_spent', {
+        question_id: question.id,
+        step_index: stepIndex,
+        quiz_id: quizId,
+        time_spent_ms: timeSpent,
+        time_spent_seconds: Math.round(timeSpent / 1000)
+      });
+    };
+  }, [question.id, stepIndex, track, quizId, question.text, question.type]);
 
   // Initialize selected option from saved answers
   useEffect(() => {
@@ -124,6 +157,19 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     setAnimatingSelection(optionId);
     setAnswer(stepIndex, value, question.id, optionId);
     
+    // Track option selection
+    const timeToAnswer = Date.now() - questionViewTime;
+    track('option_selected', {
+      question_id: question.id,
+      question_type: question.type,
+      step_index: stepIndex,
+      quiz_id: quizId,
+      option_id: optionId,
+      option_value: String(value),
+      time_to_answer_ms: timeToAnswer,
+      time_to_answer_seconds: Math.round(timeToAnswer / 1000)
+    });
+    
     // Automatically advance to the next question after animation completes
     setTimeout(() => {
       goToNextStep();
@@ -131,45 +177,90 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     }, 600);
   };
 
-  // Handle multi-select option toggle
   const handleToggleOption = (optionId: string) => {
     setSelectedOptions(prev => {
-      const newSelectedOptions = new Set(prev);
-      if (newSelectedOptions.has(optionId)) {
-        newSelectedOptions.delete(optionId);
+      const newSelection = new Set(prev);
+      if (newSelection.has(optionId)) {
+        newSelection.delete(optionId);
+        
+        // Track option deselection
+        track('option_deselected', {
+          question_id: question.id,
+          question_type: 'multiselect',
+          step_index: stepIndex,
+          quiz_id: quizId,
+          option_id: optionId
+        });
       } else {
-        newSelectedOptions.add(optionId);
+        newSelection.add(optionId);
+        
+        // Track option selection
+        track('option_selected', {
+          question_id: question.id,
+          question_type: 'multiselect',
+          step_index: stepIndex,
+          quiz_id: quizId,
+          option_id: optionId,
+          is_multiple: true
+        });
       }
-      return newSelectedOptions;
+      
+      // Store the comma-separated string of selected ids
+      const ids = Array.from(newSelection).join(',');
+      setAnswer(stepIndex, ids, question.id);
+      
+      return newSelection;
     });
   };
 
-  // Handle continue for multi-select questions
-  const handleMultiSelectContinue = () => {
-    if (selectedOptions.size > 0) {
-      const selectedIds = Array.from(selectedOptions).join(',');
-      setAnswer(stepIndex, selectedIds, question.id);
-      goToNextStep();
-    }
+  const handleSubmitMultiSelect = () => {
+    if (selectedOptions.size === 0) return;
+    
+    // Track multiselect submission
+    track('multiselect_submitted', {
+      question_id: question.id,
+      step_index: stepIndex,
+      quiz_id: quizId,
+      num_selections: selectedOptions.size,
+      selected_options: Array.from(selectedOptions)
+    });
+    
+    goToNextStep();
   };
 
-  // Handle swipe back gesture
+  // Touch event handlers for swipe gestures
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart !== null) {
-      const touchEnd = e.changedTouches[0].clientX;
-      const diff = touchStart - touchEnd;
-      
-      // If swipe right to left (next), need more distance to trigger
-      if (diff > 100 && selectedOption !== null) {
+    if (touchStart === null) return;
+    
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+    
+    // Detect left or right swipe (minimum 50px movement)
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        // Swipe left (forward)
+        track('question_swiped', {
+          direction: 'left',
+          question_id: question.id,
+          step_index: stepIndex
+        });
         goToNextStep();
-      } 
-      
-      setTouchStart(null);
+      } else {
+        // Swipe right (backward)
+        track('question_swiped', {
+          direction: 'right',
+          question_id: question.id,
+          step_index: stepIndex
+        });
+        // Handle back navigation if needed
+      }
     }
+    
+    setTouchStart(null);
   };
 
   // Render different question types
@@ -236,7 +327,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                   : 'bg-gray-300 cursor-not-allowed'
               }`}
               disabled={selectedOptions.size === 0}
-              onClick={handleMultiSelectContinue}
+              onClick={handleSubmitMultiSelect}
               whileHover={selectedOptions.size > 0 ? { scale: 1.02 } : {}}
               whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
             >

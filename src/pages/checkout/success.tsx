@@ -1,36 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useToast } from '@/hooks/use-toast';
 import { CheckCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useQuiz } from '@/context/QuizContext';
+import { usePostHog } from '@/context/PostHogContext';
 
 const CheckoutSuccessPage = () => {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id');
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [countdown, setCountdown] = useState(5);
-
+  const location = useLocation();
+  const { visitorId } = useQuiz();
+  const { track, identify } = usePostHog();
+  const [countdown, setCountdown] = useState(10);
+  
   useEffect(() => {
-    if (!sessionId) {
-      toast({
-        title: "Error",
-        description: "Invalid checkout session",
-        variant: "destructive",
-        duration: 5000,
-      });
-      navigate('/checkout');
-      return;
-    }
-
-    // Show success toast
-    toast({
-      title: "Payment Successful!",
-      description: "Your subscription has been activated.",
-      duration: 5000,
+    // Get search params from URL which Stripe might have added
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get('session_id');
+    
+    // Get user info from localStorage
+    const userId = localStorage.getItem('user_id') || undefined;
+    const userEmail = localStorage.getItem('user_email') || undefined;
+    
+    // Track successful purchase
+    track('purchase_successful', {
+      visitor_id: visitorId,
+      user_id: userId,
+      user_email: userEmail,
+      session_id: sessionId || undefined,
+      page: 'checkout_success'
     });
-
-    // Start countdown to redirect to home
+    
+    // If we have the email and userId, make sure user is identified
+    if (userEmail && userId) {
+      identify(visitorId, {
+        email: userEmail,
+        user_id: userId,
+        has_subscription: true
+      });
+    }
+    
+    // Set up countdown timer
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -41,9 +50,20 @@ const CheckoutSuccessPage = () => {
         return prev - 1;
       });
     }, 1000);
-
+    
     return () => clearInterval(timer);
-  }, [sessionId, navigate, toast]);
+  }, [navigate, track, identify, visitorId, location.search]);
+  
+  const handleGoHome = () => {
+    // Track home navigation from success page
+    track('navigate_from_success', {
+      visitor_id: visitorId,
+      destination: 'home',
+      source: 'checkout_success'
+    });
+    
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-[#f9f7f3] flex flex-col items-center justify-center p-4">
@@ -73,7 +93,7 @@ const CheckoutSuccessPage = () => {
         </p>
 
         <button
-          onClick={() => navigate('/')}
+          onClick={handleGoHome}
           className="mt-6 w-full bg-[#7c3aed] text-white py-3 rounded-lg font-bold"
         >
           Go to Home

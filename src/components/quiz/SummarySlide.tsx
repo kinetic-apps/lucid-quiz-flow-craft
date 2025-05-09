@@ -3,6 +3,7 @@ import { motion, useAnimation, Variants } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
+import { usePostHog } from '@/context/PostHogContext';
 
 type SummarySlideProps = {
   quizId: string;
@@ -121,9 +122,10 @@ const statsCardVariants: Variants = {
 };
 
 const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
-  const { goToNextStep } = useQuiz();
+  const { track } = usePostHog();
+  const { goToNextStep, visitorId } = useQuiz();
   const levelInfo = getLevelInfo(score);
-  const controls = useAnimation();
+  const animation = useAnimation();
   
   // Calculate slider position (0-100)
   const sliderPosition = Math.min(Math.max((score / 100) * 100, 0), 100);
@@ -131,10 +133,32 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
   // Determine level indicator position
   const levelIndicatorLeft = sliderPosition + '%';
 
+  // Track when the summary slide is shown
   useEffect(() => {
-    controls.start("visible");
-  }, [controls]);
-  
+    // Track summary view
+    track('summary_slide_viewed', {
+      visitor_id: visitorId,
+      quiz_id: quizId,
+      score,
+      result_title: result.title
+    });
+    
+    // Start animations
+    animation.start('visible');
+  }, [animation, track, visitorId, quizId, score, result.title]);
+
+  const handleNextStep = () => {
+    // Track when user clicks to continue from summary
+    track('summary_continue_clicked', {
+      visitor_id: visitorId,
+      quiz_id: quizId,
+      score,
+      result_title: result.title
+    });
+    
+    goToNextStep();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -147,7 +171,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
         className="flex flex-col p-4 h-full"
         variants={containerVariants}
         initial="hidden"
-        animate={controls}
+        animate={animation}
       >
         <motion.h1 
           className="text-xl font-bold mb-3"
@@ -336,7 +360,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
           className="mt-auto"
         >
           <Button
-            onClick={goToNextStep}
+            onClick={handleNextStep}
             className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white py-2 rounded-full"
           >
             Continue
