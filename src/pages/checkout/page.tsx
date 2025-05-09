@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { updateUserSubscription } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +8,7 @@ import { STRIPE_PRODUCTS } from '@/integrations/stripe/client';
 import { loadStripe } from '@stripe/stripe-js';
 import { usePostHog } from '@/context/PostHogContext';
 import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
+import { parseQueryParams, createUrlWithParams } from '@/lib/utils';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -146,6 +147,7 @@ const PAYMENT_METHODS = [
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { visitorId } = useQuiz();
   const { track } = usePostHog();
   const [selectedPlan, setSelectedPlan] = useState('1month');
@@ -177,9 +179,19 @@ const CheckoutPage = () => {
     track('checkout_page_viewed', {
       visitor_id: visitorId,
       user_id: storedUserId || undefined,
-      user_email: storedEmail || undefined
+      user_email: storedEmail || undefined,
+      from_stripe: location.search.includes('stripe_canceled=true')
     });
-  }, [visitorId, track]);
+
+    // Check if the user is returning from a canceled Stripe checkout
+    if (location.search.includes('stripe_canceled=true')) {
+      toast({
+        title: "Checkout Canceled",
+        description: "You can continue shopping or try again when you're ready.",
+        duration: 5000,
+      });
+    }
+  }, [visitorId, track, location, toast]);
   
   // Countdown timer effect
   useEffect(() => {
@@ -256,6 +268,13 @@ const CheckoutPage = () => {
         return;
       }
 
+      // Create proper URLs with parameters
+      const successUrl = `${window.location.origin}/checkout/success`;
+      const cancelUrl = createUrlWithParams(`${window.location.origin}/checkout`, {
+        stripe_canceled: 'true',
+        plan_id: selectedPlan
+      });
+
       // Create a Stripe Checkout Session
       const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-checkout-session', {
         method: 'POST',
@@ -267,8 +286,8 @@ const CheckoutPage = () => {
           userId: userId,
           email: userEmail,
           planId: selectedPlan,
-          successUrl: `${window.location.origin}/checkout/success`,
-          cancelUrl: `${window.location.origin}/checkout`,
+          successUrl,
+          cancelUrl,
         }),
       });
 

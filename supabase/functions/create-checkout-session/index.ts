@@ -118,12 +118,14 @@ serve(async (req) => {
       ],
       mode: 'subscription',
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${cancelUrl}`,
+      cancel_url: cancelUrl,
       metadata: {
         userId,
         planId,
         productName: productDetails.name,
       },
+      automatic_tax: { enabled: true },
+      client_reference_id: userId || undefined,
     })
 
     // Set CORS headers for the main response
