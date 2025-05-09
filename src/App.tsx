@@ -31,16 +31,23 @@ const App = () => {
               <Route path="/" element={<GenderSelect />} />
               <Route path="/mindfulness" element={<MindfulnessQuiz />} />
               <Route path="/home" element={<Index />} />
-              <Route path="/checkout" element={
-                <QuizProvider>
-                  <CheckoutPage />
-                </QuizProvider>
-              } />
-              <Route path="/checkout/success" element={
-                <QuizProvider>
-                  <CheckoutSuccessPage />
-                </QuizProvider>
-              } />
+              <Route path="/checkout">
+                <Route index element={
+                  <QuizProvider>
+                    <CheckoutPage />
+                  </QuizProvider>
+                } />
+                <Route path="success" element={
+                  <QuizProvider>
+                    <CheckoutSuccessPage />
+                  </QuizProvider>
+                } />
+                <Route path="*" element={
+                  <QuizProvider>
+                    <CheckoutPage />
+                  </QuizProvider>
+                } />
+              </Route>
               <Route path="/quiz" element={<QuizLayout />}>
                 <Route path=":slug" element={<QuizPage />} />
               </Route>
