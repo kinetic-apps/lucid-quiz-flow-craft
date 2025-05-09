@@ -16,25 +16,34 @@ const SUBSCRIPTION_PLANS = [
   {
     id: '7day',
     name: '7-DAY PLAN',
-    totalPrice: 43.50,
-    perDayPrice: 6.21,
-    popular: false
+    originalPrice: 43.50,
+    discountedPrice: 10.50,
+    perDayPrice: 1.50,
+    popular: false,
+    label: 'Trial plan'
   },
   {
     id: '1month',
     name: '1-MONTH PLAN',
-    totalPrice: 43.50,
-    perDayPrice: 1.45,
-    popular: true
+    originalPrice: 43.50,
+    discountedPrice: 19.99,
+    perDayPrice: 0.66,
+    popular: true,
+    label: 'Most popular'
   },
   {
     id: '3month',
     name: '3-MONTH PLAN',
-    totalPrice: 79.99,
-    perDayPrice: 0.88,
-    popular: false
+    originalPrice: 79.99,
+    discountedPrice: 34.99,
+    perDayPrice: 0.38,
+    popular: false,
+    label: 'Best value'
   }
 ];
+
+const DIFFICULTY = "Perfectionist";
+const GOAL = "Well-being";
 
 const GOALS = [
   "You wake up feeling energized",
@@ -73,18 +82,66 @@ const LIFE_WITHOUT = [
   "Scrolling on social media in the middle of a task",
   "Feeling uneasy when you have free time",
   "Feeling rushed at work",
-  "Always checking phone for messages or notifications"
+  "Always checking phone for messages or emails",
+  "Lack of time for self care",
+  "Problems with feeling rested",
+  "Feeling tired and overwhelmed during the day"
+];
+
+const CAN_HELP_WITH = [
+  "Continuous focus and concentration",
+  "Elevated energy levels",
+  "Improved sleep quality and schedule",
+  "Emotional stability",
+  "No guilt for getting relaxed",
+  "Efficient performance at work",
+  "Stable self-care routine"
+];
+
+const FAQ_ITEMS = [
+  {
+    question: "What if I don't have enough willpower to stick to the plan?",
+    answer: "Our plan is designed to help you build your willpower gradually, so you don't have to rely on your own willpower too much in the beginning. We also provide support and guidance to help you stay motivated throughout the process."
+  },
+  {
+    question: "What if I have too many distractions in my life?",
+    answer: "We understand that life can be hectic, but our plan includes strategies to help you minimize distractions and stay focused on your goals. From setting clear priorities to creating a distraction-free environment, we'll help you develop habits that promote productivity."
+  },
+  {
+    question: "What if I feel overwhelmed about starting this plan?",
+    answer: "Starting anything new can be scary, but our plan is designed to be manageable and easy to follow. We'll help you break down your goals into small, actionable steps, and provide support and encouragement to help you stay motivated and overcome any obstacles that come up along the way."
+  },
+  {
+    question: "What if I've tried tools before and they haven't worked for me?",
+    answer: "Our plan stands apart from other options you've tried by incorporating the latest findings and time-tested methods. Drawing on insights from experienced professionals, it provides a personalized approach that focuses on your unique needs and challenges."
+  }
+];
+
+const TESTIMONIALS = [
+  {
+    text: "It has really changed my life",
+    name: "Brian Ross",
+    content: "I have been using this app for six months now. During this time, I have been able to get rid of the habit of putting everything off until the last minute. The app has helped me to organize my time better and start achieving my goals. It has really changed my life for the better."
+  },
+  {
+    text: "Lucid is a great self-help tool...",
+    name: "Selactive",
+    content: "Lucid helps me understand why I procrastinate on tasks and how to get free from that. Lucid is doing a great job at it. I am very grateful for a tool like Lucid."
+  },
+  {
+    text: "Eye-opening information...",
+    name: "Patrick Naughton",
+    content: "I am new to this app. I'm not new to my own issues. As I age and now being 62 with years of having needed help. Such little money for eye-opening information in regard to my inner self and drive."
+  }
 ];
 
 // Payment method logos
 const PAYMENT_METHODS = [
-  { name: 'PayPal', image: '/assets/paypal.svg' },
-  { name: 'Apple Pay', image: '/assets/applepay.svg' },
-  { name: 'Visa', image: '/assets/visa.svg' },
-  { name: 'Mastercard', image: '/assets/mastercard.svg' },
-  { name: 'Maestro', image: '/assets/maestro.svg' },
-  { name: 'Discover', image: '/assets/discover.svg' },
-  { name: 'American Express', image: '/assets/amex.svg' },
+  { id: 'visa', alt: 'Visa' },
+  { id: 'mastercard', alt: 'Mastercard' },
+  { id: 'amex', alt: 'American Express' },
+  { id: 'paypal', alt: 'PayPal' },
+  { id: 'applepay', alt: 'Apple Pay' },
 ];
 
 const CheckoutPage = () => {
@@ -96,6 +153,9 @@ const CheckoutPage = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  
+  // Countdown timer state
+  const [countdown, setCountdown] = useState({ minutes: 10, seconds: 0 });
   
   // Allow scrolling on the checkout page since it has a lot of content
   useMobileScrollLock({ allowScroll: true });
@@ -120,6 +180,24 @@ const CheckoutPage = () => {
       user_email: storedEmail || undefined
     });
   }, [visitorId, track]);
+  
+  // Countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prevState => {
+        if (prevState.seconds > 0) {
+          return { ...prevState, seconds: prevState.seconds - 1 };
+        } else if (prevState.minutes > 0) {
+          return { minutes: prevState.minutes - 1, seconds: 59 };
+        } else {
+          clearInterval(timer);
+          return { minutes: 0, seconds: 0 };
+        }
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
 
   const getPlanDetails = () => {
     const plan = STRIPE_PRODUCTS[selectedPlan];
@@ -237,29 +315,37 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#5d3f4a] flex flex-col">
+    <div className="min-h-screen bg-[#f5f5f0] flex flex-col">
       {/* Fixed header */}
       <div className="sticky top-0 z-10 w-full bg-white shadow-md">
         <div className="max-w-md mx-auto flex justify-between items-center p-4">
           <div className="font-bold text-xl">Lucid</div>
-          <button
-            className="bg-[#7c3aed] text-white px-6 py-2 rounded-full font-medium"
-            onClick={handleGetPlan}
-            disabled={isProcessing}
-          >
-            {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
-          </button>
+          <div className="flex items-center">
+            <div className="mr-4 text-sm">
+              <span className="text-gray-600">Discount is reserved for:</span> 
+              <span className="ml-2 text-[#8A2BE2] font-semibold text-lg">
+                {String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
+              </span>
+            </div>
+            <button
+              className="bg-[#8A2BE2] text-white px-6 py-2 rounded-full font-medium"
+              onClick={handleGetPlan}
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
+            </button>
+          </div>
         </div>
       </div>
       
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto -webkit-overflow-scrolling-touch pb-16">
-        <div className="max-w-md mx-auto bg-[#f9f7f3]">
+        <div className="max-w-md mx-auto bg-white">
           {/* Before/After Section */}
           <div className="flex mb-2">
             <div className="flex-1 p-4 border-r border-gray-200">
               <div className="text-center mb-2">
-                <div className="bg-green-100 rounded-full inline-block px-4 py-1">Now</div>
+                <div className="bg-purple-100 rounded-full inline-block px-4 py-1">Now</div>
               </div>
               <div className="flex justify-center">
                 <img 
@@ -273,22 +359,22 @@ const CheckoutPage = () => {
                   <div>Energy level</div>
                   <div className="font-semibold">Low</div>
                   <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
-                    <div className="w-1/4 h-2 bg-[#7c3aed] rounded-full"></div>
+                    <div className="w-1/4 h-2 bg-[#8A2BE2] rounded-full"></div>
                   </div>
                 </div>
                 <div>
                   <div>Well-being level</div>
                   <div className="font-semibold">Weak</div>
                   <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
-                    <div className="w-2/5 h-2 bg-[#7c3aed] rounded-full"></div>
+                    <div className="w-2/5 h-2 bg-[#8A2BE2] rounded-full"></div>
                   </div>
                 </div>
                 <div>
                   <div>Self-esteem level</div>
                   <div className="font-semibold">Low</div>
                   <div className="w-full h-2 bg-gray-200 rounded-full mt-1 relative">
-                    <div className="w-1/3 h-2 bg-[#7c3aed] rounded-full"></div>
-                    <div className="absolute left-1/3 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-[#7c3aed]"></div>
+                    <div className="w-1/3 h-2 bg-[#8A2BE2] rounded-full"></div>
+                    <div className="absolute left-1/3 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-[#8A2BE2]"></div>
                   </div>
                 </div>
               </div>
@@ -296,7 +382,7 @@ const CheckoutPage = () => {
 
             <div className="flex-1 p-4">
               <div className="text-center mb-2">
-                <div className="bg-[#7c3aed] text-white rounded-full inline-block px-4 py-1">Your Goal</div>
+                <div className="bg-[#8A2BE2] text-white rounded-full inline-block px-4 py-1">Your Goal</div>
               </div>
               <div className="flex justify-center">
                 <img 
@@ -310,171 +396,290 @@ const CheckoutPage = () => {
                   <div>Energy level</div>
                   <div className="font-semibold">High</div>
                   <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
-                    <div className="w-full h-2 bg-[#7c3aed] rounded-full"></div>
+                    <div className="w-full h-2 bg-[#8A2BE2] rounded-full"></div>
                   </div>
                 </div>
                 <div>
                   <div>Well-being level</div>
                   <div className="font-semibold">Strong</div>
                   <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
-                    <div className="w-full h-2 bg-[#7c3aed] rounded-full"></div>
+                    <div className="w-full h-2 bg-[#8A2BE2] rounded-full"></div>
                   </div>
                 </div>
                 <div>
                   <div>Self-esteem level</div>
                   <div className="font-semibold">High</div>
                   <div className="w-full h-2 bg-gray-200 rounded-full mt-1 relative">
-                    <div className="w-full h-2 bg-[#7c3aed] rounded-full"></div>
-                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-[#7c3aed]"></div>
+                    <div className="w-full h-2 bg-[#8A2BE2] rounded-full"></div>
+                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-[#8A2BE2]"></div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Your personalized plan is ready */}
+          <div className="px-6 py-4 text-center">
+            <h2 className="text-2xl font-semibold text-gray-800">Your personalized plan is ready!</h2>
+            <div className="flex justify-center mt-4 gap-6">
+              <div className="flex items-center">
+                <div className="mr-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#8A2BE2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 16V12" stroke="#8A2BE2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="8" r="1" fill="#8A2BE2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Main difficulty</div>
+                  <div className="font-semibold">{DIFFICULTY}</div>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <div className="mr-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 12H18L15 21L9 3L6 12H2" stroke="#8A2BE2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Goal</div>
+                  <div className="font-semibold">{GOAL}</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Subscription Plans Section */}
-          <div className="px-6 py-8 bg-white">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800">Choose Your Plan</h2>
-              <p className="text-gray-600">Select the plan that works best for you</p>
-            </div>
-            
+          <div className="px-6 py-6 bg-white border-t border-gray-100">
             <div className="space-y-4">
-              {Object.entries(STRIPE_PRODUCTS).map(([id, plan]) => (
+              {SUBSCRIPTION_PLANS.map((plan, index) => (
                 <div 
-                  key={id}
-                  className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${
-                    selectedPlan === id 
-                      ? 'border-[#7c3aed] bg-purple-50' 
+                  key={index}
+                  className={`border rounded-lg p-4 transition-all cursor-pointer relative ${
+                    selectedPlan === plan.id 
+                      ? 'border-2 border-[#8A2BE2] bg-purple-50' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
-                  onClick={() => handlePlanSelect(id)}
+                  onClick={() => handlePlanSelect(plan.id)}
                 >
+                  {plan.popular && (
+                    <div className="absolute top-0 left-0 right-0 -mt-3 flex justify-center">
+                      <div className="bg-[#8A2BE2] text-white text-xs px-3 py-1 rounded-full">
+                        MOST POPULAR
+                      </div>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <div>
-                      <div className="font-semibold text-gray-800">{plan.name}</div>
-                      <div className="text-sm text-gray-500">${plan.perDayPrice.toFixed(2)}/day</div>
+                      <div className="flex items-center">
+                        <div className="mr-2 w-5 h-5 flex items-center justify-center">
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                            selectedPlan === plan.id ? 'border-[#8A2BE2]' : 'border-gray-300'
+                          }`}>
+                            {selectedPlan === plan.id && (
+                              <div className="w-3 h-3 rounded-full bg-[#8A2BE2]"></div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="font-semibold text-gray-800">{plan.name}</div>
+                      </div>
+                      <div className="ml-7 text-sm text-gray-500">${plan.perDayPrice.toFixed(2)} per day</div>
                     </div>
-                    <div className="text-xl font-bold text-gray-800">${plan.totalPrice.toFixed(2)}</div>
-                  </div>
-                  <div className="mt-2 flex items-center">
-                    <div 
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                        selectedPlan === id 
-                          ? 'border-[#7c3aed] bg-[#7c3aed]' 
-                          : 'border-gray-300'
-                      }`}
-                    >
-                      {selectedPlan === id && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
+                    <div className="text-right">
+                      <div className="text-sm text-gray-400 line-through">${plan.originalPrice.toFixed(2)}</div>
+                      <div className="text-xl font-bold text-gray-800">${plan.discountedPrice.toFixed(2)}</div>
                     </div>
-                    <span className="ml-2 text-sm text-gray-600">
-                      {id === '1month' && 'Most popular'}
-                      {id === '3month' && 'Best value'}
-                      {id === '7day' && 'Trial plan'}
-                    </span>
                   </div>
                 </div>
               ))}
+            </div>
+            
+            <div className="mt-4 text-xs text-gray-500 px-4">
+              By clicking "Get My Plan", you agree to a 1-week trial at $10.50, converting to a $43.50/month auto-renewing subscription if not canceled. Cancel via the app or email: support@thelucid.com. See <a href="#" className="text-[#8A2BE2] underline">Subscription Policy</a> for details.
             </div>
             
             <button
-              className="w-full mt-6 bg-[#7c3aed] text-white py-3 rounded-lg font-semibold"
+              className="w-full mt-6 bg-[#8A2BE2] text-white py-4 rounded-lg font-semibold text-lg"
               onClick={handleGetPlan}
-              disabled={isProcessing}
-            >
-              {isProcessing ? 'Processing...' : 'Continue to Checkout'}
-            </button>
-            
-            <div className="mt-4 text-center">
-              <div className="text-sm text-gray-500 mb-2">Secure payment via</div>
-              <div className="flex justify-center space-x-2">
-                {PAYMENT_METHODS.map(method => (
-                  <img 
-                    key={method.name}
-                    src={method.image} 
-                    alt={method.name}
-                    className="h-6 object-contain"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Our Goals */}
-          <div className="p-4 bg-white mt-4">
-            <h3 className="text-lg font-bold mb-4">What you'll achieve</h3>
-            <ul className="space-y-3">
-              {GOALS.map((goal, index) => (
-                <li key={index} className="flex items-start">
-                  <div className="bg-green-100 p-1 rounded-full mr-2 mt-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M5 13L9 17L19 7" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <div>{goal}</div>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          {/* Featured Logos */}
-          <div className="p-4 mt-4">
-            <div className="text-center text-sm text-gray-500 mb-4">AS FEATURED IN</div>
-            <div className="flex flex-wrap justify-center gap-4">
-              {FEATURED_LOGOS.map((logo, index) => (
-                <div key={index} className="text-gray-400 font-semibold text-xs">{logo}</div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Stats */}
-          <div className="p-4 bg-white mt-4">
-            <div className="space-y-4">
-              {STATS.map((stat, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="text-[#7c3aed] text-2xl font-bold mr-3">{stat.percent}</div>
-                  <div className="text-sm">{stat.text}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Life Without Section */}
-          <div className="p-4 mt-4">
-            <h3 className="text-lg font-bold mb-4">Life without poor productivity habits</h3>
-            <div className="bg-white p-4 rounded-lg">
-              <ul className="space-y-3">
-                {LIFE_WITHOUT.map((item, index) => (
-                  <li key={index} className="flex items-start">
-                    <div className="bg-red-100 p-1 rounded-full mr-2 mt-1">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18M6 6l12 12" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <div>{item}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          
-          {/* Final CTA */}
-          <div className="p-4 mt-4">
-            <button 
-              onClick={handleGetPlan} 
-              className="w-full bg-[#7c3aed] text-white py-3 rounded-lg font-bold text-lg"
               disabled={isProcessing}
             >
               {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
             </button>
             
-            <div className="mt-4 text-xs text-gray-500 text-center">
-              7-day money-back guarantee if you are not satisfied
+            <div className="mt-4 flex items-center justify-center">
+              <div className="flex items-center text-gray-600 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-purple-600">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                Pay Safe & Secure
+              </div>
             </div>
+
+            <div className="flex justify-center gap-3 mt-2 mb-8">
+              {PAYMENT_METHODS.map((method) => (
+                <div key={method.id} className="w-10 h-6 opacity-70">
+                  <div className="w-full h-full bg-gray-200 rounded-sm flex items-center justify-center text-[8px] text-gray-500">
+                    {method.alt}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Featured In Section */}
+          <div className="p-8 mt-4 text-center bg-white border-t border-gray-100">
+            <div className="text-xl text-gray-500 mb-6">AS FEATURED IN</div>
+            <div className="flex flex-wrap justify-center gap-8">
+              {FEATURED_LOGOS.map((logo, index) => (
+                <div key={index} className="text-gray-400 font-serif text-lg">{logo}</div>
+              ))}
+            </div>
+          </div>
+          
+          {/* People like you achieved results */}
+          <div className="p-6 mt-4 bg-white text-center border-t border-gray-100">
+            <h2 className="text-2xl font-semibold">People just like you achieved great results using our</h2>
+            <p className="text-2xl font-semibold text-[#8A2BE2] mt-1 mb-8">Well-being Management Plan!</p>
+            
+            <div className="mt-12 relative">
+              <div className="w-48 h-48 mx-auto bg-[#8A2BE2] bg-opacity-10 rounded-full flex items-center justify-center">
+                <div className="text-4xl font-bold text-[#8A2BE2]">83%</div>
+              </div>
+              <div className="absolute top-0 left-1/4 -ml-8 bg-[#8A2BE2] bg-opacity-10 px-3 py-1 rounded-full">
+                <span className="text-[#8A2BE2] font-semibold">77%</span>
+              </div>
+              <div className="absolute bottom-8 right-1/4 bg-[#8A2BE2] bg-opacity-10 px-3 py-1 rounded-full">
+                <span className="text-[#8A2BE2] font-semibold">45%</span>
+              </div>
+            </div>
+            
+            <div className="mt-12 space-y-6">
+              {STATS.map((stat, index) => (
+                <div key={index} className="font-medium">
+                  <span className="text-[#8A2BE2] text-xl font-bold">{stat.percent}</span> <span className="text-gray-700">{stat.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* How life might be without Lucid */}
+          <div className="p-6 mt-4 bg-white border-t border-gray-100">
+            <h3 className="text-xl font-semibold mb-6">How life might be without Lucid</h3>
+            <ul className="space-y-4">
+              {LIFE_WITHOUT.map((item, index) => (
+                <li key={index} className="flex items-start">
+                  <div className="bg-purple-100 p-1 rounded-full mr-3 mt-1 flex-shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="text-gray-700">{item}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* What Lucid can help with */}
+          <div className="p-6 mt-4 bg-white border border-purple-100 rounded-lg mx-4 shadow-sm">
+            <h3 className="text-xl font-semibold mb-6">What Lucid can help you with</h3>
+            <ul className="space-y-4">
+              {CAN_HELP_WITH.map((item, index) => (
+                <li key={index} className="flex items-start">
+                  <div className="bg-purple-100 p-1 rounded-full mr-3 mt-1 flex-shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 13L9 17L19 7" stroke="#9333ea" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="text-gray-700">{item}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* Awards Section */}
+          <div className="p-6 mt-6 bg-[#f8f7f2] flex items-center mx-4 rounded-lg shadow-sm">
+            <div className="mr-4">
+              <img src="/assets/guarantee-badge.svg" alt="Award Badge" className="w-16 h-16 filter hue-rotate-270" />
+            </div>
+            <div>
+              <p className="font-semibold">Lucid is proudly nominated for an</p>
+              <p className="text-[#8A2BE2] font-semibold">International Digital Well-being Innovation Award - 2023.</p>
+            </div>
+          </div>
+          
+          {/* Testimonials */}
+          <div className="p-6 mt-6 bg-white border-t border-gray-100">
+            <h3 className="text-xl font-semibold mb-4 text-center">Users love our plans</h3>
+            <p className="text-center text-gray-500 mb-8">Here's what people are saying about Lucid</p>
+            
+            <div className="space-y-6">
+              {TESTIMONIALS.map((testimonial, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-5 shadow-sm">
+                  <div className="flex items-center mb-3">
+                    <div className="text-[#FFD700] text-lg">★★★★★</div>
+                  </div>
+                  <h4 className="font-semibold mb-3 text-lg">{testimonial.text}</h4>
+                  <p className="text-gray-600 mb-3">{testimonial.content}</p>
+                  <div className="text-right text-sm font-medium text-gray-700">{testimonial.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* People often ask */}
+          <div className="p-6 mt-6 bg-white border-t border-gray-100">
+            <h3 className="text-xl font-semibold mb-8 text-center">People often ask</h3>
+            <div className="space-y-8">
+              {FAQ_ITEMS.map((item, index) => (
+                <div key={index}>
+                  <h4 className="flex items-start mb-3">
+                    <span className="bg-purple-100 p-1 rounded-full mr-3 flex-shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#9333ea" strokeWidth="2" />
+                        <path d="M12 16V12" stroke="#9333ea" strokeWidth="2" strokeLinecap="round" />
+                        <circle cx="12" cy="8" r="1" fill="#9333ea" />
+                      </svg>
+                    </span>
+                    <span className="font-semibold text-gray-800">{item.question}</span>
+                  </h4>
+                  <p className="ml-8 text-gray-600">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* 30-Day Money-Back Guarantee */}
+          <div className="p-6 mt-8 border-2 border-[#8A2BE2] rounded-lg mx-4 relative shadow-md">
+            <h3 className="text-xl font-bold mb-4 text-center">30-Day Money-Back Guarantee</h3>
+            <p className="text-center mb-4 text-gray-700">
+              Our plan is backed by a money-back guarantee. We believe that our plan will work for you, that we guarantee a full refund within 30 days after purchase if you don't see visible results in your ability to reduce negative effects despite following your plan as directed. Find more about applicable limitations in our money-back policy
+            </p>
+            <div className="text-center">
+              <a href="#" className="text-[#8A2BE2] font-medium underline">Learn more.</a>
+            </div>
+            <div className="absolute -bottom-6 -right-2">
+              <img src="/assets/guarantee-badge.svg" alt="Guarantee Badge" className="w-20 h-20 filter hue-rotate-270" />
+            </div>
+          </div>
+          
+          {/* Final CTA */}
+          <div className="p-6 mt-16">
+            <button 
+              onClick={handleGetPlan} 
+              className="w-full bg-[#8A2BE2] text-white py-4 rounded-lg font-bold text-lg shadow-md hover:bg-[#7928a1] transition-colors"
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
+            </button>
+            
+            <div className="mt-4 text-sm text-gray-500 text-center">
+              30-day money-back guarantee if you are not satisfied
+            </div>
+          </div>
+          
+          {/* Footer */}
+          <div className="p-4 text-center text-xs text-gray-400 border-t border-gray-100 mt-6">
+            LUCID LLC., 7455 Arroyo Crossing Pkwy Suite 220 Las Vegas, NV 89113
           </div>
         </div>
       </div>
