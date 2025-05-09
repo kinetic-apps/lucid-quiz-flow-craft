@@ -92,7 +92,10 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    /* Don't prevent scrolling on the body globally */
+    /* Use height 100% instead of auto to contain content */
+    height: 100%;
+    /* Touch action manipulation prevents browser handling of pinch-zoom, etc. */
+    touch-action: manipulation;
   }
   
   /* Ensure quiz slides fit in viewport */
@@ -128,6 +131,19 @@
     max-height: 100vh;
     overflow: hidden;
   }
+  
+  /* Class to enforce no scrolling on mobile */
+  .mobile-no-scroll {
+    @apply overflow-hidden touch-none fixed inset-0;
+    height: 100%;
+    width: 100%;
+  }
+  
+  /* Class to allow scrolling on specific pages */
+  .mobile-scroll-allowed {
+    @apply overflow-auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Ensure proper viewport handling on mobile */
@@ -136,6 +152,28 @@ html, body {
   position: relative;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Disable viewport zooming on mobile */
+@media screen and (max-width: 767px) {
+  html, body {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Override for pages that need scrolling */
+  .allow-scroll-page {
+    overflow-y: auto !important;
+    position: static !important;
+    height: auto !important;
+  }
+  
+  /* Apply padding to prevent content from being cut off at bottom */
+  .page-content {
+    padding-bottom: 120px;
+  }
 }
 
 /* Fix for iOS Safari scrolling issues */

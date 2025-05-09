@@ -102,6 +102,80 @@ npm run build
 npm run preview
 ```
 
+## Testing on Mobile Devices
+
+To test the mobile experience and ensure scroll behavior works correctly:
+
+### Using Chrome DevTools
+
+1. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+2. Open Chrome and navigate to your local development URL (usually http://localhost:5173)
+
+3. Open Chrome DevTools (right-click and select "Inspect" or press F12)
+
+4. Click on the "Toggle device toolbar" button (or press Ctrl+Shift+M / Cmd+Shift+M)
+
+5. Select a device from the dropdown at the top of the viewport (e.g., iPhone 12 Pro)
+
+6. Test the different pages:
+   - Quiz pages should have scrolling disabled (locked viewport)
+   - Checkout page should allow scrolling for longer content
+
+### Using iOS Simulator (on macOS)
+
+If you have Xcode installed:
+
+1. Start the development server with the host flag to make it accessible on your network:
+   ```bash
+   npm run dev -- --host
+   ```
+
+2. Find your local IP address:
+   ```bash
+   ipconfig getifaddr en0
+   ```
+
+3. Open Xcode and launch the iOS Simulator
+
+4. In the Simulator, open Safari and navigate to your IP address with the port 
+   (e.g., http://192.168.1.100:5173)
+
+5. Test scroll behavior across different pages
+
+### Using Real Devices
+
+1. Start the development server with the host flag:
+   ```bash
+   npm run dev -- --host
+   ```
+
+2. Find your local IP address:
+   ```bash
+   ipconfig getifaddr en0
+   ```
+
+3. On your mobile device, connect to the same WiFi network and navigate to 
+   your IP address with the port in a browser
+
+4. Test scroll behavior on different pages
+
+### Troubleshooting Mobile Scroll Issues
+
+If you encounter issues with the mobile scroll behavior:
+
+- Make sure the viewport meta tag in `index.html` is correctly set:
+  ```html
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  ```
+
+- Check that the `useMobileScrollLock` hook is properly applied to each page
+
+- Test with different browsers (Safari on iOS, Chrome on Android) as their behavior can vary
+
 ## License
 
 [Your license information here]

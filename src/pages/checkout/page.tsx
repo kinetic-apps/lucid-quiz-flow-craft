@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { STRIPE_PRODUCTS } from '@/integrations/stripe/client';
 import { loadStripe } from '@stripe/stripe-js';
 import { usePostHog } from '@/context/PostHogContext';
+import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -95,6 +96,9 @@ const CheckoutPage = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  
+  // Allow scrolling on the checkout page since it has a lot of content
+  useMobileScrollLock({ allowScroll: true });
 
   useEffect(() => {
     // Get the email associated with the visitor ID from local storage (set during quiz)

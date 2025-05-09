@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Step as QuizStep } from '@/context/QuizContext';
+import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
 
 // Define types for better type safety
 type QuestionOption = {
@@ -97,6 +98,9 @@ export default function QuizPage() {
   const [summaryScoreCalculated, setSummaryScoreCalculated] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Prevent scrolling on the quiz page as all content fits within the viewport
+  useMobileScrollLock({ allowScroll: false });
 
   // Fetch quiz data
   useEffect(() => {
