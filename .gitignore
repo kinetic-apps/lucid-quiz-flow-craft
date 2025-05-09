@@ -39,3 +39,10 @@ Thumbs.db
 
 # Sensitive files
 .cursor/mcp.json
+.cursor/playwright/playwright_mcp_config.json
+./cursor/*
+
+# Cursor files
+.cursor/
+
+# Cursor files
