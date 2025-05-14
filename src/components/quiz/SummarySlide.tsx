@@ -174,7 +174,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
         animate={animation}
       >
         <motion.h1 
-          className="text-xl font-bold mb-3 text-[#383655]"
+          className="text-xl font-bold mb-3 text-[#BC5867]"
           variants={itemVariants}
         >
           Summary of your Well-being Profile
@@ -185,7 +185,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
           className="flex justify-between items-center mb-2"
           variants={itemVariants}
         >
-          <div className="text-[#383655] font-medium">Negative effects level</div>
+          <div className="text-[#BC5867] font-medium">Negative effects level</div>
           <motion.div 
             className={`text-white text-xs px-3 py-1 rounded-full ${
               levelInfo.level === "High" ? "bg-red-400" :
@@ -223,7 +223,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
           
           {/* Level indicator */}
           <motion.div 
-            className="absolute bottom-2 right-2 bg-[#383655] text-white text-xs px-3 py-1 rounded-full shadow-sm"
+            className="absolute bottom-2 right-2 bg-[#BC5867] text-white text-xs px-3 py-1 rounded-full shadow-sm"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.2, duration: 0.3 }}
@@ -239,11 +239,11 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
         >
           <div className="relative h-2 w-full rounded-full overflow-hidden">
             <motion.div 
-              className="h-full w-full bg-gradient-to-r from-[#383655] via-yellow-300 to-red-400"
+              className="h-full w-full bg-gradient-to-r from-[#BC5867] via-yellow-300 to-red-400"
               variants={sliderVariants}
             />
             <motion.div 
-              className="absolute -top-1 h-4 w-4 bg-lucid-cream border-2 border-[#383655] rounded-full"
+              className="absolute -top-1 h-4 w-4 bg-lucid-cream border-2 border-[#BC5867] rounded-full"
               style={{ left: levelIndicatorLeft, transform: 'translateX(-50%)' }}
               variants={dotVariants}
               initial={{ top: "100%" }}
@@ -258,7 +258,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             />
           </div>
           <motion.div 
-            className="flex justify-between mt-1 text-xs text-[#383655]/70"
+            className="flex justify-between mt-1 text-xs text-[#BC5867]/70"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.1, duration: 0.3 }}
@@ -284,8 +284,8 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
               <AlertCircle className="text-red-500 mr-2 w-4 h-4 flex-shrink-0 mt-0.5" />
             </motion.div>
             <div>
-              <div className="font-bold text-[#383655] text-sm">{levelInfo.levelText}</div>
-              <p className="text-xs text-[#383655]/80">
+              <div className="font-bold text-[#BC5867] text-sm">{levelInfo.levelText}</div>
+              <p className="text-xs text-[#BC5867]/80">
                 High levels of negative effects can lead to constant procrastination, increased worrying, reduced energy and well-being
               </p>
             </div>
@@ -300,12 +300,12 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-[#383655] flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">★</span>
               </div>
-              <span className="text-xs text-[#383655]/70">Main difficulty</span>
+              <span className="text-xs text-[#BC5867]/70">Main difficulty</span>
             </div>
-            <div className="font-semibold text-sm text-[#383655]">{levelInfo.mainDifficulty}</div>
+            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.mainDifficulty}</div>
           </motion.div>
           
           <motion.div 
@@ -314,12 +314,12 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-[#383655] flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">📅</span>
               </div>
-              <span className="text-xs text-[#383655]/70">Challenging period</span>
+              <span className="text-xs text-[#BC5867]/70">Challenging period</span>
             </div>
-            <div className="font-semibold text-sm text-[#383655]">{levelInfo.challengingPeriod}</div>
+            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.challengingPeriod}</div>
           </motion.div>
           
           <motion.div 
@@ -328,12 +328,12 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-[#383655] flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">⚡</span>
               </div>
-              <span className="text-xs text-[#383655]/70">Trigger</span>
+              <span className="text-xs text-[#BC5867]/70">Trigger</span>
             </div>
-            <div className="font-semibold text-sm text-[#383655]">{levelInfo.trigger}</div>
+            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.trigger}</div>
           </motion.div>
           
           <motion.div 
@@ -342,12 +342,12 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             variants={statsCardVariants}
           >
             <div className="flex items-center mb-1">
-              <div className="w-5 h-5 rounded-full bg-[#383655] flex items-center justify-center mr-1">
+              <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">🔋</span>
               </div>
-              <span className="text-xs text-[#383655]/70">Energy level</span>
+              <span className="text-xs text-[#BC5867]/70">Energy level</span>
             </div>
-            <div className="font-semibold text-sm text-[#383655]">{levelInfo.energyLevel}</div>
+            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.energyLevel}</div>
           </motion.div>
         </div>
         
@@ -359,7 +359,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
           <button
             onClick={handleNextStep}
             className="w-full py-4 px-8 rounded-full text-white font-medium text-lg"
-            style={{ backgroundColor: '#383655' }}
+            style={{ backgroundColor: '#BC5867' }}
           >
             Continue
           </button>

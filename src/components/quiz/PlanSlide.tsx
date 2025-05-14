@@ -105,7 +105,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         {/* Title */}
         <motion.h1
           variants={itemVariants}
-          className="text-xl font-bold text-center mb-4 text-[#383655]"
+          className="text-xl font-bold text-center mb-4 text-[#BC5867]"
         >
           A plan designed to support your wellbeing journey
         </motion.h1>
@@ -117,7 +117,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         >
           Based on your answers, we expect you to improve your well-being by
           <br />
-          <span className="font-bold text-lg text-[#383655]">{predictedMonth}</span>
+          <span className="font-bold text-lg text-[#BC5867]">{predictedMonth}</span>
         </motion.p>
 
         {/* Progress Chart */}
@@ -139,11 +139,11 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
               initial="hidden"
               animate="visible"
             >
-              <div className="bg-[#383655] text-white text-xs px-3 py-1 rounded-full whitespace-nowrap">
+              <div className="bg-[#BC5867] text-white text-xs px-3 py-1 rounded-full whitespace-nowrap">
                 Goal
               </div>
               <motion.div 
-                className="h-6 w-1 bg-[#383655]"
+                className="h-6 w-1 bg-[#BC5867]"
                 variants={connectorVariants}
                 initial="hidden"
                 animate="visible"
@@ -169,7 +169,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
                       index === 1 ? "bg-red-200" :
                       index === 2 ? "bg-orange-200" :
                       index === 3 ? "bg-yellow-200" :
-                      index === 4 ? "bg-[#383655]" : "bg-blue-300"
+                      index === 4 ? "bg-[#BC5867]" : "bg-blue-300"
                     } rounded-md`}
                   />
                 </div>
@@ -202,7 +202,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         >
           <Button
             onClick={goToNextStep}
-            className="w-full bg-[#383655] hover:bg-[#2c2a44] text-white py-2 rounded-full"
+            className="w-full bg-[#BC5867] hover:bg-[#a34857] text-white py-2 rounded-full"
           >
             Continue
           </Button>

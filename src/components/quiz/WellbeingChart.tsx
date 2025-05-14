@@ -72,7 +72,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
       transition={{ duration: 0.7 }}
       className="flex flex-col items-center justify-center w-full max-w-md mx-auto px-4 py-6"
     >
-      <h2 className="text-2xl font-semibold text-center mb-2 text-[#383655]">Your Well-being level</h2>
+      <h2 className="text-2xl font-semibold text-center mb-2 text-[#BC5867]">Your Well-being level</h2>
       
       <div 
         ref={chartRef}
@@ -131,7 +131,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
             className={`absolute w-3 h-3 sm:w-4 sm:h-4 rounded-full flex items-center justify-center
               ${index === 0 ? 'bg-pink-400' : 
                 index === 1 ? 'bg-orange-400' : 
-                index === 2 ? 'bg-yellow-400' : 'bg-[#383655]'}`}
+                index === 2 ? 'bg-yellow-400' : 'bg-[#BC5867]'}`}
             style={{ 
               left: week.x, 
               top: week.y,
@@ -156,7 +156,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
                 <stop offset="0%" stopColor="#f472b6" /> {/* Pink */}
                 <stop offset="35%" stopColor="#fb923c" /> {/* Orange */}
                 <stop offset="65%" stopColor="#facc15" /> {/* Yellow */}
-                <stop offset="100%" stopColor="#383655" /> {/* New theme color */}
+                <stop offset="100%" stopColor="#BC5867" /> {/* New theme color */}
               </linearGradient>
             </defs>
             <motion.path
@@ -190,7 +190,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
         
         {/* After using Lucid indicator */}
         <motion.div
-          className="absolute bg-[#383655] text-white px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm whitespace-nowrap"
+          className="absolute bg-[#BC5867] text-white px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm whitespace-nowrap"
           style={{ 
             left: weeks[3].x, 
             top: `calc(${weeks[3].y} - 25px)`,
@@ -219,13 +219,13 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
       </p>
       
       <div className="text-center mt-4 sm:mt-6">
-        <h2 className="text-xl font-semibold text-[#383655]">Your personal</h2>
-        <h1 className="text-2xl font-bold text-[#383655] mb-1">Well-being Management Plan</h1>
+        <h2 className="text-xl font-semibold text-[#BC5867]">Your personal</h2>
+        <h1 className="text-2xl font-bold text-[#BC5867] mb-1">Well-being Management Plan</h1>
         <p className="text-lg">is ready!</p>
       </div>
       
       <motion.button
-        className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 rounded-full bg-[#383655] hover:bg-[#2c2a44] text-white font-medium shadow-md"
+        className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 rounded-full bg-[#BC5867] hover:bg-[#a34857] text-white font-medium shadow-md"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, y: 20 }}
