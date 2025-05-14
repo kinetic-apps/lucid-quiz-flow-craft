@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuiz } from '@/context/QuizContext';
 import { motion } from 'framer-motion';
 
@@ -10,6 +10,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
   const [mood, setMood] = useState<string>('meh');
   const [emoji, setEmoji] = useState<string>('😐');
   const [sliderPosition, setSliderPosition] = useState<number>(50);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const sliderRef = useRef<HTMLDivElement>(null);
   const { goToNextStep } = useQuiz();
 
@@ -60,6 +61,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
 
   // Touch and mouse event handlers
   const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
     handleSliderInteraction(e);
     
     const handleMouseMove = (e: MouseEvent) => {
@@ -68,6 +70,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
     };
     
     const handleMouseUp = () => {
+      setIsDragging(false);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -77,18 +80,21 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
     handleSliderInteraction(e);
     
     const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault(); // Prevent scrolling while dragging
       handleSliderInteraction(e as unknown as React.TouchEvent);
     };
     
     const handleTouchEnd = () => {
+      setIsDragging(false);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
     
-    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false } as AddEventListenerOptions);
     document.addEventListener('touchend', handleTouchEnd);
   };
 
@@ -120,10 +126,14 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
               How would you describe your current mood?
             </h1>
             
-            <div className="flex flex-col items-center">
+            <motion.div 
+              className="flex flex-col items-center"
+              animate={{ scale: isDragging ? 1.05 : 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+            >
               <div className="text-4xl mb-2">{emoji}</div>
               <div className="text-xl font-medium font-dm-sans">{mood}</div>
-            </div>
+            </motion.div>
             
             {/* Mood slider */}
             <div className="mt-6 relative">
@@ -140,14 +150,31 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
                 <div className="h-full bg-lucid-pink opacity-10 rounded-r-full" style={{ width: "20%" }}></div>
               </div>
               
-              {/* Triangle indicator */}
+              {/* Active area indicator */}
               <div 
+                className="absolute h-12 bg-lucid-pink opacity-20 top-0 rounded-full pointer-events-none"
+                style={{ 
+                  width: `${sliderPosition}%`,
+                  transition: isDragging ? 'none' : 'width 0.2s ease-out'
+                }}
+              />
+              
+              {/* Triangle indicator */}
+              <motion.div 
                 className="absolute w-8 h-8"
                 style={{ 
                   left: `calc(${sliderPosition}% - 16px)`,
                   top: '100%',
                   transform: 'translateY(-50%)',
-                  transition: 'left 0.1s ease-out'
+                }}
+                animate={{ 
+                  x: 0, 
+                  scale: isDragging ? 1.2 : 1 
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 500, 
+                  damping: isDragging ? 10 : 15 
                 }}
               >
                 <img 
@@ -155,7 +182,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
                   alt="Slider indicator" 
                   className="w-full h-full"
                 />
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
