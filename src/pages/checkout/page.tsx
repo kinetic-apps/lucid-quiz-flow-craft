@@ -461,8 +461,30 @@ const CheckoutPage = () => {
                 <EmbeddedCheckout 
                   clientSecret={clientSecret}
                   onSuccess={handlePaymentSuccess}
-                  onCancel={handleCancel}
+                  onCancel={() => {
+                    setIsCheckoutOpen(false);
+                    setClientSecret(null);
+                    
+                    track('checkout_canceled', {
+                      visitor_id: visitorId,
+                      user_id: userId || undefined,
+                      plan_id: selectedPlan
+                    });
+                  }}
                 />
+                
+                {/* Back button */}
+                <div className="mt-4 text-center">
+                  <button 
+                    className="text-gray-500 text-sm"
+                    onClick={() => {
+                      setIsCheckoutOpen(false);
+                      setClientSecret(null);
+                    }}
+                  >
+                    ← Back to payment options
+                  </button>
+                </div>
               </div>
             ) : (
               <>
@@ -513,7 +535,15 @@ const CheckoutPage = () => {
                   By clicking "Get My Plan", you agree to a 1-week trial at $10.50, converting to a $43.50/month auto-renewing subscription if not canceled. Cancel via the app or email: support@thelucid.com. See <a href="#" className="text-[#8A2BE2] underline">Subscription Policy</a> for details.
                 </div>
                 
-                <div className="mt-6">
+                <button
+                  className="w-full mt-6 bg-[#8A2BE2] text-white py-4 rounded-lg font-semibold text-lg"
+                  onClick={handleGetPlan}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
+                </button>
+                
+                <div className="mt-3">
                   <PaymentRequestButton
                     amount={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.discountedPrice || 19.99}
                     planName={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.name || '1-MONTH PLAN'}
@@ -547,14 +577,18 @@ const CheckoutPage = () => {
                   />
                 </div>
                 
-                <button
-                  className="w-full mt-3 bg-[#8A2BE2] text-white py-4 rounded-lg font-semibold text-lg"
-                  onClick={handleGetPlan}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
-                </button>
-                
+                <div className="mt-2 text-center">
+                  <button 
+                    className="text-[#8A2BE2] text-sm font-medium"
+                    onClick={() => {
+                      setIsCheckoutOpen(true);
+                      handleGetPlan();
+                    }}
+                  >
+                    More payment options
+                  </button>
+                </div>
+
                 <div className="mt-4 flex items-center justify-center">
                   <div className="flex items-center text-gray-600 text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-purple-600">
