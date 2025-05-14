@@ -23,12 +23,14 @@ const ProgressBar = () => {
   
   // Determine if we should show the progress bar based on quiz state
   useEffect(() => {
+    // Check if we're on the "Did You Know" slide
+    const isOnDidYouKnowSlide = localStorage.getItem('showing_did_you_know') === 'true';
+    
     // Only show progress bar if:
     // 1. We have an age range selected (meaning we've passed the age selection step)
-    // 2. And it's a question step (not intro screens)
-    // Remove the currentStep > 0 condition since we want to show the progress bar
-    // immediately after age selection, even on the first question
-    const shouldShowProgress = userAgeRange !== null && isQuestionStep(currentStep, allSteps);
+    // 2. And we're not on the "Did You Know" slide
+    const shouldShowProgress = userAgeRange !== null && !isOnDidYouKnowSlide;
+                              
     setShowProgressBar(shouldShowProgress);
   }, [userAgeRange, currentStep, allSteps]);
   

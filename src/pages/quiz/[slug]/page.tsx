@@ -4,6 +4,7 @@ import { useQuiz } from '@/context/QuizContext';
 import { getQuizBySlug, Question, submitQuizResults } from '@/lib/supabase';
 import QuizSlide from '@/components/quiz/QuizSlide';
 import AgeSelect from '@/components/quiz/AgeSelect';
+import DidYouKnowSlide from '@/components/quiz/DidYouKnowSlide';
 import ResultGate from '@/components/quiz/ResultGate';
 import ConfirmationSlide from '@/components/quiz/ConfirmationSlide';
 import InfoSlide from '@/components/quiz/InfoSlide';
@@ -92,6 +93,7 @@ export default function QuizPage() {
   const [error, setError] = useState<string | null>(null);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [showAgeSelect, setShowAgeSelect] = useState(true);
+  const [showDidYouKnow, setShowDidYouKnow] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [progress, setProgress] = useState(0); // Separate progress state for display
   const [localSteps, setLocalSteps] = useState<Step[]>([]); // Renamed to avoid confusion with context
@@ -305,6 +307,41 @@ export default function QuizPage() {
     }
   }, [currentStep, localSteps]);
 
+  // Handle age selection
+  const handleAgeSelection = (ageRange: string) => {
+    setUserAgeRange(ageRange);
+    localStorage.setItem('lucid_age_range', ageRange);
+    
+    // Clear any existing quiz state
+    localStorage.removeItem('quiz_started');
+    
+    // Show the "Did You Know" slide after age selection
+    setShowAgeSelect(false);
+    setShowDidYouKnow(true);
+    
+    // Set flag to hide progress bar
+    localStorage.setItem('showing_did_you_know', 'true');
+  };
+
+  // Handle continuing from the "Did You Know" slide
+  const handleDidYouKnowContinue = () => {
+    setShowDidYouKnow(false);
+    setShowConfirmation(true);
+    
+    // Remove flag to show progress bar again
+    localStorage.removeItem('showing_did_you_know');
+  };
+  
+  // Handle back button from "Did You Know" slide
+  const handleDidYouKnowBack = () => {
+    setShowDidYouKnow(false);
+    setShowAgeSelect(true);
+    
+    // Remove flags
+    localStorage.removeItem('showing_did_you_know');
+    localStorage.removeItem('quiz_started');
+  };
+
   if (loading) {
     return <div className="p-4 max-w-md mx-auto">Loading quiz...</div>;
   }
@@ -318,20 +355,21 @@ export default function QuizPage() {
   }
 
   if (showAgeSelect) {
-    return (
-      <AgeSelect 
-        onComplete={(range) => {
-          setUserAgeRange(range);
-          setShowAgeSelect(false);
-        }} 
-      />
-    );
+    return <AgeSelect onComplete={handleAgeSelection} />;
+  }
+
+  if (showDidYouKnow) {
+    return <DidYouKnowSlide onContinue={handleDidYouKnowContinue} onBack={handleDidYouKnowBack} />;
   }
 
   if (showConfirmation) {
     return (
       <ConfirmationSlide 
-        onContinue={() => setShowConfirmation(false)} 
+        onContinue={() => {
+          setShowConfirmation(false);
+          // Ensure quiz is marked as started for progress bar
+          localStorage.setItem('quiz_started', 'true');
+        }} 
       />
     );
   }
