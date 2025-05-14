@@ -48,7 +48,7 @@ const AgeSelect = ({ onComplete }: AgeSelectProps) => {
     // Add a slight delay before navigating to show selection
     setTimeout(() => {
       onComplete(ageRange);
-    }, 300);
+    }, 200);
   };
 
   if (isLoading) {
@@ -64,7 +64,7 @@ const AgeSelect = ({ onComplete }: AgeSelectProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3 }}
       className="age-select-container"
     >
       <div className="mb-6">
@@ -84,7 +84,7 @@ const AgeSelect = ({ onComplete }: AgeSelectProps) => {
             `}
             onClick={() => handleSelectAge(ageGroup.range_text)}
             whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.1 }}
+            transition={{ duration: 0.08 }}
           >
             <span className="font-lexend text-lg text-lucid-dark">{ageGroup.range_text}</span>
           </motion.div>

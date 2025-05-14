@@ -174,7 +174,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     setTimeout(() => {
       goToNextStep();
       setAnimatingSelection(null);
-    }, 600);
+    }, 400);
   };
 
   const handleToggleOption = (optionId: string) => {
@@ -414,7 +414,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3 }}
       className="quiz-slide pb-6"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
