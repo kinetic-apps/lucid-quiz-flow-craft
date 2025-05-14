@@ -10,6 +10,7 @@ import ConfirmationSlide from '@/components/quiz/ConfirmationSlide';
 import InfoSlide from '@/components/quiz/InfoSlide';
 import ExpertReviewSlide from '@/components/quiz/ExpertReviewSlide';
 import CommunitySlide from '@/components/quiz/CommunitySlide';
+import MoodSlide from '@/components/quiz/MoodSlide';
 import SummarySlide from '@/components/quiz/SummarySlide';
 import PlanSlide from '@/components/quiz/PlanSlide';
 import ProgressSlide from '@/components/quiz/ProgressSlide';
@@ -82,7 +83,7 @@ type StepData = {
 
 // Using our own Step type here to avoid conflicts with QuizStep
 type Step = {
-  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'summary' | 'plan' | 'progress';
+  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'mood' | 'summary' | 'plan' | 'progress';
   data: StepData;
 };
 
@@ -122,8 +123,8 @@ export default function QuizPage() {
           setQuizData(data);
           
           // Set the total number of steps (questions + special slides + summary + result)
-          // Adding 7 for: 1) info slide, 2) expert review, 3) community, 4) summary, 5) plan, 6) progress, 7) result
-          const totalSteps = data.questions.length + 7;
+          // Adding 8 for: 1) info slide, 2) expert review, 3) community, 4) mood, 5) summary, 6) plan, 7) progress, 8) result
+          const totalSteps = data.questions.length + 8;
           setTotalSteps(totalSteps);
         } else {
           setError("Quiz not found");
@@ -145,6 +146,14 @@ export default function QuizPage() {
     
     const { quiz, questions } = quizData;
     const steps: Step[] = [];
+    
+    // Add the mood slide as the first step in the quiz
+    steps.push({
+      type: 'mood',
+      data: { 
+        quizId: quiz.id 
+      }
+    });
     
     // Add all questions, inserting special slides at specific positions
     questions.forEach((q, index) => {
@@ -342,6 +351,12 @@ export default function QuizPage() {
     localStorage.removeItem('quiz_started');
   };
 
+  // Handle mood selection
+  const handleMoodSelection = (mood: string) => {
+    localStorage.setItem('lucid_mood', mood);
+    // No need to navigate or change state as the quiz flow handles this automatically
+  };
+
   if (loading) {
     return <div className="p-4 max-w-md mx-auto">Loading quiz...</div>;
   }
@@ -410,6 +425,12 @@ export default function QuizPage() {
       {currentStepData?.type === 'community' && (
         <CommunitySlide 
           quizId={quiz.id}
+        />
+      )}
+      
+      {currentStepData?.type === 'mood' && (
+        <MoodSlide 
+          onComplete={handleMoodSelection}
         />
       )}
       

@@ -1,12 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const GenderSelect = () => {
-  const handleQuizStart = () => {
+  const navigate = useNavigate();
+  
+  const handleQuizStart = (gender: string) => {
     // Remove the age range directly from localStorage instead of using the context
     localStorage.removeItem('lucid_age_range');
     localStorage.removeItem('lucid_answers');
     localStorage.removeItem('lucid_progress');
+    localStorage.removeItem('lucid_mood');
+    localStorage.setItem('lucid_gender', gender);
+    
+    // Navigate directly to the quiz route with the correct gender slug
+    navigate(`/quiz/${gender}`);
   };
 
   return (
@@ -50,10 +57,7 @@ const GenderSelect = () => {
               </div>
               <div 
                 className="bg-lucid-offWhite py-6 px-6 text-center cursor-pointer"
-                onClick={() => {
-                  handleQuizStart();
-                  window.location.href = "/quiz/male";
-                }}
+                onClick={() => handleQuizStart('male')}
               >
                 <span className="font-lexend font-light text-xl text-[#2A2B2F]">Male</span>
               </div>
@@ -69,10 +73,7 @@ const GenderSelect = () => {
               </div>
               <div 
                 className="bg-lucid-offWhite py-6 px-6 text-center cursor-pointer"
-                onClick={() => {
-                  handleQuizStart();
-                  window.location.href = "/quiz/female";
-                }}
+                onClick={() => handleQuizStart('female')}
               >
                 <span className="font-lexend font-light text-xl text-[#2A2B2F]">Female</span>
               </div>
