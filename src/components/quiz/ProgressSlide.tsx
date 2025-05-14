@@ -38,7 +38,7 @@ const Review: React.FC<ReviewProps> = ({ name, text, visible }) => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="bg-white rounded-lg p-4 shadow-md my-4"
+          className="rounded-lg p-4 shadow-sm my-4 border border-gray-100"
         >
           <div className="flex mb-2">
             {/* 5 star rating */}
@@ -51,7 +51,7 @@ const Review: React.FC<ReviewProps> = ({ name, text, visible }) => {
             </div>
           </div>
           
-          <h4 className="font-semibold">{name}</h4>
+          <h4 className="font-semibold text-[#383655]">{name}</h4>
           <p className="text-gray-700 text-sm">{text}</p>
         </motion.div>
       )}
@@ -108,7 +108,7 @@ const Dialog: React.FC<DialogProps> = ({ question, visible, onAnswer }) => {
                 No
               </Button>
               <Button
-                className="flex-1 bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white rounded-full"
+                className="flex-1 bg-[#383655] hover:bg-[#2c2a44] text-white rounded-full"
                 onClick={() => onAnswer(true)}
               >
                 Yes
@@ -229,11 +229,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       
       <div className="flex justify-between mb-1">
         <span className="text-sm font-semibold text-gray-700">{label}</span>
-        <span className="text-sm font-semibold text-lucid-violet-600">{progress}%</span>
+        <span className="text-sm font-semibold text-[#383655]">{progress}%</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
         <motion.div
-          className="h-full bg-lucid-violet-600 rounded-full"
+          className="h-full bg-[#383655] rounded-full"
           initial={{ width: "0%" }}
           animate={controls}
         />
@@ -341,11 +341,11 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
       animate="visible"
       exit="exit"
       variants={containerVariants}
-      className="bg-gray-50 p-6 h-full flex flex-col"
+      className="p-6 h-full flex flex-col"
     >
       <motion.div variants={titleVariants} className="text-center mb-10">
-        <h1 className="text-xl font-bold">Creating your</h1>
-        <h2 className="text-xl font-bold text-lucid-violet-600">personalized Well-being Management plan</h2>
+        <h1 className="text-xl font-bold text-[#383655]">Creating your</h1>
+        <h2 className="text-xl font-bold text-[#383655]">personalized Well-being Management plan</h2>
       </motion.div>
 
       <div className="flex-1 mt-2">
@@ -372,7 +372,7 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
         >
           <Button
             onClick={goToNextStep}
-            className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white py-3 rounded-full"
+            className="w-full bg-[#383655] hover:bg-[#2c2a44] text-white py-3 rounded-full"
           >
             Continue
           </Button>

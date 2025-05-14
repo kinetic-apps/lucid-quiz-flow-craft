@@ -72,18 +72,18 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
       transition={{ duration: 0.7 }}
       className="flex flex-col items-center justify-center w-full max-w-md mx-auto px-4 py-6"
     >
-      <h2 className="text-2xl font-semibold text-center mb-2">Your Well-being level</h2>
+      <h2 className="text-2xl font-semibold text-center mb-2 text-[#383655]">Your Well-being level</h2>
       
       <div 
         ref={chartRef}
-        className="relative w-full h-60 sm:h-64 md:h-72 mt-4 mb-6 sm:mb-8 bg-white rounded-lg"
+        className="relative w-full h-60 sm:h-64 md:h-72 mt-4 mb-6 sm:mb-8 rounded-lg"
       >
         {/* Chart background zones - lighter purple gradient */}
         <div className="absolute inset-0 grid grid-cols-4 gap-0">
-          <div className="bg-pink-50/50 rounded-l-lg"></div>
-          <div className="bg-yellow-50/40"></div>
-          <div className="bg-green-50/40"></div>
-          <div className="bg-purple-50/40 rounded-r-lg"></div>
+          <div className="bg-pink-50/30 rounded-l-lg"></div>
+          <div className="bg-yellow-50/20"></div>
+          <div className="bg-green-50/20"></div>
+          <div className="bg-purple-50/20 rounded-r-lg"></div>
         </div>
         
         {/* Horizontal grid lines */}
@@ -131,7 +131,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
             className={`absolute w-3 h-3 sm:w-4 sm:h-4 rounded-full flex items-center justify-center
               ${index === 0 ? 'bg-pink-400' : 
                 index === 1 ? 'bg-orange-400' : 
-                index === 2 ? 'bg-yellow-400' : 'bg-lucid-violet-600'}`}
+                index === 2 ? 'bg-yellow-400' : 'bg-[#383655]'}`}
             style={{ 
               left: week.x, 
               top: week.y,
@@ -156,7 +156,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
                 <stop offset="0%" stopColor="#f472b6" /> {/* Pink */}
                 <stop offset="35%" stopColor="#fb923c" /> {/* Orange */}
                 <stop offset="65%" stopColor="#facc15" /> {/* Yellow */}
-                <stop offset="100%" stopColor="#7c3aed" /> {/* Purple */}
+                <stop offset="100%" stopColor="#383655" /> {/* New theme color */}
               </linearGradient>
             </defs>
             <motion.path
@@ -190,7 +190,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
         
         {/* After using Lucid indicator */}
         <motion.div
-          className="absolute bg-lucid-violet-600 text-white px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm whitespace-nowrap"
+          className="absolute bg-[#383655] text-white px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm whitespace-nowrap"
           style={{ 
             left: weeks[3].x, 
             top: `calc(${weeks[3].y} - 25px)`,
@@ -219,13 +219,13 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
       </p>
       
       <div className="text-center mt-4 sm:mt-6">
-        <h2 className="text-xl font-semibold">Your personal</h2>
-        <h1 className="text-2xl font-bold text-lucid-violet-600 mb-1">Well-being Management Plan</h1>
+        <h2 className="text-xl font-semibold text-[#383655]">Your personal</h2>
+        <h1 className="text-2xl font-bold text-[#383655] mb-1">Well-being Management Plan</h1>
         <p className="text-lg">is ready!</p>
       </div>
       
       <motion.button
-        className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 rounded-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white font-medium shadow-md"
+        className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 rounded-full bg-[#383655] hover:bg-[#2c2a44] text-white font-medium shadow-md"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, y: 20 }}

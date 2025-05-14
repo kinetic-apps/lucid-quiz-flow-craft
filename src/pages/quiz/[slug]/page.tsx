@@ -275,9 +275,12 @@ export default function QuizPage() {
               }
             };
             
-            setLocalSteps(updatedSteps);
-            setAllSteps(updatedSteps as QuizStep[]);
-            setSummaryScoreCalculated(true);
+            // Use a setTimeout to avoid updating state during rendering
+            setTimeout(() => {
+              setLocalSteps(updatedSteps);
+              setAllSteps(updatedSteps as QuizStep[]);
+              setSummaryScoreCalculated(true);
+            }, 0);
           }
         } catch (error) {
           console.error('Error calculating score:', error);
@@ -297,16 +300,19 @@ export default function QuizPage() {
               }
             };
             
-            setLocalSteps(updatedSteps);
-            setAllSteps(updatedSteps as QuizStep[]);
-            setSummaryScoreCalculated(true);
+            // Use a setTimeout to avoid updating state during rendering
+            setTimeout(() => {
+              setLocalSteps(updatedSteps);
+              setAllSteps(updatedSteps as QuizStep[]);
+              setSummaryScoreCalculated(true);
+            }, 0);
           }
         }
       };
       
       calculateScore();
     }
-  }, [currentStep, localSteps, quizData, answers, userAgeRange, summaryScoreCalculated, visitorId]);
+  }, [currentStep, quizData, answers, userAgeRange, summaryScoreCalculated, visitorId]);
 
   // Reset summaryScoreCalculated when step changes away from summary
   useEffect(() => {

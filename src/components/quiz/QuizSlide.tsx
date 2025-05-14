@@ -178,39 +178,45 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
   };
 
   const handleToggleOption = (optionId: string) => {
-    setSelectedOptions(prev => {
-      const newSelection = new Set(prev);
-      if (newSelection.has(optionId)) {
-        newSelection.delete(optionId);
-        
-        // Track option deselection
-        track('option_deselected', {
-          question_id: question.id,
-          question_type: 'multiselect',
-          step_index: stepIndex,
-          quiz_id: quizId,
-          option_id: optionId
-        });
-      } else {
-        newSelection.add(optionId);
-        
-        // Track option selection
-        track('option_selected', {
-          question_id: question.id,
-          question_type: 'multiselect',
-          step_index: stepIndex,
-          quiz_id: quizId,
-          option_id: optionId,
-          is_multiple: true
-        });
-      }
+    // First, create a new selection set without updating state yet
+    const newSelection = new Set(selectedOptions);
+    
+    // Toggle the selection
+    if (newSelection.has(optionId)) {
+      newSelection.delete(optionId);
       
-      // Store the comma-separated string of selected ids
-      const ids = Array.from(newSelection).join(',');
+      // Track option deselection
+      track('option_deselected', {
+        question_id: question.id,
+        question_type: 'multiselect',
+        step_index: stepIndex,
+        quiz_id: quizId,
+        option_id: optionId
+      });
+    } else {
+      newSelection.add(optionId);
+      
+      // Track option selection
+      track('option_selected', {
+        question_id: question.id,
+        question_type: 'multiselect',
+        step_index: stepIndex,
+        quiz_id: quizId,
+        option_id: optionId,
+        is_multiple: true
+      });
+    }
+    
+    // Store the comma-separated string of selected ids
+    const ids = Array.from(newSelection).join(',');
+    
+    // Update local state
+    setSelectedOptions(newSelection);
+    
+    // Update the answer in context after the current render cycle
+    setTimeout(() => {
       setAnswer(stepIndex, ids, question.id);
-      
-      return newSelection;
-    });
+    }, 0);
   };
 
   const handleSubmitMultiSelect = () => {

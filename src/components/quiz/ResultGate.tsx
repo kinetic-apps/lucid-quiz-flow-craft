@@ -182,10 +182,10 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
           className="result-gate"
         >
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            <h2 className="text-2xl font-semibold text-[#383655] mb-4">
               Almost there!
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[#383655] mb-6">
               Enter your email to receive your personalized {quizTitle} results.
             </p>
             
@@ -204,7 +204,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white"
+                className="w-full bg-[#383655] hover:bg-[#2c2a44] text-white"
               >
                 {isSubmitting ? 
                   <span className="flex items-center">
@@ -228,7 +228,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
                 variant="outline"
                 size="sm"
                 onClick={handleBack}
-                className="flex items-center"
+                className="flex items-center border-[#383655] text-[#383655] hover:bg-[#38365510]"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" /> Back
               </Button>
