@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -58,6 +57,12 @@ export default {
             600: "#7c3aed",
             700: "#6d28d9",
           },
+          pink: "#BC5867",
+          dark: "#191825",
+          gray: "#62656D",
+          cream: "#FBF3ED",
+          lightGray: "#DCD5D0",
+          offWhite: "#FEFDFB",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -106,6 +111,8 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-inter)", "sans-serif"],
+        'dm-sans': ['DM Sans', 'sans-serif'],
+        'lexend': ['Lexend', 'sans-serif'],
       },
     },
   },
