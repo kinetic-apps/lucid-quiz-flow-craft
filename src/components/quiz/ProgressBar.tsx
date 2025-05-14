@@ -62,35 +62,39 @@ const ProgressBar = () => {
   };
   
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
-        <div className="flex items-center">
+    <header className="p-4">
+      {/* Logo and back button row */}
+      <div className="flex justify-center items-center relative">
+        {currentStep > 0 && (
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBackNavigation}
-            className="p-0 h-8 w-8 mr-2"
+            className="absolute left-0 text-lucid-dark"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft size={24} />
           </Button>
-          <span>Progress</span>
-          {totalQuestions > 0 && (
-            <span className="ml-2 font-medium">
-              {currentQuestionNumber}/{totalQuestions}
-            </span>
-          )}
+        )}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8">
+            <img src="/assets/lucid-icon.svg" alt="Lucid Logo" className="w-full h-full" />
+          </div>
+          <span className="text-lucid-dark font-medium">lucid</span>
         </div>
-        <span>{Math.round(progressPercentage)}%</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-        <motion.div 
-          className="h-full bg-lucid-violet-600"
-          initial={{ width: 0 }}
-          animate={{ width: `${progressPercentage}%` }}
-          transition={{ duration: 0.3 }}
-        />
+      
+      {/* Progress bar */}
+      <div className="mt-4 px-4">
+        <div className="w-full bg-lucid-lightGray h-3 rounded-full overflow-hidden">
+          <motion.div 
+            className="h-full bg-lucid-pink"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercentage}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
       </div>
-    </div>
+    </header>
   );
 };
 
