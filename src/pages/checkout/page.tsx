@@ -540,7 +540,7 @@ const CheckoutPage = () => {
                   onClick={handleGetPlan}
                   disabled={isProcessing}
                 >
-                  {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
+                  {isProcessing ? 'PROCESSING...' : 'PURCHASE MY PLAN'}
                 </button>
                 
                 <div className="mt-3">
@@ -754,7 +754,7 @@ const CheckoutPage = () => {
               className="w-full bg-[#8A2BE2] text-white py-4 rounded-lg font-bold text-lg shadow-md hover:bg-[#7928a1] transition-colors"
               disabled={isProcessing}
             >
-              {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
+              {isProcessing ? 'PROCESSING...' : 'PURCHASE MY PLAN'}
             </button>
             
             <div className="mt-4 text-sm text-gray-500 text-center">
