@@ -16,6 +16,7 @@ type AgeSelectProps = {
 const AgeSelect = ({ onComplete }: AgeSelectProps) => {
   const [ageGroups, setAgeGroups] = useState<AgeGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAge, setSelectedAge] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAgeGroups = async () => {
@@ -42,38 +43,51 @@ const AgeSelect = ({ onComplete }: AgeSelectProps) => {
   }, []);
 
   const handleSelectAge = (ageRange: string) => {
-    // Immediately complete when an age is selected
-    onComplete(ageRange);
+    setSelectedAge(ageRange);
+    
+    // Add a slight delay before navigating to show selection
+    setTimeout(() => {
+      onComplete(ageRange);
+    }, 300);
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-lucid-pink"></div>
       </div>
     );
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
       className="age-select-container"
     >
-      <h2 className="text-2xl font-bold text-center mb-2">What's your age?</h2>
-      <p className="text-gray-600 text-center mb-6">We only use your age to personalize your plan</p>
+      <div className="mb-6">
+        <h2 className="text-2xl font-dm-sans font-medium text-lucid-dark mb-4">What's your age?</h2>
+        <p className="text-sm font-dm-sans text-lucid-gray">We only use your age to personalize your plan</p>
+      </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-3">
         {ageGroups.map((ageGroup) => (
-          <div
+          <motion.div
             key={ageGroup.id}
-            className="p-4 border rounded-lg flex items-center cursor-pointer transition-all border-gray-200 hover:border-gray-300 hover:bg-purple-50 bg-white"
+            className={`
+              border rounded-xl p-4 cursor-pointer transition-colors
+              ${selectedAge === ageGroup.range_text 
+                ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
+                : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
+            `}
             onClick={() => handleSelectAge(ageGroup.range_text)}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.1 }}
           >
-            <span className="text-lg">{ageGroup.range_text}</span>
-          </div>
+            <span className="font-lexend text-lg text-lucid-dark">{ageGroup.range_text}</span>
+          </motion.div>
         ))}
       </div>
     </motion.div>

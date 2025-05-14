@@ -65,16 +65,15 @@ const ProgressBar = () => {
     <header className="p-4">
       {/* Logo and back button row */}
       <div className="flex justify-center items-center relative">
-        {currentStep > 0 && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBackNavigation}
-            className="absolute left-0 text-lucid-dark"
-          >
-            <ArrowLeft size={24} />
-          </Button>
-        )}
+        {/* Always show back button on quiz pages */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleBackNavigation}
+          className="absolute left-0 text-lucid-dark"
+        >
+          <ArrowLeft size={24} />
+        </Button>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8">
             <img src="/assets/lucid-icon.svg" alt="Lucid Logo" className="w-full h-full" />
