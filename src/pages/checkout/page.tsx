@@ -237,25 +237,6 @@ const CheckoutPage = () => {
         plan_price: plan.totalPrice
       });
       
-      if (!userEmail) {
-        toast({
-          title: "Email Required",
-          description: "Please complete the quiz and provide your email before checking out.",
-          variant: "destructive",
-          duration: 5000,
-        });
-        setIsProcessing(false);
-        
-        // Track checkout error
-        track('checkout_error', {
-          visitor_id: visitorId,
-          error_type: 'missing_email',
-          plan_id: selectedPlan
-        });
-        
-        return;
-      }
-
       // Create a Stripe Checkout Session
       const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-checkout-session', {
         method: 'POST',
