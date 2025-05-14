@@ -29,7 +29,11 @@ const ProgressBar = () => {
     // Only show progress bar if:
     // 1. We have an age range selected (meaning we've passed the age selection step)
     // 2. And we're not on the "Did You Know" slide
-    const shouldShowProgress = userAgeRange !== null && !isOnDidYouKnowSlide;
+    // 3. And we're on a question step
+    const shouldShowProgress = 
+      userAgeRange !== null && 
+      !isOnDidYouKnowSlide && 
+      isQuestionStep(currentStep, allSteps);
                               
     setShowProgressBar(shouldShowProgress);
   }, [userAgeRange, currentStep, allSteps]);
@@ -64,17 +68,18 @@ const ProgressBar = () => {
       </div>
       
       {/* Progress bar - only show if showProgressBar is true */}
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {showProgressBar && (
           <motion.div 
             className="mt-4 px-4"
             initial={{ opacity: 0, y: -10, height: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
             transition={{ 
-              duration: 0.5, 
-              ease: "easeOut",
-              opacity: { duration: 0.3 },
-              height: { duration: 0.3 }
+              duration: 0.6, 
+              ease: "easeInOut",
+              opacity: { duration: 0.4 },
+              height: { duration: 0.5 }
             }}
           >
             <div className="w-full bg-lucid-lightGray h-3 rounded-full overflow-hidden">
@@ -82,7 +87,7 @@ const ProgressBar = () => {
                 className="h-full bg-lucid-pink"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercentage}%` }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
               />
             </div>
           </motion.div>
