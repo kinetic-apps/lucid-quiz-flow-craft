@@ -251,30 +251,11 @@ const CheckoutPage = () => {
         plan_price: plan.totalPrice
       });
       
-      if (!userEmail) {
-        toast({
-          title: "Email Required",
-          description: "Please complete the quiz and provide your email before checking out.",
-          variant: "destructive",
-          duration: 5000,
-        });
-        setIsProcessing(false);
-        
-        // Track checkout error
-        track('checkout_error', {
-          visitor_id: visitorId,
-          error_type: 'missing_email',
-          plan_id: selectedPlan
-        });
-        
-        return;
-      }
-
       // Create a payment intent instead of checkout session
       const { clientSecret } = await createStripePaymentIntent(
         plan.priceId,
         userId,
-        userEmail,
+        userEmail || 'temp@example.com', // Provide a fallback temporary email if not available
         selectedPlan
       );
       

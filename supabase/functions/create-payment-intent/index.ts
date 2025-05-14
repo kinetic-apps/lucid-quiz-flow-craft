@@ -67,7 +67,7 @@ serve(async (req) => {
     // Parse the request body
     const { priceId, userId, email, planId } = await req.json()
 
-    // Validate required fields
+    // Validate required fields - only check for priceId
     if (!priceId) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }), 
@@ -78,7 +78,7 @@ serve(async (req) => {
       )
     }
 
-    // First check if a customer with this email already exists
+    // Handle customer creation with or without email
     let customer;
     if (email) {
       const customers = await stripe.customers.list({
@@ -90,11 +90,11 @@ serve(async (req) => {
         // Use existing customer
         customer = customers.data[0]
       } else {
-        // Create a new customer
+        // Create a new customer with email
         customer = await stripe.customers.create({
           email,
           metadata: {
-            userId,
+            userId: userId || '',
           },
         })
       }
@@ -102,7 +102,7 @@ serve(async (req) => {
       // Create an anonymous customer if email is not provided
       customer = await stripe.customers.create({
         metadata: {
-          userId,
+          userId: userId || '',
         },
       })
     }
