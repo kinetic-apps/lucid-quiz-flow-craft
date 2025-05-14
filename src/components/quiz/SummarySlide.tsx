@@ -215,7 +215,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             style={{ backgroundColor: '#FBF3ED' }}
           >
             <img 
-              src="/male-before-image.svg" 
+              src="/male-before-image-new.svg" 
               alt="Profile" 
               className="w-3/4 h-3/4"
             />
