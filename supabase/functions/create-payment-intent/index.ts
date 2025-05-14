@@ -14,7 +14,7 @@ const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
 })
 
-// Product IDs from our Stripe account
+// Product IDs from our Stripe account - same as in create-checkout-session
 const STRIPE_PRODUCTS = {
   '7day': {
     id: 'prod_SHPfu4RexpUljs',
@@ -39,7 +39,7 @@ const STRIPE_PRODUCTS = {
   }
 };
 
-// Define CORS headers - include your Vercel domain explicitly
+// Define CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
@@ -55,7 +55,7 @@ serve(async (req) => {
     })
   }
 
-  // Only handle POST requests for checkout session creation
+  // Only handle POST requests
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { 
       status: 405,
@@ -65,10 +65,10 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { priceId, userId, email, planId, successUrl, cancelUrl } = await req.json()
+    const { priceId, userId, email, planId } = await req.json()
 
     // Validate required fields
-    if (!priceId || !successUrl || !cancelUrl) {
+    if (!priceId) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }), 
         { 
@@ -122,36 +122,35 @@ serve(async (req) => {
       )
     }
 
-    // Create the checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create a payment intent for one-time payment
+    // Or use subscriptions.create for recurring payments
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(productDetails.totalPrice * 100), // convert to cents
+      currency: 'usd',
       customer: customer.id,
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${cancelUrl}`,
+      automatic_payment_methods: {
+        enabled: true,
+      },
       metadata: {
         userId,
         planId,
         productName: productDetails.name,
       },
-    })
+    });
 
-    // Return the session ID to the client
+    // Return the client secret to the client
     return new Response(
-      JSON.stringify({ sessionId: session.id }), 
+      JSON.stringify({ 
+        clientSecret: paymentIntent.client_secret,
+        customerId: customer.id
+      }), 
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   } catch (error) {
-    console.error('Error creating checkout session:', error)
+    console.error('Error creating payment intent:', error)
     return new Response(
       JSON.stringify({ error: 'Internal server error', details: error.message }), 
       { 

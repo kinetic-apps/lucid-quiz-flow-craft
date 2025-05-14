@@ -144,4 +144,36 @@ export async function updateUserWithSubscription(
     console.error('Failed to update user subscription:', error);
     return false;
   }
+}
+
+export async function createStripePaymentIntent(
+  priceId: string,
+  userId: string | null,
+  email: string | null,
+  planId: string
+) {
+  try {
+    const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        priceId,
+        userId: userId || undefined,
+        email: email || undefined,
+        planId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create payment intent');
+    }
+
+    const { clientSecret, customerId } = await response.json();
+    return { clientSecret, customerId };
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    throw error;
+  }
 } 

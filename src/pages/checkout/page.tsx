@@ -8,6 +8,8 @@ import { STRIPE_PRODUCTS } from '@/integrations/stripe/client';
 import { loadStripe } from '@stripe/stripe-js';
 import { usePostHog } from '@/context/PostHogContext';
 import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
+import EmbeddedCheckout from '@/components/EmbeddedCheckout';
+import { createStripePaymentIntent } from '@/integrations/stripe/client';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -144,6 +146,14 @@ const PAYMENT_METHODS = [
   { id: 'applepay', alt: 'Apple Pay' },
 ];
 
+// Define PaymentIntent interface
+interface PaymentIntent {
+  id: string;
+  status: string;
+  amount: number;
+  currency: string;
+}
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { visitorId } = useQuiz();
@@ -153,6 +163,10 @@ const CheckoutPage = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  
+  // New state for embedded checkout
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   
   // Countdown timer state
   const [countdown, setCountdown] = useState({ minutes: 10, seconds: 0 });
@@ -237,43 +251,44 @@ const CheckoutPage = () => {
         plan_price: plan.totalPrice
       });
       
-      // Create a Stripe Checkout Session
-      const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: plan.priceId,
-          userId: userId,
-          email: userEmail,
-          planId: selectedPlan,
-          successUrl: `${window.location.origin}/checkout/success`,
-          cancelUrl: `${window.location.origin}/checkout`,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+      if (!userEmail) {
+        toast({
+          title: "Email Required",
+          description: "Please complete the quiz and provide your email before checking out.",
+          variant: "destructive",
+          duration: 5000,
+        });
+        setIsProcessing(false);
+        
+        // Track checkout error
+        track('checkout_error', {
+          visitor_id: visitorId,
+          error_type: 'missing_email',
+          plan_id: selectedPlan
+        });
+        
+        return;
       }
 
-      const { sessionId } = await response.json();
+      // Create a payment intent instead of checkout session
+      const { clientSecret } = await createStripePaymentIntent(
+        plan.priceId,
+        userId,
+        userEmail,
+        selectedPlan
+      );
       
-      // Track redirect to stripe
-      track('redirect_to_stripe', {
+      // Set the client secret and open the checkout
+      setClientSecret(clientSecret);
+      setIsCheckoutOpen(true);
+      setIsProcessing(false);
+      
+      // Track embed checkout opened
+      track('embedded_checkout_opened', {
         visitor_id: visitorId,
         user_id: userId || undefined,
-        session_id: sessionId,
         plan_id: selectedPlan
       });
-      
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise;
-      const { error } = await stripe!.redirectToCheckout({ sessionId });
-      
-      if (error) {
-        throw error;
-      }
       
     } catch (error) {
       console.error('Subscription error:', error);
@@ -288,11 +303,35 @@ const CheckoutPage = () => {
       // Track checkout error
       track('checkout_error', {
         visitor_id: visitorId,
-        error_type: 'stripe_error',
+        error_type: 'payment_intent_error',
         error_message: error instanceof Error ? error.message : 'Unknown error',
         plan_id: selectedPlan
       });
     }
+  };
+
+  // Handle successful payment
+  const handlePaymentSuccess = (paymentIntent: PaymentIntent) => {
+    track('payment_successful', {
+      visitor_id: visitorId,
+      user_id: userId || undefined,
+      plan_id: selectedPlan,
+      payment_intent_id: paymentIntent.id
+    });
+    
+    navigate('/checkout/success');
+  };
+
+  // Handle cancellation
+  const handleCancel = () => {
+    setIsCheckoutOpen(false);
+    setClientSecret(null);
+    
+    track('checkout_canceled', {
+      visitor_id: visitorId,
+      user_id: userId || undefined,
+      plan_id: selectedPlan
+    });
   };
 
   return (
@@ -308,13 +347,15 @@ const CheckoutPage = () => {
                 {String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
               </span>
             </div>
-            <button
-              className="bg-[#8A2BE2] text-white px-6 py-2 rounded-full font-medium"
-              onClick={handleGetPlan}
-              disabled={isProcessing}
-            >
-              {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
-            </button>
+            {!isCheckoutOpen && (
+              <button
+                className="bg-[#8A2BE2] text-white px-6 py-2 rounded-full font-medium"
+                onClick={handleGetPlan}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -432,79 +473,92 @@ const CheckoutPage = () => {
 
           {/* Subscription Plans Section */}
           <div className="px-6 py-6 bg-white border-t border-gray-100">
-            <div className="space-y-4">
-              {SUBSCRIPTION_PLANS.map((plan, index) => (
-                <div 
-                  key={index}
-                  className={`border rounded-lg p-4 transition-all cursor-pointer relative ${
-                    selectedPlan === plan.id 
-                      ? 'border-2 border-[#8A2BE2] bg-purple-50' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => handlePlanSelect(plan.id)}
-                >
-                  {plan.popular && (
-                    <div className="absolute top-0 left-0 right-0 -mt-3 flex justify-center">
-                      <div className="bg-[#8A2BE2] text-white text-xs px-3 py-1 rounded-full">
-                        MOST POPULAR
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="flex items-center">
-                        <div className="mr-2 w-5 h-5 flex items-center justify-center">
-                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                            selectedPlan === plan.id ? 'border-[#8A2BE2]' : 'border-gray-300'
-                          }`}>
-                            {selectedPlan === plan.id && (
-                              <div className="w-3 h-3 rounded-full bg-[#8A2BE2]"></div>
-                            )}
+            {isCheckoutOpen && clientSecret ? (
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold mb-4">Complete your purchase</h3>
+                <EmbeddedCheckout 
+                  clientSecret={clientSecret}
+                  onSuccess={handlePaymentSuccess}
+                  onCancel={handleCancel}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {SUBSCRIPTION_PLANS.map((plan, index) => (
+                    <div 
+                      key={index}
+                      className={`border rounded-lg p-4 transition-all cursor-pointer relative ${
+                        selectedPlan === plan.id 
+                          ? 'border-2 border-[#8A2BE2] bg-purple-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => handlePlanSelect(plan.id)}
+                    >
+                      {plan.popular && (
+                        <div className="absolute top-0 left-0 right-0 -mt-3 flex justify-center">
+                          <div className="bg-[#8A2BE2] text-white text-xs px-3 py-1 rounded-full">
+                            MOST POPULAR
                           </div>
                         </div>
-                        <div className="font-semibold text-gray-800">{plan.name}</div>
+                      )}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="flex items-center">
+                            <div className="mr-2 w-5 h-5 flex items-center justify-center">
+                              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                                selectedPlan === plan.id ? 'border-[#8A2BE2]' : 'border-gray-300'
+                              }`}>
+                                {selectedPlan === plan.id && (
+                                  <div className="w-3 h-3 rounded-full bg-[#8A2BE2]"></div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="font-semibold text-gray-800">{plan.name}</div>
+                          </div>
+                          <div className="ml-7 text-sm text-gray-500">${plan.perDayPrice.toFixed(2)} per day</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-gray-400 line-through">${plan.originalPrice.toFixed(2)}</div>
+                          <div className="text-xl font-bold text-gray-800">${plan.discountedPrice.toFixed(2)}</div>
+                        </div>
                       </div>
-                      <div className="ml-7 text-sm text-gray-500">${plan.perDayPrice.toFixed(2)} per day</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-400 line-through">${plan.originalPrice.toFixed(2)}</div>
-                      <div className="text-xl font-bold text-gray-800">${plan.discountedPrice.toFixed(2)}</div>
-                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-4 text-xs text-gray-500 px-4">
+                  By clicking "Get My Plan", you agree to a 1-week trial at $10.50, converting to a $43.50/month auto-renewing subscription if not canceled. Cancel via the app or email: support@thelucid.com. See <a href="#" className="text-[#8A2BE2] underline">Subscription Policy</a> for details.
+                </div>
+                
+                <button
+                  className="w-full mt-6 bg-[#8A2BE2] text-white py-4 rounded-lg font-semibold text-lg"
+                  onClick={handleGetPlan}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
+                </button>
+                
+                <div className="mt-4 flex items-center justify-center">
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-purple-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    Pay Safe & Secure
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            <div className="mt-4 text-xs text-gray-500 px-4">
-              By clicking "Get My Plan", you agree to a 1-week trial at $10.50, converting to a $43.50/month auto-renewing subscription if not canceled. Cancel via the app or email: support@thelucid.com. See <a href="#" className="text-[#8A2BE2] underline">Subscription Policy</a> for details.
-            </div>
-            
-            <button
-              className="w-full mt-6 bg-[#8A2BE2] text-white py-4 rounded-lg font-semibold text-lg"
-              onClick={handleGetPlan}
-              disabled={isProcessing}
-            >
-              {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
-            </button>
-            
-            <div className="mt-4 flex items-center justify-center">
-              <div className="flex items-center text-gray-600 text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-purple-600">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                </svg>
-                Pay Safe & Secure
-              </div>
-            </div>
 
-            <div className="flex justify-center gap-3 mt-2 mb-8">
-              {PAYMENT_METHODS.map((method) => (
-                <div key={method.id} className="w-10 h-6 opacity-70">
-                  <div className="w-full h-full bg-gray-200 rounded-sm flex items-center justify-center text-[8px] text-gray-500">
-                    {method.alt}
-                  </div>
+                <div className="flex justify-center gap-3 mt-2 mb-8">
+                  {PAYMENT_METHODS.map((method) => (
+                    <div key={method.id} className="w-10 h-6 opacity-70">
+                      <div className="w-full h-full bg-gray-200 rounded-sm flex items-center justify-center text-[8px] text-gray-500">
+                        {method.alt}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
           
           {/* Featured In Section */}
