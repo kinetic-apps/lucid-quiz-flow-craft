@@ -13,13 +13,13 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center h-full text-center"
+      className="flex flex-col items-center justify-center h-full text-center bg-lucid-cream"
     >
       <div className="p-4 max-w-sm mx-auto">
-        <h2 className="text-3xl font-semibold text-emerald-600 whitespace-nowrap">
+        <h2 className="text-3xl font-semibold text-lucid-pink whitespace-nowrap">
           Over 1,000,000 people
         </h2>
-        <p className="text-gray-900 font-bold mb-8">have chosen Lucid</p>
+        <p className="text-lucid-dark font-bold mb-8">have chosen Lucid</p>
         
         <div className="relative my-12">
           {/* Circle visualization with profile images */}
@@ -76,12 +76,12 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
           </div>
         </div>
         
-        <Button 
+        <button 
           onClick={onContinue}
-          className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+          className="w-full py-4 px-8 rounded-full bg-lucid-dark text-white font-dm-sans font-semibold text-lg"
         >
           Continue
-        </Button>
+        </button>
       </div>
     </motion.div>
   );

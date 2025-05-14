@@ -30,16 +30,16 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
     }
   };
 
-  // User avatars positioning data for the world map
+  // User avatars positioning data for the visualization
   const avatarPositions = [
-    { top: '20%', left: '15%', color: '#7c3aed' }, // North America
-    { top: '25%', left: '35%', color: '#6d28d9' }, // Europe
-    { top: '20%', left: '55%', color: '#7c3aed' }, // Asia
-    { top: '35%', left: '25%', color: '#6d28d9' }, // Africa
-    { top: '45%', left: '20%', color: '#7c3aed' }, // South America
-    { top: '15%', left: '42%', color: '#6d28d9' }, // Northern Europe
-    { top: '50%', left: '75%', color: '#7c3aed' }, // Australia
-    { top: '30%', left: '65%', color: '#6d28d9' }  // East Asia
+    { top: '25%', left: '20%', size: 'w-10 h-10' }, // A
+    { top: '32%', left: '35%', size: 'w-12 h-12' }, // B
+    { top: '22%', left: '45%', size: 'w-10 h-10' }, // C
+    { top: '35%', left: '28%', size: 'w-12 h-12' }, // D
+    { top: '45%', left: '25%', size: 'w-10 h-10' }, // E
+    { top: '18%', left: '38%', size: 'w-10 h-10' }, // F
+    { top: '38%', left: '55%', size: 'w-10 h-10' }, // G
+    { top: '28%', left: '52%', size: 'w-12 h-12' }  // H
   ];
 
   return (
@@ -48,21 +48,14 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="community-slide flex flex-col h-full bg-gray-50"
+      className="community-slide flex flex-col h-full bg-lucid-cream"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       <div className="flex-1 flex flex-col items-center justify-between py-8 px-4">
         <div className="w-full flex flex-col items-center">
-          {/* World Map with User Avatars */}
-          <div className="relative w-full h-48 mb-6">
-            {/* World Map */}
-            <img 
-              src="/world-map-dots.svg" 
-              alt="World map" 
-              className="w-full opacity-20"
-            />
-
+          {/* Visualization */}
+          <div className="relative w-full h-60 mb-8 bg-blue-50/30 rounded-lg flex items-center justify-center">
             {/* User Avatars */}
             {avatarPositions.map((pos, index) => (
               <div 
@@ -70,15 +63,14 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
                 className="absolute"
                 style={{ 
                   top: pos.top, 
-                  left: pos.left, 
+                  left: pos.left,
                   transform: 'translate(-50%, -50%)'
                 }}
               >
                 <div 
-                  className="rounded-full w-8 h-8 flex items-center justify-center shadow-sm"
-                  style={{ backgroundColor: pos.color }}
+                  className={`${pos.size} rounded-full flex items-center justify-center bg-purple-500`}
                 >
-                  <div className="text-white font-bold text-xs">
+                  <div className="text-white font-bold text-base">
                     {String.fromCharCode(65 + index)}
                   </div>
                 </div>
@@ -87,21 +79,21 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
           </div>
 
           {/* Text Content */}
-          <h2 className="text-2xl font-bold text-center mb-4">
+          <h2 className="text-3xl font-bold text-center mb-4 text-lucid-dark">
             Join over 1,000,000 people
           </h2>
-          <p className="text-center text-gray-700 px-4 max-w-sm">
+          <p className="text-center text-lucid-dark/80 px-6 max-w-sm text-lg font-serif">
             Become part of a growing worldwide community and achieve your goals with us!
           </p>
         </div>
 
         {/* Continue Button */}
-        <Button
+        <button
           onClick={goToNextStep}
-          className="w-full bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white rounded-full py-4 mt-8"
+          className="w-full max-w-md py-4 px-8 rounded-full bg-[#8a3bf9] text-white font-medium text-lg mt-10"
         >
           Continue
-        </Button>
+        </button>
       </div>
     </motion.div>
   );

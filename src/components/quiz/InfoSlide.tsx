@@ -43,34 +43,34 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="info-slide px-4 py-10 text-center"
+      className="info-slide px-4 py-10 text-center bg-lucid-cream h-full"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-3">
+        <h2 className="text-2xl font-bold text-lucid-dark mb-3">
           Lucid was developed using evidence-based psychological practices
         </h2>
-        <p className="text-gray-700 mb-8">
+        <p className="text-lucid-dark mb-8">
           Your plan is based on decades of research
         </p>
         
         <div className="flex flex-col items-center space-y-4 mt-8">
-          <div className="university-logo bg-white rounded-lg shadow-sm p-4 w-64">
+          <div className="university-logo rounded-lg p-4 w-64">
             <div className="text-center">
               <div className="font-serif text-xl font-bold">HARVARD</div>
               <div className="text-sm">UNIVERSITY</div>
             </div>
           </div>
           
-          <div className="university-logo bg-white rounded-lg shadow-sm p-4 w-64">
+          <div className="university-logo rounded-lg p-4 w-64">
             <div className="text-center">
               <div className="text-sm">UNIVERSITY OF</div>
               <div className="font-serif text-xl font-bold">OXFORD</div>
             </div>
           </div>
           
-          <div className="university-logo bg-white rounded-lg shadow-sm p-4 w-64">
+          <div className="university-logo rounded-lg p-4 w-64">
             <div className="text-center">
               <div className="text-sm">UNIVERSITY OF</div>
               <div className="font-serif text-xl font-bold">CAMBRIDGE</div>
@@ -79,21 +79,19 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
         </div>
       </div>
 
-      <div className="flex justify-between mt-10 sticky bottom-0 pt-4 pb-4 bg-white">
-        <Button
-          variant="outline"
-          size="sm"
+      <div className="flex justify-between mt-10 sticky bottom-0 pt-4 pb-4 bg-lucid-cream">
+        <button
           onClick={goToPrevStep}
-          className="flex items-center"
+          className="px-4 py-2 rounded-lg text-lucid-dark flex items-center font-medium"
         >
           <ChevronLeft className="w-4 h-4 mr-1" /> Back
-        </Button>
-        <Button
+        </button>
+        <button
           onClick={goToNextStep}
-          className="bg-lucid-violet-600 hover:bg-lucid-violet-700 text-white flex items-center"
+          className="px-4 py-2 rounded-lg bg-lucid-dark text-white flex items-center font-medium"
         >
           Continue <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
+        </button>
       </div>
     </motion.div>
   );
