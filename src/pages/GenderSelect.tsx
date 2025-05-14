@@ -11,7 +11,7 @@ const GenderSelect = () => {
 
   return (
     <div className="min-h-screen bg-lucid-cream flex flex-col">
-      {/* Header */}
+      {/* Header - Only Logo */}
       <header className="p-4">
         <div className="flex justify-center items-center">
           <div className="flex items-center gap-2">
@@ -19,11 +19,6 @@ const GenderSelect = () => {
               <img src="/assets/lucid-icon.svg" alt="Lucid Logo" className="w-full h-full" />
             </div>
             <span className="text-lucid-dark font-medium">lucid</span>
-          </div>
-        </div>
-        <div className="mt-4 px-4">
-          <div className="w-full bg-lucid-lightGray h-3 rounded-full">
-            {/* Progress bar with 0% completion */}
           </div>
         </div>
       </header>

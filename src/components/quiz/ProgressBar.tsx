@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -16,42 +16,21 @@ const isQuestionStep = (currentStep: number, allSteps: Step[]): boolean => {
 };
 
 const ProgressBar = () => {
-  const { currentStep, totalSteps, goToPrevStep, allSteps } = useQuiz();
+  const { currentStep, totalSteps, goToPrevStep, allSteps, userAgeRange } = useQuiz();
   const progressPercentage = totalSteps > 0 ? (currentStep / (totalSteps - 1)) * 100 : 0;
   const navigate = useNavigate();
+  const [showProgressBar, setShowProgressBar] = useState(false);
   
-  // Check if this step should show the progress bar
-  const shouldShowProgress = isQuestionStep(currentStep, allSteps);
-  
-  // If this isn't a question step, don't show the progress bar
-  if (!shouldShowProgress) {
-    return (
-      <div className="w-full">
-        <div className="flex justify-start items-center mb-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => goToPrevStep()}
-            className="p-0 h-8 w-8"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  
-  // Calculate the question number - we add 1 to currentStep since it's zero-indexed
-  const questionNumber = currentStep + 1;
-  
-  // Count only question steps for the total questions display
-  const totalQuestions = allSteps.filter(step => step.type === 'question').length;
-  
-  // Calculate the current question number (count only previous questions)
-  const currentQuestionNumber = allSteps
-    .slice(0, currentStep + 1)
-    .filter(step => step.type === 'question')
-    .length;
+  // Determine if we should show the progress bar based on quiz state
+  useEffect(() => {
+    // Only show progress bar if:
+    // 1. We have an age range selected (meaning we've passed the age selection step)
+    // 2. And it's a question step (not intro screens)
+    // Remove the currentStep > 0 condition since we want to show the progress bar
+    // immediately after age selection, even on the first question
+    const shouldShowProgress = userAgeRange !== null && isQuestionStep(currentStep, allSteps);
+    setShowProgressBar(shouldShowProgress);
+  }, [userAgeRange, currentStep, allSteps]);
   
   const handleBackNavigation = () => {
     if (currentStep > 0) {
@@ -82,17 +61,31 @@ const ProgressBar = () => {
         </div>
       </div>
       
-      {/* Progress bar */}
-      <div className="mt-4 px-4">
-        <div className="w-full bg-lucid-lightGray h-3 rounded-full overflow-hidden">
+      {/* Progress bar - only show if showProgressBar is true */}
+      <AnimatePresence>
+        {showProgressBar && (
           <motion.div 
-            className="h-full bg-lucid-pink"
-            initial={{ width: 0 }}
-            animate={{ width: `${progressPercentage}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      </div>
+            className="mt-4 px-4"
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            transition={{ 
+              duration: 0.5, 
+              ease: "easeOut",
+              opacity: { duration: 0.3 },
+              height: { duration: 0.3 }
+            }}
+          >
+            <div className="w-full bg-lucid-lightGray h-3 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-lucid-pink"
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercentage}%` }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
