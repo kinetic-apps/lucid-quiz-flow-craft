@@ -10,6 +10,7 @@ import { usePostHog } from '@/context/PostHogContext';
 import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
 import EmbeddedCheckout from '@/components/EmbeddedCheckout';
 import { createStripePaymentIntent } from '@/integrations/stripe/client';
+import PaymentRequestButton from '@/components/PaymentRequestButton';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -512,8 +513,42 @@ const CheckoutPage = () => {
                   By clicking "Get My Plan", you agree to a 1-week trial at $10.50, converting to a $43.50/month auto-renewing subscription if not canceled. Cancel via the app or email: support@thelucid.com. See <a href="#" className="text-[#8A2BE2] underline">Subscription Policy</a> for details.
                 </div>
                 
+                <div className="mt-6">
+                  <PaymentRequestButton
+                    amount={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.discountedPrice || 19.99}
+                    planName={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.name || '1-MONTH PLAN'}
+                    onSuccess={(paymentIntent) => {
+                      track('express_payment_successful', {
+                        visitor_id: visitorId,
+                        user_id: userId || undefined,
+                        plan_id: selectedPlan,
+                        payment_intent_id: paymentIntent.id,
+                        method: 'express_checkout'
+                      });
+                      
+                      navigate('/checkout/success');
+                    }}
+                    onError={(error) => {
+                      console.error('Express payment error:', error);
+                      toast({
+                        title: "Payment Failed",
+                        description: error.message || "There was an error processing your payment. Please try again.",
+                        variant: "destructive",
+                        duration: 5000,
+                      });
+                      
+                      track('checkout_error', {
+                        visitor_id: visitorId,
+                        error_type: 'express_payment_error',
+                        error_message: error.message || 'Unknown error',
+                        plan_id: selectedPlan
+                      });
+                    }}
+                  />
+                </div>
+                
                 <button
-                  className="w-full mt-6 bg-[#8A2BE2] text-white py-4 rounded-lg font-semibold text-lg"
+                  className="w-full mt-3 bg-[#8A2BE2] text-white py-4 rounded-lg font-semibold text-lg"
                   onClick={handleGetPlan}
                   disabled={isProcessing}
                 >
