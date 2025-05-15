@@ -364,6 +364,17 @@ export default function QuizPage() {
   };
 
   if (loading) {
+    // Skip loading display if we're coming directly from gender selection 
+    // and just showing the age selection screen
+    const comingFromGenderSelect = !localStorage.getItem('quiz_started') && 
+                                   !localStorage.getItem('showing_did_you_know') && 
+                                   localStorage.getItem('lucid_gender');
+    
+    if (comingFromGenderSelect) {
+      // If we're coming from gender select, immediately show age select
+      return <AgeSelect onComplete={handleAgeSelection} />;
+    }
+    
     return <div className="p-4 max-w-md mx-auto">Loading quiz...</div>;
   }
 
