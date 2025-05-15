@@ -85,6 +85,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   const [utmParams, setUtmParams] = useState<Record<string, string>>({});
   const [userAgeRange, setUserAgeRange] = useState<string | null>(null);
   const [allSteps, setAllSteps] = useState<Step[]>([]);
+  const [quizProgress75Fired, setQuizProgress75Fired] = useState(false);
   
   // Get PostHog context
   const { track, identify } = usePostHog();
@@ -229,8 +230,9 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
         track('quiz_progress_25_percent', { visitor_id: visitorId });
       } else if (stepPercentage === 50) {
         track('quiz_progress_50_percent', { visitor_id: visitorId });
-      } else if (stepPercentage === 75) {
+      } else if (stepPercentage >= 75 && !quizProgress75Fired) {
         track('quiz_progress_75_percent', { visitor_id: visitorId });
+        setQuizProgress75Fired(true);
       }
     }
   };
@@ -249,6 +251,12 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
         progress_percentage: Math.round((prevStep / totalSteps) * 100),
         visitor_id: visitorId
       });
+
+      // If user navigates back past the 75% mark, allow the event to be fired again if they reach it.
+      const stepPercentage = Math.round((prevStep / totalSteps) * 100);
+      if (stepPercentage < 75 && quizProgress75Fired) {
+        setQuizProgress75Fired(false);
+      }
     }
   };
 
@@ -265,6 +273,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
     setProgress(0);
     setCurrentStep(0);
     setUserAgeRange(null);
+    setQuizProgress75Fired(false); // Reset on quiz reset
     localStorage.removeItem('lucid_answers');
     localStorage.removeItem('lucid_progress');
     localStorage.removeItem('lucid_age_range');
