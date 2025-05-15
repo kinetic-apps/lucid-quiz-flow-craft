@@ -275,9 +275,6 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       <div className="flex flex-col h-full">
         <motion.div 
           className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
         >
           <h2 className="text-2xl font-dm-sans font-medium text-lucid-dark mb-2">{question.text}</h2>
           <p className="text-sm font-dm-sans text-lucid-gray">{getInstructionText()}</p>
