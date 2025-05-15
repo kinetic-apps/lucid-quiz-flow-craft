@@ -77,7 +77,7 @@ const AgeSelect = ({ onComplete }: AgeSelectProps) => {
           <motion.div
             key={ageGroup.id}
             className={`
-              border rounded-xl p-4 cursor-pointer transition-colors
+              border rounded-xl p-4 cursor-pointer transition-colors flex items-center justify-center
               ${selectedAge === ageGroup.range_text 
                 ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
                 : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
@@ -86,7 +86,7 @@ const AgeSelect = ({ onComplete }: AgeSelectProps) => {
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.08 }}
           >
-            <span className="font-lexend text-lg text-lucid-dark">{ageGroup.range_text}</span>
+            <span className="font-lexend text-lg text-lucid-dark text-center">{ageGroup.range_text}</span>
           </motion.div>
         ))}
       </div>
