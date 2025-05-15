@@ -49,7 +49,7 @@ const GenderSelect = () => {
       )}
       
       {/* Header - Only Logo */}
-      <header className="p-4">
+      <header className="p-6">
         <div className="flex justify-center items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8">
@@ -60,23 +60,20 @@ const GenderSelect = () => {
         </div>
       </header>
 
-      <main className="flex-grow flex flex-col p-4">
+      <main className="flex-grow flex flex-col justify-center items-center p-4">
         <div className="max-w-xl w-full mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-medium font-lexend text-lucid-dark mb-2">
-              A PERSONALIZED WELL-BEING MANAGEMENT PLAN
-            </h1>
+          <div className="text-center mb-10">
             
-            <p className="text-xl font-medium font-lexend text-lucid-dark mb-2">
+            <p className="text-3xl font-medium font-lexend text-lucid-dark mb-4">
               IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN
             </p>
             
-            <p className="text-2xl font-medium font-lexend text-lucid-dark">
+            <p className="text-xl font-medium font-lexend text-lucid-dark mt-4 mb-8">
               3-MINUTE QUIZ
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div 
               className={`flex flex-col border border-lucid-lightGray rounded-2xl overflow-hidden transition-all duration-300 ${selectedGender === 'male' ? 'scale-95 opacity-90' : ''} cursor-pointer`}
               onClick={() => handleQuizStart('male')}
