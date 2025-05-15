@@ -392,7 +392,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
             <div className="mt-auto">
               <motion.button
                 className={`
-                  w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-left
+                  w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-center
                   ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
                 `}
                 onClick={handleSubmitMultiSelect}
@@ -422,7 +422,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.3 }}
-      className="quiz-slide pb-6"
+      className="quiz-slide flex-1 h-full pb-[10px]"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

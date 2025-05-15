@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
+import { ChevronRight } from 'lucide-react';
 
 type CommunitySlideProps = {
   quizId: string;
@@ -30,69 +31,42 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
     }
   };
 
-  // User avatars positioning data for the visualization
-  const avatarPositions = [
-    { top: '25%', left: '20%', size: 'w-10 h-10' }, // A
-    { top: '32%', left: '35%', size: 'w-12 h-12' }, // B
-    { top: '22%', left: '45%', size: 'w-10 h-10' }, // C
-    { top: '35%', left: '28%', size: 'w-12 h-12' }, // D
-    { top: '45%', left: '25%', size: 'w-10 h-10' }, // E
-    { top: '18%', left: '38%', size: 'w-10 h-10' }, // F
-    { top: '38%', left: '55%', size: 'w-10 h-10' }, // G
-    { top: '28%', left: '52%', size: 'w-12 h-12' }  // H
-  ];
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="community-slide flex flex-col h-full bg-lucid-cream"
+      className="community-slide min-h-screen flex flex-col bg-lucid-cream"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex-1 flex flex-col items-center justify-between py-8 px-4">
-        <div className="w-full flex flex-col items-center">
-          {/* Visualization */}
-          <div className="relative w-full h-60 mb-8 bg-blue-50/30 rounded-lg flex items-center justify-center">
-            {/* User Avatars */}
-            {avatarPositions.map((pos, index) => (
-              <div 
-                key={index}
-                className="absolute"
-                style={{ 
-                  top: pos.top, 
-                  left: pos.left,
-                  transform: 'translate(-50%, -50%)'
-                }}
-              >
-                <div 
-                  className={`${pos.size} rounded-full flex items-center justify-center bg-purple-500`}
-                >
-                  <div className="text-white font-bold text-base">
-                    {String.fromCharCode(65 + index)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Text Content */}
-          <h2 className="text-3xl font-bold text-center mb-4 text-lucid-dark">
-            Join over 1,000,000 people
-          </h2>
-          <p className="text-center text-lucid-dark/80 px-6 max-w-sm text-lg font-serif">
-            Become part of a growing worldwide community and achieve your goals with us!
-          </p>
+      <div className="flex-1 p-6 pt-12 flex flex-col items-center">
+        {/* Community Image */}
+        <div className="w-full max-w-md mb-10 flex justify-center">
+          <img 
+            src="/src/assets/figma/image.png" 
+            alt="Community of people" 
+            className="w-full max-w-md"
+          />
         </div>
 
-        {/* Continue Button */}
+        {/* Text Content */}
+        <h2 className="text-3xl font-bold text-center mb-4 text-lucid-dark">
+          Join over 1,000,000 people
+        </h2>
+        <p className="text-center text-lucid-dark/80 px-6 max-w-sm text-lg font-serif">
+          Become part of a growing worldwide community and achieve your goals with us!
+        </p>
+      </div>
+
+      {/* Continue Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10">
         <button
           onClick={goToNextStep}
-          className="w-full max-w-md py-4 px-8 rounded-full bg-[#8a3bf9] text-white font-medium text-lg mt-10"
+          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-medium text-xl"
         >
-          Continue
+          Continue <ChevronRight className="w-4 h-4 ml-1 inline" />
         </button>
       </div>
     </motion.div>

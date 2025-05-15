@@ -1,10 +1,38 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import peopleImage from '../../assets/figma/image.png';
 
 interface ConfirmationSlideProps {
   onContinue: () => void;
 }
+
+// URLs for the downloaded Figma images - adjust paths as necessary
+const figmaImageUrls = {
+  ellipse10: '/assets/figma/ellipse_10.png',
+  ellipse11: '/assets/figma/ellipse_11.png',
+  ellipse12: '/assets/figma/ellipse_12.png',
+  ellipse13: '/assets/figma/ellipse_13.png',
+  ellipse14: '/assets/figma/ellipse_14.png',
+  ellipse15: '/assets/figma/ellipse_15.png',
+  ellipse16: '/assets/figma/ellipse_16.png',
+  ellipse17: '/assets/figma/ellipse_17.png',
+  ellipse18: '/assets/figma/ellipse_18.png',
+  ellipse19: '/assets/figma/ellipse_19.png',
+};
+
+// Coordinates and sizes are illustrative and will need adjustment for an exact match.
+// Based on Figma structure (node 71:1073 and its children)
+// For simplicity, using a subset of images and a more structured layout.
+const peopleGraphic = [
+  { id: 'ellipse10', src: figmaImageUrls.ellipse10, size: 'w-20 h-20', top: '35%', left: '40%', zIndex: 10 }, // Center-ish
+  { id: 'ellipse11', src: figmaImageUrls.ellipse11, size: 'w-14 h-14', top: '15%', left: '25%' },
+  { id: 'ellipse12', src: figmaImageUrls.ellipse12, size: 'w-14 h-14', top: '30%', left: '65%' },
+  { id: 'ellipse13', src: figmaImageUrls.ellipse13, size: 'w-14 h-14', top: '60%', left: '30%' },
+  { id: 'ellipse19', src: figmaImageUrls.ellipse19, size: 'w-12 h-12', top: '5%', left: '50%' },
+  { id: 'ellipse14', src: figmaImageUrls.ellipse14, size: 'w-12 h-12', top: '55%', left: '60%' },
+  { id: 'ellipse15', src: figmaImageUrls.ellipse15, size: 'w-12 h-12', top: '20%', left: '5%' },
+];
 
 const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => {
   return (
@@ -15,9 +43,11 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
       transition={{ duration: 0.4 }}
       className="bg-lucid-cream min-h-screen flex flex-col justify-between text-center"
     >
-      <div className="p-6 pt-12 flex-1 max-w-sm mx-auto">
+      <div className="p-6 pt-12 flex-1 max-w-md mx-auto flex flex-col items-center">
+        {/* Logo and back button would go here in a real implementation */}
+        
         <motion.h2 
-          className="text-3xl font-semibold text-lucid-pink whitespace-nowrap"
+          className="text-[32px] font-medium text-[#191825] whitespace-nowrap font-dm-sans mt-16" 
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -25,7 +55,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
           Over 1,000,000 people
         </motion.h2>
         <motion.p 
-          className="text-lucid-dark font-bold mb-8"
+          className="text-[20px] font-medium text-[#191825] mb-10 font-dm-sans"
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
@@ -34,66 +64,20 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
         </motion.p>
         
         <motion.div 
-          className="relative my-12"
+          className="w-full flex justify-center items-center"
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          {/* Circle visualization with profile images */}
-          <div className="w-full h-64 relative">
-            {/* Center circle with main profile */}
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="w-24 h-24 rounded-full bg-purple-100 border-4 border-white overflow-hidden flex items-center justify-center">
-                <img src="/male-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            
-            {/* Inner circle profiles */}
-            <div className="absolute left-1/2 top-1/3 transform -translate-x-1/2 -translate-y-1/2 rotate-45">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 -ml-32 border-2 border-white overflow-hidden">
-                <img src="/male-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            <div className="absolute right-1/4 top-1/2 transform -translate-y-1/2">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-white overflow-hidden">
-                <img src="/female-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            <div className="absolute left-1/3 bottom-0 transform -translate-x-1/2">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-white overflow-hidden">
-                <img src="/male-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            
-            {/* Outer circle profiles */}
-            <div className="absolute left-1/4 top-0">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 border-2 border-white overflow-hidden">
-                <img src="/female-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            <div className="absolute right-1/6 top-1/4">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 border-2 border-white overflow-hidden">
-                <img src="/male-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            <div className="absolute left-0 top-1/2">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 border-2 border-white overflow-hidden">
-                <img src="/female-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            <div className="absolute right-0 bottom-1/4">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 border-2 border-white overflow-hidden">
-                <img src="/male-placeholder.svg" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-
-            {/* Dashed circles */}
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-2 border-dashed border-amber-200 opacity-70"></div>
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border-2 border-dashed border-amber-200 opacity-50"></div>
-          </div>
+          <img 
+            src={peopleImage}
+            alt="People Circles" 
+            className="max-w-full h-auto" 
+            style={{ background: 'transparent' }}
+          />
         </motion.div>
-        
       </div>
+      
       <motion.div 
         className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
         initial={{ opacity: 0, x: 100 }}
