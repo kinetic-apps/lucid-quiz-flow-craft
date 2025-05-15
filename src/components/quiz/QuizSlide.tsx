@@ -305,8 +305,8 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
         <motion.div 
           className="mb-4"
         >
-          <h2 className="text-2xl font-dm-sans font-medium text-lucid-dark mb-2">{question.text}</h2>
-          <p className="text-sm font-dm-sans text-lucid-gray">{getInstructionText()}</p>
+          <h2 className="text-2xl font-medium text-lucid-dark mb-2">{question.text}</h2>
+          <p className="text-sm text-lucid-gray">{getInstructionText()}</p>
         </motion.div>
 
         {question.type === 'radio' && (

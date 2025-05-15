@@ -54,7 +54,7 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
         <h2 className="text-2xl font-bold text-center mb-3 text-lucid-dark">
           Join over 1,000,000 people
         </h2>
-        <p className="text-center text-lucid-dark/80 px-4 max-w-sm text-base font-serif">
+        <p className="text-center text-lucid-dark/80 px-4 max-w-sm text-base">
           Become part of a growing worldwide community and achieve your goals with us!
         </p>
       </div>

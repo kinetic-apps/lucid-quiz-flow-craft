@@ -127,7 +127,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <h1 className="text-2xl font-medium font-dm-sans text-lucid-dark mb-6">
+            <h1 className="text-2xl font-medium text-lucid-dark mb-6">
               How would you describe your current mood?
             </h1>
             
@@ -147,7 +147,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
               }}
             >
               <div className="text-4xl mb-2">{emoji}</div>
-              <div className="text-xl font-medium font-dm-sans">{mood}</div>
+              <div className="text-xl font-medium">{mood}</div>
             </motion.div>
             
             {/* Mood slider */}
@@ -228,7 +228,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
         <button
           onClick={handleContinue}
           type="button"
-          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-dm-sans font-semibold text-xl"
+          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-semibold text-xl"
         >
           Continue
         </button>

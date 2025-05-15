@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { updateUserSubscription } from '@/lib/supabase';
@@ -354,7 +354,7 @@ const CheckoutPage = () => {
           <div className="flex mb-2 bg-lucid-cream">
             <div className="flex-1 p-4 border-r border-lucid-lightGray">
               <div className="text-center mb-2">
-                <div className="bg-lucid-cream rounded-full inline-block px-4 py-1 text-lucid-dark font-dm-sans">Now</div>
+                <div className="bg-lucid-cream rounded-full inline-block px-4 py-1 text-lucid-dark">Now</div>
               </div>
               <div className="flex justify-center">
                 <div className="relative w-32 h-32 bg-lucid-cream rounded-full overflow-hidden">
@@ -365,7 +365,7 @@ const CheckoutPage = () => {
                   />
                 </div>
               </div>
-              <div className="mt-6 space-y-6 font-dm-sans">
+              <div className="mt-6 space-y-6">
                 <div>
                   <div className="text-lucid-dark text-base">Energy Level</div>
                   <div className="font-semibold text-lucid-dark">Low</div>
@@ -394,7 +394,7 @@ const CheckoutPage = () => {
 
             <div className="flex-1 p-4">
               <div className="text-center mb-2">
-                <div className="bg-lucid-pink text-white rounded-full inline-block px-4 py-1 font-dm-sans">Goal</div>
+                <div className="bg-lucid-pink text-white rounded-full inline-block px-4 py-1">Goal</div>
               </div>
               <div className="flex justify-center">
                 <div className="relative w-32 h-32 bg-lucid-cream rounded-full overflow-hidden">
@@ -405,7 +405,7 @@ const CheckoutPage = () => {
                   />
                 </div>
               </div>
-              <div className="mt-6 space-y-6 font-dm-sans">
+              <div className="mt-6 space-y-6">
                 <div>
                   <div className="text-lucid-dark text-base">Energy Level</div>
                   <div className="font-semibold text-lucid-dark">High</div>
@@ -435,7 +435,7 @@ const CheckoutPage = () => {
           
           {/* Your personalized plan is ready */}
           <div className="px-6 py-4 text-center bg-white">
-            <h2 className="text-2xl font-semibold text-lucid-dark font-dm-sans">Your personalized plan is ready!</h2>
+            <h2 className="text-2xl font-semibold text-lucid-dark">Your personalized plan is ready!</h2>
             <div className="flex justify-center mt-4 gap-6">
               <div className="flex items-center">
                 <div className="mr-2">

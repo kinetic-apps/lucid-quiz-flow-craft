@@ -53,14 +53,14 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
 
         {/* Text Content */}
         <div className="text-center">
-          <h2 className="text-4xl font-medium font-dm-sans text-lucid-dark mb-4">
+          <h2 className="text-4xl font-medium text-lucid-dark mb-4">
             Did you know?
           </h2>
-          <p className="text-xl font-medium font-dm-sans text-lucid-dark mb-4">
+          <p className="text-xl font-medium text-lucid-dark mb-4">
             Journaling helps improve mental health in 60% of people
           </p>
-          <p className="text-sm font-semibold font-dm-sans text-lucid-gray mb-6">
-            Mental health studies show that lorem ipsum lorem ipsum...
+          <p className="text-sm font-semibold text-lucid-gray mb-6">
+            Mental health studies show that consistent journaling can lead to reduced stress, improved mood, and greater self-awareness.
           </p>
         </div>
       </motion.div>
@@ -75,7 +75,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
         <button
           onClick={onContinue}
           type="button"
-          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-dm-sans font-semibold text-xl"
+          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-semibold text-xl"
         >
           Continue
         </button>

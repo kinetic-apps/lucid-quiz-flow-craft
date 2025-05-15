@@ -60,10 +60,10 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
       >
         {/* Logo and back button would go here in a real implementation */}
         
-        <h2 className="text-[28px] font-medium text-[#191825] whitespace-nowrap font-dm-sans mt-8">
+        <h2 className="text-[28px] font-medium text-[#191825] whitespace-nowrap mt-8">
           Over 1,000,000 people
         </h2>
-        <p className="text-[18px] font-medium text-[#191825] mb-4 font-dm-sans">
+        <p className="text-[18px] font-medium text-[#191825] mb-4">
           have chosen Lucid
         </p>
         
@@ -86,7 +86,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
         <button
           onClick={onContinue}
           type="button"
-          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-dm-sans font-semibold text-lg"
+          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-semibold text-lg"
         >
           Continue
         </button>

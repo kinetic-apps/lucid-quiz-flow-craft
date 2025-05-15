@@ -110,12 +110,12 @@ const MoodSelect: React.FC = () => {
         <main className="flex-grow flex flex-col justify-between p-4 pt-8">
           <div className="max-w-md w-full mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-2xl font-medium font-dm-sans text-lucid-dark mb-6">
+              <h1 className="text-2xl font-medium text-lucid-dark mb-6">
                 How would you describe your current mood?
               </h1>
               <div className="flex flex-col items-center">
                 <div className="text-4xl mb-2">{emoji}</div>
-                <div className="text-xl font-medium font-dm-sans">{mood}</div>
+                <div className="text-xl font-medium">{mood}</div>
               </div>
               {/* Mood slider */}
               <div className="mt-6 relative">
@@ -174,7 +174,7 @@ const MoodSelect: React.FC = () => {
             <button
               onClick={handleContinue}
               type="button"
-              className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-dm-sans font-semibold text-xl mt-8"
+              className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-semibold text-xl mt-8"
             >
               Continue
             </button>

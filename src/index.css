@@ -93,7 +93,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-lexend;
     /* Use height 100% instead of auto to contain content */
     height: 100%;
     /* Touch action manipulation prevents browser handling of pinch-zoom, etc. */
