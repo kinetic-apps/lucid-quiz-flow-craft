@@ -9,19 +9,36 @@ interface ConfirmationSlideProps {
 const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 50 }}
+      initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
+      exit={{ opacity: 0, x: 50 }}
       transition={{ duration: 0.4 }}
       className="flex flex-col items-center justify-center h-full text-center bg-lucid-cream"
     >
       <div className="p-4 max-w-sm mx-auto">
-        <h2 className="text-3xl font-semibold text-lucid-pink whitespace-nowrap">
+        <motion.h2 
+          className="text-3xl font-semibold text-lucid-pink whitespace-nowrap"
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
           Over 1,000,000 people
-        </h2>
-        <p className="text-lucid-dark font-bold mb-8">have chosen Lucid</p>
+        </motion.h2>
+        <motion.p 
+          className="text-lucid-dark font-bold mb-8"
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          have chosen Lucid
+        </motion.p>
         
-        <div className="relative my-12">
+        <motion.div 
+          className="relative my-12"
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           {/* Circle visualization with profile images */}
           <div className="w-full h-64 relative">
             {/* Center circle with main profile */}
@@ -74,14 +91,17 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
             <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-2 border-dashed border-amber-200 opacity-70"></div>
             <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border-2 border-dashed border-amber-200 opacity-50"></div>
           </div>
-        </div>
+        </motion.div>
         
-        <button 
+        <motion.button 
           onClick={onContinue}
           className="w-full py-4 px-8 rounded-full bg-lucid-dark text-white font-dm-sans font-semibold text-lg"
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
         >
           Continue
-        </button>
+        </motion.button>
       </div>
     </motion.div>
   );

@@ -112,31 +112,54 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, x: -100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
       transition={{ duration: 0.3 }}
       className="mood-slide-container flex flex-col h-full bg-lucid-cream"
     >
       {/* Main Content */}
       <div className="flex-grow flex flex-col justify-between p-4 pt-8">
         <div className="max-w-md w-full mx-auto">
-          <div className="text-center mb-12">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <h1 className="text-2xl font-medium font-dm-sans text-lucid-dark mb-6">
               How would you describe your current mood?
             </h1>
             
             <motion.div 
               className="flex flex-col items-center"
-              animate={{ scale: isDragging ? 1.05 : 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ 
+                opacity: 1, 
+                x: 0, 
+                scale: isDragging ? 1.05 : 1 
+              }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300,
+                damping: 15,
+                delay: 0.1
+              }}
             >
               <div className="text-4xl mb-2">{emoji}</div>
               <div className="text-xl font-medium font-dm-sans">{mood}</div>
             </motion.div>
             
             {/* Mood slider */}
-            <div className="mt-6 relative">
+            <motion.div 
+              className="mt-6 relative"
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ 
+                duration: 0.4,
+                delay: 0.2
+              }}
+            >
               <div 
                 ref={sliderRef}
                 className="h-12 rounded-full overflow-hidden flex cursor-pointer"
@@ -183,19 +206,27 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
                   className="w-full h-full"
                 />
               </motion.div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
         
         {/* Continue Button */}
-        <div className="max-w-md w-full mx-auto mt-8">
+        <motion.div 
+          className="max-w-md w-full mx-auto mt-8"
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ 
+            duration: 0.4,
+            delay: 0.3
+          }}
+        >
           <button
             onClick={handleContinue}
             className="w-full py-4 px-8 rounded-full bg-lucid-dark text-white font-dm-sans font-semibold text-lg"
           >
             Continue
           </button>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );

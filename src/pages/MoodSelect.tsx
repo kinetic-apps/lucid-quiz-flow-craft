@@ -13,7 +13,7 @@ const MoodSelect: React.FC = () => {
   // Define the moods and emojis for different positions
   const moods = [
     { position: 0, mood: 'sad', emoji: '😔' },
-    { position: 25, mood: 'meh-', emoji: '🙁' },
+    { position: 25, mood: 'not good', emoji: '🙁' },
     { position: 50, mood: 'meh', emoji: '😐' },
     { position: 75, mood: 'good', emoji: '🙂' },
     { position: 100, mood: 'great', emoji: '😀' }
