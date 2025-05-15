@@ -39,9 +39,49 @@ const ProgressBar = () => {
   }, [userAgeRange, currentStep, allSteps]);
   
   const handleBackNavigation = () => {
+    // Check for special slides that need custom navigation
+    const isOnDidYouKnowSlide = localStorage.getItem('showing_did_you_know') === 'true';
+    const quizStarted = localStorage.getItem('quiz_started') === 'true';
+    const hasAgeRange = userAgeRange !== null;
+    const hasGender = localStorage.getItem('lucid_gender') !== null;
+    
+    // On age selection screen (has gender but no age range yet)
+    if (hasGender && !hasAgeRange && !isOnDidYouKnowSlide && !quizStarted) {
+      // Create and dispatch custom event to navigate back to gender selection
+      const event = new CustomEvent('quiz-back-navigation', { detail: { screen: 'age-select' } });
+      window.dispatchEvent(event);
+      return;
+    }
+    
+    // Create and dispatch custom events for special navigation cases
+    if (isOnDidYouKnowSlide) {
+      // On "Did You Know" slide - go back to age selection
+      const event = new CustomEvent('quiz-back-navigation', { detail: { screen: 'did-you-know' } });
+      window.dispatchEvent(event);
+      return;
+    }
+    
+    // If we're on the confirmation slide (has age range but quiz not started)
+    if (hasAgeRange && !quizStarted && !isOnDidYouKnowSlide) {
+      // On confirmation slide - go back to "Did You Know"
+      const event = new CustomEvent('quiz-back-navigation', { detail: { screen: 'confirmation' } });
+      window.dispatchEvent(event);
+      return;
+    }
+    
+    // If we're on the first question of the actual quiz
+    if (quizStarted && currentStep === 0) {
+      // On first question - go back to confirmation slide
+      const event = new CustomEvent('quiz-back-navigation', { detail: { screen: 'first-question' } });
+      window.dispatchEvent(event);
+      return;
+    }
+    
+    // For regular quiz questions after the first one
     if (currentStep > 0) {
       goToPrevStep();
     } else {
+      // Fallback - navigate to home
       navigate('/');
     }
   };

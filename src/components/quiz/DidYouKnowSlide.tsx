@@ -2,10 +2,9 @@ import React, { useEffect } from 'react';
 
 type DidYouKnowSlideProps = {
   onContinue: () => void;
-  onBack: () => void;
 };
 
-const DidYouKnowSlide = ({ onContinue, onBack }: DidYouKnowSlideProps) => {
+const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
   // Set localStorage flag on mount and clear on unmount
   useEffect(() => {
     // Set flag to hide progress bar

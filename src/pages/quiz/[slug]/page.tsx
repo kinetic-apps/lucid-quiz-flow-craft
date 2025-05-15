@@ -105,6 +105,56 @@ export default function QuizPage() {
   // Prevent scrolling on the quiz page as all content fits within the viewport
   useMobileScrollLock({ allowScroll: false });
 
+  // Listen for back navigation events from the ProgressBar component
+  useEffect(() => {
+    const handleBackNavigation = (event: CustomEvent) => {
+      const screen = event.detail?.screen;
+      
+      switch (screen) {
+        case 'age-select':
+          // Navigate from age selection back to gender selection
+          navigate('/');
+          break;
+          
+        case 'did-you-know':
+          // Navigate from Did You Know slide back to Age Select
+          setShowDidYouKnow(false);
+          setShowAgeSelect(true);
+          localStorage.removeItem('showing_did_you_know');
+          break;
+          
+        case 'confirmation':
+          // Navigate from Confirmation slide back to Did You Know
+          setShowConfirmation(false);
+          setShowDidYouKnow(true);
+          localStorage.setItem('showing_did_you_know', 'true');
+          break;
+          
+        case 'first-question':
+          // Navigate from first question back to confirmation
+          setShowConfirmation(true);
+          localStorage.removeItem('quiz_started');
+          break;
+          
+        default:
+          // Default fallback
+          if (currentStep > 0) {
+            goToPrevStep();
+          } else {
+            navigate('/');
+          }
+      }
+    };
+    
+    // Add event listener for back navigation
+    window.addEventListener('quiz-back-navigation', handleBackNavigation as EventListener);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('quiz-back-navigation', handleBackNavigation as EventListener);
+    };
+  }, [currentStep, goToPrevStep, navigate, setShowAgeSelect, setShowConfirmation, setShowDidYouKnow]);
+
   // Fetch quiz data
   useEffect(() => {
     async function fetchQuiz() {
@@ -347,16 +397,6 @@ export default function QuizPage() {
     localStorage.removeItem('showing_did_you_know');
   };
   
-  // Handle back button from "Did You Know" slide
-  const handleDidYouKnowBack = () => {
-    setShowDidYouKnow(false);
-    setShowAgeSelect(true);
-    
-    // Remove flags
-    localStorage.removeItem('showing_did_you_know');
-    localStorage.removeItem('quiz_started');
-  };
-
   // Handle mood selection
   const handleMoodSelection = (mood: string) => {
     localStorage.setItem('lucid_mood', mood);
@@ -391,7 +431,7 @@ export default function QuizPage() {
   }
 
   if (showDidYouKnow) {
-    return <DidYouKnowSlide onContinue={handleDidYouKnowContinue} onBack={handleDidYouKnowBack} />;
+    return <DidYouKnowSlide onContinue={handleDidYouKnowContinue} />;
   }
 
   if (showConfirmation) {
