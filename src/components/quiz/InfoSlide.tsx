@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 type InfoSlideProps = {
   title: string;
@@ -43,54 +43,46 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="info-slide px-4 py-10 text-center bg-lucid-cream h-full"
+      className="info-slide bg-lucid-cream min-h-screen flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-lucid-dark mb-3">
-          Lucid was developed using evidence-based psychological practices
-        </h2>
-        <p className="text-lucid-dark mb-8">
-          Your plan is based on decades of research
-        </p>
+      <div className="flex-1 p-6 pt-12 flex flex-col items-center">
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-bold text-lucid-dark mb-3">
+            Lucid was developed using evidence-based psychological practices
+          </h2>
+          <p className="text-lucid-dark mb-8">
+            Your plan is based on decades of research
+          </p>
+        </div>
         
-        <div className="flex flex-col items-center space-y-4 mt-8">
-          <div className="university-logo rounded-lg p-4 w-64">
-            <div className="text-center">
-              <div className="font-serif text-xl font-bold">HARVARD</div>
-              <div className="text-sm">UNIVERSITY</div>
-            </div>
+        <div className="flex flex-col items-center space-y-6 mt-8 w-full max-w-md">
+          <div className="university-logo w-full rounded-lg p-4 flex justify-center">
+            <img 
+              src="/src/assets/figma/harvard.png" 
+              alt="Harvard University" 
+              className="h-auto max-w-full"
+            />
           </div>
           
-          <div className="university-logo rounded-lg p-4 w-64">
-            <div className="text-center">
-              <div className="text-sm">UNIVERSITY OF</div>
-              <div className="font-serif text-xl font-bold">OXFORD</div>
-            </div>
-          </div>
-          
-          <div className="university-logo rounded-lg p-4 w-64">
-            <div className="text-center">
-              <div className="text-sm">UNIVERSITY OF</div>
-              <div className="font-serif text-xl font-bold">CAMBRIDGE</div>
-            </div>
+          <div className="university-logo w-full rounded-lg p-4 flex justify-center">
+            <img 
+              src="/src/assets/figma/cambridge.png" 
+              alt="University of Cambridge" 
+              className="h-auto max-w-full"
+            />
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between mt-10 sticky bottom-0 pt-4 pb-4 bg-lucid-cream">
-        <button
-          onClick={goToPrevStep}
-          className="px-4 py-2 rounded-lg text-lucid-dark flex items-center font-medium"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" /> Back
-        </button>
+      {/* Continue Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10">
         <button
           onClick={goToNextStep}
-          className="px-4 py-2 rounded-lg bg-lucid-dark text-white flex items-center font-medium"
+          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-medium text-xl"
         >
-          Continue <ChevronRight className="w-4 h-4 ml-1" />
+          Continue <ChevronRight className="w-4 h-4 ml-1 inline" />
         </button>
       </div>
     </motion.div>

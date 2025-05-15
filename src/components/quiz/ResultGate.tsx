@@ -36,6 +36,8 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [score, setScore] = useState<number | null>(null);
+  const [skipTransitionScreens, setSkipTransitionScreens] = useState(true);
+  const [shouldShowFinalResult, setShouldShowFinalResult] = useState(false);
 
   const featureFlagKey = 'require-email-for-quiz-result';
   const [showEmailForm, setShowEmailForm] = useState(() => {
@@ -102,7 +104,14 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       setResult(response.result);
       setScore(response.score);
       setShowEmailForm(false); 
-      setShowWellbeingChart(true);
+      
+      if (skipTransitionScreens) {
+        setShowWellbeingChart(true);
+      } else {
+        setTimeout(() => {
+          setShowWellbeingChart(true);
+        }, 500);
+      }
       
       track('quiz_complete', {
         visitor_id: visitorId,
@@ -183,6 +192,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       result_id: result?.id
     });
     
+    setShouldShowFinalResult(true);
     navigate('/checkout');
   };
 
@@ -251,7 +261,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
             </div>
           </div>
         </motion.div>
-      ) : isSubmitting ? (
+      ) : isSubmitting && !skipTransitionScreens ? (
         <motion.div 
           key="loading-auto-submit"
           className="result-gate flex flex-col items-center justify-center p-8 text-center"
@@ -282,7 +292,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
         >
           <WellbeingChart onContinue={handleContinue} />
         </motion.div>
-      ) : (
+      ) : shouldShowFinalResult ? (
         <motion.div
           key="result-content"
           initial={{ opacity: 0, x: 50 }}
@@ -323,6 +333,17 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
               </div>
             </div>
           </div>
+        </motion.div>
+      ) : (
+        <motion.div 
+          key="default-wellbeing-chart"
+          className="result-gate"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 }}
+          transition={{ duration: 0.4 }}
+        >
+          <WellbeingChart onContinue={handleContinue} />
         </motion.div>
       )}
     </AnimatePresence>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
 
 interface WellbeingChartProps {
   onContinue?: () => void;
@@ -70,7 +71,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, y: -50 }}
       transition={{ duration: 0.7 }}
-      className="flex flex-col items-center justify-center w-full max-w-md mx-auto px-4 py-6"
+      className="flex flex-col items-center justify-center w-full max-w-md mx-auto px-4 py-6 pb-24"
     >
       <h2 className="text-2xl font-semibold text-center mb-2 text-[#BC5867]">Your Well-being level</h2>
       
@@ -224,17 +225,21 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
         <p className="text-lg">is ready!</p>
       </div>
       
-      <motion.button
-        className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 rounded-full bg-[#BC5867] hover:bg-[#a34857] text-white font-medium shadow-md"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      {/* Fixed continue button at bottom */}
+      <motion.div
+        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.5, duration: 0.5 }}
-        onClick={handleContinue}
       >
-        Continue
-      </motion.button>
+        <button
+          onClick={handleContinue}
+          className="w-full bg-lucid-dark text-white py-4 rounded-full font-medium text-lg flex items-center justify-center"
+        >
+          Continue
+          <ChevronRight className="w-4 h-4 ml-1 inline" />
+        </button>
+      </motion.div>
     </motion.div>
   );
 };

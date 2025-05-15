@@ -68,7 +68,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
 
         {/* Expert Card */}
         <div className="w-full max-w-md">
-          <div className="bg-purple-100 py-1 px-4 text-xs text-center rounded-t-lg font-medium">
+          <div className="py-1 px-4 text-xs text-center rounded-t-lg font-medium">
             Content reviewed by an expert
           </div>
           <div className="bg-lucid-cream border-x border-b border-purple-100 rounded-b-lg p-3 flex items-center">

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, useAnimation, Variants } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronRight } from 'lucide-react';
 import { usePostHog } from '@/context/PostHogContext';
 
 type SummarySlideProps = {
@@ -168,16 +168,16 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
       className="summary-slide bg-lucid-cream h-full flex flex-col"
     >
       <motion.div 
-        className="flex flex-col p-4 h-full"
+        className="flex flex-col p-4 h-full pb-24"
         variants={containerVariants}
         initial="hidden"
         animate={animation}
       >
         <motion.h1 
-          className="text-xl font-bold mb-3 text-[#BC5867]"
+          className="text-xl font-bold mb-3 text-lucid-dark"
           variants={itemVariants}
         >
-          Summary of your Well-being Profile
+          Summary of your <span className="text-[#BC5867]">Well-being Profile</span>
         </motion.h1>
         
         {/* Negative effects level */}
@@ -185,7 +185,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
           className="flex justify-between items-center mb-2"
           variants={itemVariants}
         >
-          <div className="text-[#BC5867] font-medium">Negative effects level</div>
+          <div className="text-lucid-dark font-medium">Negative effects level</div>
           <motion.div 
             className={`text-white text-xs px-3 py-1 rounded-full ${
               levelInfo.level === "High" ? "bg-red-400" :
@@ -223,7 +223,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
           
           {/* Level indicator */}
           <motion.div 
-            className="absolute bottom-2 right-2 bg-[#BC5867] text-white text-xs px-3 py-1 rounded-full shadow-sm"
+            className="absolute bottom-2 right-2 bg-lucid-dark text-white text-xs px-3 py-1 rounded-full shadow-sm"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.2, duration: 0.3 }}
@@ -239,7 +239,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
         >
           <div className="relative h-2 w-full rounded-full overflow-hidden">
             <motion.div 
-              className="h-full w-full bg-gradient-to-r from-[#BC5867] via-yellow-300 to-red-400"
+              className="h-full w-full bg-gradient-to-r from-blue-500 via-yellow-300 to-red-400"
               variants={sliderVariants}
             />
             <motion.div 
@@ -258,7 +258,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             />
           </div>
           <motion.div 
-            className="flex justify-between mt-1 text-xs text-[#BC5867]/70"
+            className="flex justify-between mt-1 text-xs text-lucid-dark/70"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.1, duration: 0.3 }}
@@ -285,7 +285,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             </motion.div>
             <div>
               <div className="font-bold text-[#BC5867] text-sm">{levelInfo.levelText}</div>
-              <p className="text-xs text-[#BC5867]/80">
+              <p className="text-xs text-lucid-dark/80">
                 High levels of negative effects can lead to constant procrastination, increased worrying, reduced energy and well-being
               </p>
             </div>
@@ -303,9 +303,9 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
               <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">★</span>
               </div>
-              <span className="text-xs text-[#BC5867]/70">Main difficulty</span>
+              <span className="text-xs text-lucid-dark/70">Main difficulty</span>
             </div>
-            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.mainDifficulty}</div>
+            <div className="font-semibold text-sm text-lucid-dark">{levelInfo.mainDifficulty}</div>
           </motion.div>
           
           <motion.div 
@@ -317,9 +317,9 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
               <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">📅</span>
               </div>
-              <span className="text-xs text-[#BC5867]/70">Challenging period</span>
+              <span className="text-xs text-lucid-dark/70">Challenging period</span>
             </div>
-            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.challengingPeriod}</div>
+            <div className="font-semibold text-sm text-lucid-dark">{levelInfo.challengingPeriod}</div>
           </motion.div>
           
           <motion.div 
@@ -331,9 +331,9 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
               <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">⚡</span>
               </div>
-              <span className="text-xs text-[#BC5867]/70">Trigger</span>
+              <span className="text-xs text-lucid-dark/70">Trigger</span>
             </div>
-            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.trigger}</div>
+            <div className="font-semibold text-sm text-lucid-dark">{levelInfo.trigger}</div>
           </motion.div>
           
           <motion.div 
@@ -345,25 +345,27 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
               <div className="w-5 h-5 rounded-full bg-[#BC5867] flex items-center justify-center mr-1">
                 <span className="text-white text-xs">🔋</span>
               </div>
-              <span className="text-xs text-[#BC5867]/70">Energy level</span>
+              <span className="text-xs text-lucid-dark/70">Energy level</span>
             </div>
-            <div className="font-semibold text-sm text-[#BC5867]">{levelInfo.energyLevel}</div>
+            <div className="font-semibold text-sm text-lucid-dark">{levelInfo.energyLevel}</div>
           </motion.div>
         </div>
-        
-        {/* Continue Button */}
-        <motion.div
-          variants={itemVariants}
-          className="mt-auto"
+      </motion.div>
+      
+      {/* Fixed continue button at bottom */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.8, duration: 0.4 }}
+        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+      >
+        <button
+          onClick={handleNextStep}
+          className="w-full bg-lucid-dark text-white py-4 rounded-full font-medium text-lg flex items-center justify-center"
         >
-          <button
-            onClick={handleNextStep}
-            className="w-full py-4 px-8 rounded-full text-white font-medium text-lg"
-            style={{ backgroundColor: '#BC5867' }}
-          >
-            Continue
-          </button>
-        </motion.div>
+          Continue
+          <ChevronRight className="w-4 h-4 ml-1 inline" />
+        </button>
       </motion.div>
     </motion.div>
   );

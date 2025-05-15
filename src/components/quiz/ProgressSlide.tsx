@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence, Variants } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
+import { ChevronRight } from 'lucide-react';
 
 type ProgressSlideProps = {
   quizId: string;
@@ -341,7 +342,7 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
       animate="visible"
       exit="exit"
       variants={containerVariants}
-      className="p-6 h-full flex flex-col"
+      className="p-6 h-full flex flex-col pb-24 bg-lucid-cream"
     >
       <motion.div variants={titleVariants} className="text-center mb-10">
         <h1 className="text-xl font-bold text-[#BC5867]">Creating your</h1>
@@ -368,14 +369,15 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
           variants={buttonVariants}
           initial="hidden"
           animate="visible"
-          className="mt-6"
+          className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
         >
-          <Button
+          <button
             onClick={goToNextStep}
-            className="w-full bg-[#BC5867] hover:bg-[#a34857] text-white py-3 rounded-full"
+            className="w-full bg-lucid-dark text-white py-4 rounded-full font-medium text-lg flex items-center justify-center"
           >
             Continue
-          </Button>
+            <ChevronRight className="w-4 h-4 ml-1 inline" />
+          </button>
         </motion.div>
       )}
     </motion.div>

@@ -15,6 +15,7 @@ import SummarySlide from '@/components/quiz/SummarySlide';
 import PlanSlide from '@/components/quiz/PlanSlide';
 import ProgressSlide from '@/components/quiz/ProgressSlide';
 import TipSlide from '@/components/quiz/TipSlide';
+import WellbeingChart from '@/components/quiz/WellbeingChart';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -84,8 +85,19 @@ type StepData = {
 
 // Using our own Step type here to avoid conflicts with QuizStep
 type Step = {
-  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'mood' | 'summary' | 'plan' | 'progress';
+  type: 'question' | 'result' | 'info' | 'expert-review' | 'community' | 'mood' | 'summary' | 'plan' | 'progress' | 'wellbeing-chart';
   data: StepData;
+};
+
+// Create a direct WellbeingChartSlide component that bypasses ResultGate
+const WellbeingChartSlide = ({ quizId }: { quizId: string }) => {
+  const navigate = useNavigate();
+  
+  const handleContinue = () => {
+    navigate('/checkout');
+  };
+  
+  return <WellbeingChart onContinue={handleContinue} />;
 };
 
 export default function QuizPage() {
@@ -274,10 +286,10 @@ export default function QuizPage() {
       }
     });
 
-    // Add result as the final step
+    // Replace the result step with a direct wellbeing chart step to avoid ResultGate
     steps.push({ 
-      type: 'result', 
-      data: { quiz_id: quiz.id } 
+      type: 'wellbeing-chart', 
+      data: { quizId: quiz.id } 
     });
     
     setLocalSteps(steps);
@@ -515,6 +527,11 @@ export default function QuizPage() {
           )}
           {currentStepData?.type === 'progress' && 'quizId' in currentStepData.data && (
             <ProgressSlide 
+              quizId={currentStepData.data.quizId}
+            />
+          )}
+          {currentStepData?.type === 'wellbeing-chart' && 'quizId' in currentStepData.data && (
+            <WellbeingChartSlide 
               quizId={currentStepData.data.quizId}
             />
           )}

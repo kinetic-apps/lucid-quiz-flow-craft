@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, useAnimation, Variants } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
+import { ChevronRight } from 'lucide-react';
 
 type PlanSlideProps = {
   quizId: string;
@@ -94,10 +95,10 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="plan-slide h-full flex flex-col"
+      className="plan-slide h-full flex flex-col bg-lucid-cream"
     >
       <motion.div
-        className="flex flex-col p-4 h-full"
+        className="flex flex-col p-4 h-full pb-24"
         variants={containerVariants}
         initial="hidden"
         animate={controls}
@@ -113,7 +114,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         {/* Expected improvement text */}
         <motion.p
           variants={itemVariants}
-          className="text-sm text-center mb-10"
+          className="text-sm text-center mb-10 text-lucid-dark"
         >
           Based on your answers, we expect you to improve your well-being by
           <br />
@@ -194,19 +195,22 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         >
           The chart is a non-customized illustration and results may vary
         </motion.p>
-
-        {/* Continue Button */}
-        <motion.div
-          variants={itemVariants}
-          className="mt-auto"
+      </motion.div>
+      
+      {/* Fixed continue button at bottom */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.2, duration: 0.4 }}
+        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+      >
+        <button
+          onClick={goToNextStep}
+          className="w-full bg-lucid-dark text-white py-4 rounded-full font-medium text-lg flex items-center justify-center"
         >
-          <Button
-            onClick={goToNextStep}
-            className="w-full bg-[#BC5867] hover:bg-[#a34857] text-white py-2 rounded-full"
-          >
-            Continue
-          </Button>
-        </motion.div>
+          Continue
+          <ChevronRight className="w-4 h-4 ml-1 inline" />
+        </button>
       </motion.div>
     </motion.div>
   );
