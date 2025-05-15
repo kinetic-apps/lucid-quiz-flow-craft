@@ -60,7 +60,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
         {/* Brain Image with Labels */}
         <div className="relative w-full max-w-md mb-8">
           <img 
-            src="/src/assets/figma/brain-image.png" 
+            src="/assets/brain-image.png" 
             alt="Brain diagram showing thoughts, feelings, and behavior" 
             className="w-full"
           />

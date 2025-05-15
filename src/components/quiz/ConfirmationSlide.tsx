@@ -1,24 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import peopleImage from '../../assets/figma/image.png';
 
 interface ConfirmationSlideProps {
   onContinue: () => void;
 }
 
-// URLs for the downloaded Figma images - adjust paths as necessary
+// URLs for the public folder images - updated paths
 const figmaImageUrls = {
-  ellipse10: '/assets/figma/ellipse_10.png',
-  ellipse11: '/assets/figma/ellipse_11.png',
-  ellipse12: '/assets/figma/ellipse_12.png',
-  ellipse13: '/assets/figma/ellipse_13.png',
-  ellipse14: '/assets/figma/ellipse_14.png',
-  ellipse15: '/assets/figma/ellipse_15.png',
-  ellipse16: '/assets/figma/ellipse_16.png',
-  ellipse17: '/assets/figma/ellipse_17.png',
-  ellipse18: '/assets/figma/ellipse_18.png',
-  ellipse19: '/assets/figma/ellipse_19.png',
+  ellipse10: '/assets/figma/male-vector-1.svg',
+  ellipse11: '/assets/figma/male-vector-2.svg',
+  ellipse12: '/assets/figma/male-vector-3.svg',
+  ellipse13: '/assets/figma/male-vector-4.svg',
+  ellipse14: '/assets/figma/male-vector-5.svg',
+  ellipse15: '/assets/figma/female-vector-1.svg',
+  ellipse16: '/assets/figma/female-vector-2.svg',
+  ellipse17: '/assets/figma/female-vector-3.svg',
+  ellipse18: '/assets/figma/female-vector-4.svg',
+  ellipse19: '/assets/figma/female-vector-5.svg',
 };
 
 // Coordinates and sizes are illustrative and will need adjustment for an exact match.
@@ -70,7 +69,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <img 
-            src={peopleImage}
+            src="/assets/image.png"
             alt="People Circles" 
             className="max-w-full h-auto" 
             style={{ background: 'transparent' }}

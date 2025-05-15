@@ -45,7 +45,7 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
         {/* Community Image */}
         <div className="w-full max-w-md mb-10 flex justify-center">
           <img 
-            src="/src/assets/figma/image.png" 
+            src="/assets/image.png" 
             alt="Community of people" 
             className="w-full max-w-md"
           />

@@ -60,7 +60,7 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
         <div className="flex flex-col items-center space-y-6 mt-8 w-full max-w-md">
           <div className="university-logo w-full rounded-lg p-4 flex justify-center">
             <img 
-              src="/src/assets/figma/harvard.png" 
+              src="/assets/harvard.png" 
               alt="Harvard University" 
               className="h-auto max-w-full"
             />
@@ -68,7 +68,7 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
           
           <div className="university-logo w-full rounded-lg p-4 flex justify-center">
             <img 
-              src="/src/assets/figma/cambridge.png" 
+              src="/assets/cambridge.png" 
               alt="University of Cambridge" 
               className="h-auto max-w-full"
             />
