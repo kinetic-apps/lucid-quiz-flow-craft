@@ -41,42 +41,42 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="expert-review-slide bg-lucid-cream min-h-screen flex flex-col relative"
+      className="expert-review-slide bg-lucid-cream h-screen flex flex-col relative"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Content */}
-      <div className="flex-1 p-4 pt-8 flex flex-col items-center pb-24 overflow-y-auto">
+      <div className="flex-1 p-3 pt-6 flex flex-col items-center overflow-y-auto pb-20">
         {/* Title and Description */}
-        <div className="text-center mb-4">
-          <h2 className="text-xl font-bold text-center mb-1 text-lucid-dark">
+        <div className="text-center mb-3">
+          <h2 className="text-lg font-bold text-center mb-1 text-lucid-dark">
             Your plan will be reviewed by <span className="text-[#BC5867]">an expert</span>
           </h2>
-          <p className="text-center text-lucid-dark/80 italic mb-4 text-sm px-4 font-serif">
+          <p className="text-center text-lucid-dark/80 italic mb-3 text-xs px-2 font-serif">
             "Lucid carefully uses a proven approach to provide personalized guidance and resources that support emotional resilience."
           </p>
         </div>
 
         {/* Brain Image with Labels */}
-        <div className="relative w-full max-w-md mb-6">
+        <div className="relative w-full max-w-xs mb-4">
           <img 
             src="/assets/brain-image.png" 
             alt="Brain diagram showing thoughts, feelings, and behavior" 
-            className="w-full"
+            className="w-full max-h-[35vh] object-contain"
           />
         </div>
 
         {/* Expert Card */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-xs mb-2">
           <div className="py-1 px-4 text-xs text-center rounded-t-lg font-medium">
             Content reviewed by an expert
           </div>
-          <div className="bg-lucid-cream border-x border-b border-purple-100 rounded-b-lg p-3 flex items-center">
-            <div className="bg-[#BC5867] rounded-full p-1.5 mr-3">
-              <CheckCircle className="w-4 h-4 text-white" />
+          <div className="bg-lucid-cream border-x border-b border-purple-100 rounded-b-lg p-2 flex items-center">
+            <div className="bg-[#BC5867] rounded-full p-1 mr-2">
+              <CheckCircle className="w-3 h-3 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-lucid-dark">Anieta Dixon</h3>
+              <h3 className="font-bold text-sm text-lucid-dark">Anieta Dixon</h3>
               <p className="text-xs text-lucid-dark/70">Counselling Expert (M.A.), SME</p>
             </div>
           </div>
@@ -84,10 +84,10 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-lucid-cream z-10">
+      <div className="fixed bottom-0 left-0 right-0 p-3 pb-5 bg-lucid-cream z-10">
         <button
           onClick={goToNextStep}
-          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-medium text-lg"
+          className="w-full bg-lucid-dark text-lucid-cream py-2.5 rounded-full font-medium text-base"
         >
           Continue <ChevronRight className="w-4 h-4 ml-1 inline" />
         </button>
