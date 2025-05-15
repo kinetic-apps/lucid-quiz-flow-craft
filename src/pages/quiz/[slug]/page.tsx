@@ -464,7 +464,7 @@ export default function QuizPage() {
 
   return (
     <div 
-      className="quiz-container animate-slide-right h-full p-2 max-w-md mx-auto flex flex-col"
+      className="quiz-container animate-slide-left h-full p-2 max-w-md mx-auto flex flex-col"
       style={{ 
         '--quiz-gradient-from': quiz.gradient_from,
         '--quiz-gradient-to': quiz.gradient_to,
