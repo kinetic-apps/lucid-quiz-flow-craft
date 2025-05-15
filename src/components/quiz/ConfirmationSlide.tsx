@@ -40,13 +40,13 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="bg-lucid-cream min-h-screen flex flex-col justify-between text-center"
+      className="bg-lucid-cream min-h-screen flex flex-col justify-between text-center relative"
     >
-      <div className="p-6 pt-12 flex-1 max-w-md mx-auto flex flex-col items-center">
+      <div className="p-4 pt-8 flex-1 max-w-md mx-auto flex flex-col items-center overflow-y-auto">
         {/* Logo and back button would go here in a real implementation */}
         
         <motion.h2 
-          className="text-[32px] font-medium text-[#191825] whitespace-nowrap font-dm-sans mt-16" 
+          className="text-[28px] font-medium text-[#191825] whitespace-nowrap font-dm-sans mt-8" 
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -54,7 +54,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
           Over 1,000,000 people
         </motion.h2>
         <motion.p 
-          className="text-[20px] font-medium text-[#191825] mb-10 font-dm-sans"
+          className="text-[18px] font-medium text-[#191825] mb-4 font-dm-sans"
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
@@ -63,7 +63,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
         </motion.p>
         
         <motion.div 
-          className="w-full flex justify-center items-center"
+          className="w-full flex justify-center items-center mb-20"
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -71,14 +71,14 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
           <img 
             src="/assets/image.png"
             alt="People Circles" 
-            className="max-w-full h-auto" 
+            className="w-4/5 max-h-[45vh] object-contain" 
             style={{ background: 'transparent' }}
           />
         </motion.div>
       </div>
       
       <motion.div 
-        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+        className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-lucid-cream z-10"
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ 
@@ -89,7 +89,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
         <button
           onClick={onContinue}
           type="button"
-          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-dm-sans font-semibold text-xl"
+          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-dm-sans font-semibold text-lg"
         >
           Continue
         </button>

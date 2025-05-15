@@ -41,24 +41,24 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="expert-review-slide bg-lucid-cream min-h-screen flex flex-col"
+      className="expert-review-slide bg-lucid-cream min-h-screen flex flex-col relative"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Content */}
-      <div className="flex-1 p-6 pt-12 flex flex-col items-center">
+      <div className="flex-1 p-4 pt-8 flex flex-col items-center pb-24 overflow-y-auto">
         {/* Title and Description */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-center mb-1 text-lucid-dark">
+        <div className="text-center mb-4">
+          <h2 className="text-xl font-bold text-center mb-1 text-lucid-dark">
             Your plan will be reviewed by <span className="text-[#BC5867]">an expert</span>
           </h2>
-          <p className="text-center text-lucid-dark/80 italic mb-6 text-sm px-6 font-serif">
+          <p className="text-center text-lucid-dark/80 italic mb-4 text-sm px-4 font-serif">
             "Lucid carefully uses a proven approach to provide personalized guidance and resources that support emotional resilience."
           </p>
         </div>
 
         {/* Brain Image with Labels */}
-        <div className="relative w-full max-w-md mb-8">
+        <div className="relative w-full max-w-md mb-6">
           <img 
             src="/assets/brain-image.png" 
             alt="Brain diagram showing thoughts, feelings, and behavior" 
@@ -84,10 +84,10 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10">
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-lucid-cream z-10">
         <button
           onClick={goToNextStep}
-          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-medium text-xl"
+          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-medium text-lg"
         >
           Continue <ChevronRight className="w-4 h-4 ml-1 inline" />
         </button>
