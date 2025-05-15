@@ -4,6 +4,7 @@ import { useQuiz } from '@/context/QuizContext';
 import { useNavigate } from 'react-router-dom';
 import { ThumbsUp, ThumbsDown, HelpCircle, Battery, Brain, Heart, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { usePostHog } from '@/context/PostHogContext';
+import { createPortal } from 'react-dom';
 
 type QuizSlideProps = {
   question: {
@@ -393,7 +394,12 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
 
         {question.type === 'multiselect' && (
           <>
-            <div className="flex-grow overflow-y-auto mb-4">
+            {/*
+              The list of options gets its own scroll context. We add extra bottom
+              padding equal to (approx.) the button height + spacing so that the
+              last option isn't hidden underneath the fixed Continue button.
+            */}
+            <div className="flex-grow overflow-y-auto pb-32">
               <div className="grid grid-cols-1 gap-3">
                 {(question.optionsData || []).map((option) => (
                   <motion.div
@@ -416,20 +422,23 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                 ))}
               </div>
             </div>
-            
-            <div className="mt-auto">
-              <motion.button
-                className={`
-                  w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-center
-                  ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
-                `}
-                onClick={handleSubmitMultiSelect}
-                disabled={selectedOptions.size === 0}
-                whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
-              >
-                Continue
-              </motion.button>
-            </div>
+            {/* Render Continue button via portal to avoid being affected by parent transforms */}
+            {createPortal(
+              <div className="fixed inset-x-0 bottom-[10px] px-4 z-50">
+                <motion.button
+                  className={`
+                    w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-center
+                    ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
+                  `}
+                  onClick={handleSubmitMultiSelect}
+                  disabled={selectedOptions.size === 0}
+                  whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
+                >
+                  Continue
+                </motion.button>
+              </div>,
+              document.body
+            )}
           </>
         )}
       </div>
