@@ -174,7 +174,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     setTimeout(() => {
       goToNextStep();
       setAnimatingSelection(null);
-    }, 400);
+    }, 200);
   };
 
   const handleToggleOption = (optionId: string) => {
@@ -274,12 +274,12 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     return (
       <div className="flex flex-col h-full">
         <motion.div 
-          className="mb-6"
+          className="mb-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-2xl font-dm-sans font-medium text-lucid-dark mb-4">{question.text}</h2>
+          <h2 className="text-2xl font-dm-sans font-medium text-lucid-dark mb-2">{question.text}</h2>
           <p className="text-sm font-dm-sans text-lucid-gray">{getInstructionText()}</p>
         </motion.div>
 
@@ -368,32 +368,34 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
 
         {question.type === 'multiselect' && (
           <>
-            <div className="grid grid-cols-1 gap-3 mb-6">
-              {(question.optionsData || []).map((option) => (
-                <motion.div
-                  key={option.id}
-                  className={`
-                    border rounded-xl p-4 cursor-pointer transition-colors flex items-center justify-center
-                    ${selectedOptions.has(option.id) 
-                      ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
-                      : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
-                  `}
-                  onClick={() => handleToggleOption(option.id)}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.1 }}
-                >
-                  <div className="mr-3">
-                    {getOptionIcon(option.text)}
-                  </div>
-                  <span className="font-lexend text-lg text-lucid-dark text-center">{option.text}</span>
-                </motion.div>
-              ))}
+            <div className="flex-grow overflow-y-auto mb-4">
+              <div className="grid grid-cols-1 gap-3">
+                {(question.optionsData || []).map((option) => (
+                  <motion.div
+                    key={option.id}
+                    className={`
+                      border rounded-xl p-3 cursor-pointer transition-colors flex items-center justify-center
+                      ${selectedOptions.has(option.id) 
+                        ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
+                        : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
+                    `}
+                    onClick={() => handleToggleOption(option.id)}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: 0.1 }}
+                  >
+                    <div className="mr-2">
+                      {getOptionIcon(option.text)}
+                    </div>
+                    <span className="font-lexend text-md text-lucid-dark text-center">{option.text}</span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
             
             <div className="mt-auto">
               <motion.button
                 className={`
-                  w-full py-3 px-6 rounded-xl text-white text-lg font-medium text-center
+                  w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-center
                   ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
                 `}
                 onClick={handleSubmitMultiSelect}

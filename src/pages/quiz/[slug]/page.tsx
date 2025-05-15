@@ -21,6 +21,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Step as QuizStep } from '@/context/QuizContext';
 import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Define types for better type safety
 type QuestionOption = {
@@ -457,71 +458,74 @@ export default function QuizPage() {
         '--quiz-gradient-to': quiz.gradient_to,
       } as React.CSSProperties}
     >
-      {currentStepData?.type === 'question' && (
-        <QuizSlide 
-          question={'question' in currentStepData.data ? currentStepData.data.question : quizData.questions[0]} 
-          quizId={quiz.id}
-          stepIndex={currentStep}
-        />
-      )}
-      
-      {currentStepData?.type === 'info' && (
-        <InfoSlide 
-          title={'title' in currentStepData.data ? currentStepData.data.title : 'Evidence-Based Approach'}
-          content={'content' in currentStepData.data ? currentStepData.data.content : 'Lucid is developed using evidence-based psychological practices.'}
-          quizId={quiz.id}
-        />
-      )}
-      
-      {currentStepData?.type === 'expert-review' && (
-        <ExpertReviewSlide 
-          quizId={quiz.id}
-        />
-      )}
-      
-      {currentStepData?.type === 'community' && (
-        <CommunitySlide 
-          quizId={quiz.id}
-        />
-      )}
-      
-      {currentStepData?.type === 'mood' && (
-        <MoodSlide 
-          onComplete={handleMoodSelection}
-        />
-      )}
-      
-      {currentStepData?.type === 'summary' && 'score' in currentStepData.data && 'result' in currentStepData.data && (
-        <SummarySlide 
-          quizId={quiz.id}
-          score={currentStepData.data.score}
-          result={currentStepData.data.result}
-        />
-      )}
-      
-      {currentStepData?.type === 'plan' && 'quizId' in currentStepData.data && (
-        <PlanSlide 
-          quizId={currentStepData.data.quizId}
-          predictedMonth={
-            'predictedMonth' in currentStepData.data 
-              ? String(currentStepData.data.predictedMonth) 
-              : "July 2025"
-          }
-        />
-      )}
-      
-      {currentStepData?.type === 'progress' && 'quizId' in currentStepData.data && (
-        <ProgressSlide 
-          quizId={currentStepData.data.quizId}
-        />
-      )}
-      
-      {currentStepData?.type === 'result' && (
-        <ResultGate 
-          quizId={quiz.id}
-          quizTitle={quiz.title}
-        />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="h-full flex flex-col"
+        >
+          {currentStepData?.type === 'question' && (
+            <QuizSlide 
+              question={'question' in currentStepData.data ? currentStepData.data.question : quizData.questions[0]} 
+              quizId={quiz.id}
+              stepIndex={currentStep}
+            />
+          )}
+          {currentStepData?.type === 'info' && (
+            <InfoSlide 
+              title={'title' in currentStepData.data ? currentStepData.data.title : 'Evidence-Based Approach'}
+              content={'content' in currentStepData.data ? currentStepData.data.content : 'Lucid is developed using evidence-based psychological practices.'}
+              quizId={quiz.id}
+            />
+          )}
+          {currentStepData?.type === 'expert-review' && (
+            <ExpertReviewSlide 
+              quizId={quiz.id}
+            />
+          )}
+          {currentStepData?.type === 'community' && (
+            <CommunitySlide 
+              quizId={quiz.id}
+            />
+          )}
+          {currentStepData?.type === 'mood' && (
+            <MoodSlide 
+              onComplete={handleMoodSelection}
+            />
+          )}
+          {currentStepData?.type === 'summary' && 'score' in currentStepData.data && 'result' in currentStepData.data && (
+            <SummarySlide 
+              quizId={quiz.id}
+              score={currentStepData.data.score}
+              result={currentStepData.data.result}
+            />
+          )}
+          {currentStepData?.type === 'plan' && 'quizId' in currentStepData.data && (
+            <PlanSlide 
+              quizId={currentStepData.data.quizId}
+              predictedMonth={
+                'predictedMonth' in currentStepData.data 
+                  ? String(currentStepData.data.predictedMonth) 
+                  : "July 2025"
+              }
+            />
+          )}
+          {currentStepData?.type === 'progress' && 'quizId' in currentStepData.data && (
+            <ProgressSlide 
+              quizId={currentStepData.data.quizId}
+            />
+          )}
+          {currentStepData?.type === 'result' && (
+            <ResultGate 
+              quizId={quiz.id}
+              quizTitle={quiz.title}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
