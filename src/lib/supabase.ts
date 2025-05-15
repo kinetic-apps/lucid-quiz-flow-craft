@@ -109,40 +109,56 @@ export async function getQuizBySlug(slug: string) {
         throw new Error(`Error fetching options: ${optionsError.message}`);
       }
 
-      // Add type property based on question pattern
-      let type = 'radio';
-      
-      // Check for likert scale questions
-      if (question.text.includes('agree') || question.text.includes('rate')) {
-        type = 'likert';
+      let type = 'radio'; // Default type
+
+      // 1. Check for specific 5-point Likert scale by options content first
+      if (options && options.length === 5) {
+        const optionTexts = options.map(opt => opt.text.toLowerCase());
+        const uniqueOptionTexts = new Set(optionTexts);
+        if (
+          uniqueOptionTexts.has('strongly agree') &&
+          uniqueOptionTexts.has('agree') &&
+          uniqueOptionTexts.has('neutral') &&
+          uniqueOptionTexts.has('disagree') &&
+          uniqueOptionTexts.has('strongly disagree')
+        ) {
+          type = 'likert';
+        }
       }
-      
-      // Check for multi-select questions
-      const multiSelectIndicators = [
-        'choose all',
-        'select all',
-        'all that apply',
-        'aspects of your well-being',
-        'habits that you\'d like to quit',
-        'improve about your sleep',
-        'caused you to struggle',
-        'need to improve',
-        'like to start working on'
-      ];
-      
-      const isMultiSelect = multiSelectIndicators.some(indicator => 
-        question.text.toLowerCase().includes(indicator.toLowerCase())
-      );
-      
-      if (isMultiSelect) {
-        type = 'multiselect';
+
+      // 2. If not identified as the specific 5-point Likert by options, check for multiselect
+      if (type !== 'likert') {
+        const multiSelectIndicators = [
+          'choose all',
+          'select all',
+          'all that apply',
+          'aspects of your well-being',
+          'habits that you\'d like to quit',
+          'improve about your sleep',
+          'caused you to struggle',
+          'need to improve',
+          'like to start working on'
+        ];
+        const isMultiSelect = multiSelectIndicators.some(indicator => 
+          question.text.toLowerCase().includes(indicator.toLowerCase())
+        );
+        if (isMultiSelect) {
+          type = 'multiselect';
+        }
+      }
+
+      // 3. Fallback for other kinds of Likert scales (e.g., frequency based) using original text check
+      // This applies if it wasn't identified as a 5-point Likert by options OR as a multiselect.
+      if (type !== 'likert' && type !== 'multiselect' && 
+          (question.text.toLowerCase().includes('agree') || question.text.toLowerCase().includes('rate'))) {
+        type = 'likert';
       }
 
       return {
         ...question,
         type,
-        options: options.map(opt => opt.text),
-        optionsData: options
+        options: options ? options.map(opt => opt.text) : [],
+        optionsData: options || []
       };
     })
   );

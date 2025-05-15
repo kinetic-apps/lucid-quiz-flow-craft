@@ -34,57 +34,54 @@ const peopleGraphic = [
 ];
 
 const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => {
+  // Single animation variant for all content
+  const contentAnimation = {
+    hidden: { opacity: 0, x: 100 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: 50 }}
+      initial={{ opacity: 0, x: 50 }} // This initial animation is for the slide itself
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
       className="bg-lucid-cream min-h-screen flex flex-col justify-between text-center relative"
     >
-      <div className="p-4 pt-8 flex-1 max-w-md mx-auto flex flex-col items-center overflow-y-auto">
+      <motion.div 
+        className="p-4 pt-8 flex-1 max-w-md mx-auto flex flex-col items-center overflow-y-auto"
+        initial="hidden"
+        animate="visible"
+        variants={contentAnimation} // Apply shared animation to this container
+      >
         {/* Logo and back button would go here in a real implementation */}
         
-        <motion.h2 
-          className="text-[28px] font-medium text-[#191825] whitespace-nowrap font-dm-sans mt-8" 
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        <h2 className="text-[28px] font-medium text-[#191825] whitespace-nowrap font-dm-sans mt-8">
           Over 1,000,000 people
-        </motion.h2>
-        <motion.p 
-          className="text-[18px] font-medium text-[#191825] mb-4 font-dm-sans"
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
+        </h2>
+        <p className="text-[18px] font-medium text-[#191825] mb-4 font-dm-sans">
           have chosen Lucid
-        </motion.p>
+        </p>
         
-        <motion.div 
-          className="w-full flex justify-center items-center mb-20"
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
+        <div className="w-full flex justify-center items-center mb-20">
           <img 
             src="/assets/image.png"
             alt="People Circles" 
             className="w-4/5 max-h-[45vh] object-contain" 
             style={{ background: 'transparent' }}
           />
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
       
       <motion.div 
         className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-lucid-cream z-10"
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ 
-          duration: 0.5,
-          delay: 0.6
-        }}
+        initial="hidden"
+        animate="visible"
+        variants={contentAnimation} // Apply shared animation to the button container as well
       >
         <button
           onClick={onContinue}

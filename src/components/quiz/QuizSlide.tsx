@@ -31,12 +31,18 @@ type QuestionOption = {
 
 // Function to get the appropriate icon for Likert scale
 const getLikertIcon = (value: number) => {
-  if (value === 1 || value === 2) {
-    return <ThumbsDown size={24} className="text-lucid-pink" />;
-  } else if (value === 3) {
+  if (value === 5) { // Strongly Agree
+    return <ThumbsUp size={24} className="text-red-700" />; // Bolder red
+  } else if (value === 4) { // Agree
+    return <ThumbsUp size={24} className="text-lucid-pink" />; // #BC5867
+  } else if (value === 3) { // Neutral
     return <HelpCircle size={24} className="text-lucid-gray" />;
-  } else {
-    return <ThumbsUp size={24} className="text-lucid-dark" />;
+  } else if (value === 2) { // Disagree
+    return <ThumbsDown size={24} className="text-lucid-gray" />; // Grey
+  } else if (value === 1) { // Strongly Disagree
+    return <ThumbsDown size={24} className="text-lucid-dark" />; // Black (using lucid-dark)
+  } else { // Fallback, though ideally all likert values should be covered
+    return <HelpCircle size={24} className="text-lucid-gray" />;
   }
 };
 
@@ -61,29 +67,51 @@ const getOptionIcon = (text: string) => {
   }
 };
 
-// Function to sort options in the desired order: Always/Often first, Sometimes in the middle, Rarely/Never last
+// Function to sort options in the desired order
 const sortOptions = (options: QuestionOption[]): QuestionOption[] => {
+  const getRank = (text: string): number => {
+    const lower = text.toLowerCase();
+    if (lower === 'strongly agree') return 1;
+    if (lower === 'agree') return 2;
+    if (lower === 'neutral') return 3;
+    if (lower === 'disagree') return 4;
+    if (lower === 'strongly disagree') return 5;
+    return 6; // Fallback rank for texts not in the standard set, ensuring they are sorted after
+  };
+
   return [...options].sort((a, b) => {
     const textA = a.text.toLowerCase();
     const textB = b.text.toLowerCase();
-    
-    // Always should be first
+
+    // Check if both options are part of the standard agree/disagree/neutral set
+    const isStandardLikertA = (textA === 'strongly agree' || textA === 'agree' || textA === 'neutral' || textA === 'disagree' || textA === 'strongly disagree');
+    const isStandardLikertB = (textB === 'strongly agree' || textB === 'agree' || textB === 'neutral' || textB === 'disagree' || textB === 'strongly disagree');
+
+    if (isStandardLikertA && isStandardLikertB) {
+      const rankA = getRank(textA);
+      const rankB = getRank(textB);
+      if (rankA !== rankB) {
+        return rankA - rankB;
+      }
+      // If ranks are somehow the same (e.g., duplicate options text), maintain original relative order
+      return a.order_number - b.order_number;
+    }
+
+    // Original frequency-based sorting for other types of Likert scales (Always, Often, etc.)
+    // This block is reached if at least one of the options is not a standard agree/disagree type.
     if (textA.includes('always')) return -1;
     if (textB.includes('always')) return 1;
-    
-    // Often should be second
+
     if (textA.includes('often')) return -1;
     if (textB.includes('often')) return 1;
-    
-    // Sometimes should be in the middle
+
     if (textA.includes('sometimes') && (textB.includes('rarely') || textB.includes('never'))) return -1;
     if (textB.includes('sometimes') && (textA.includes('rarely') || textA.includes('never'))) return 1;
-    
-    // Rarely before Never
+
     if (textA.includes('rarely') && textB.includes('never')) return -1;
     if (textB.includes('rarely') && textA.includes('never')) return 1;
-    
-    // Default to original order
+
+    // Default to original order_number if no other rules apply or if types are mixed unexpectedly
     return a.order_number - b.order_number;
   });
 };
@@ -413,7 +441,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
     if (question.type === 'multiselect') {
       return "Choose all that apply";
     }
-    return "Do you agree with the following statement?";
+    return "";
   };
 
   return (

@@ -160,52 +160,57 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
                 delay: 0.2
               }}
             >
+              {/* Added a larger touch target wrapper */}
               <div 
-                ref={sliderRef}
-                className="h-12 rounded-full overflow-hidden flex cursor-pointer"
+                className="py-12 cursor-pointer"
                 onMouseDown={handleMouseDown}
                 onTouchStart={handleTouchStart}
               >
-                <div className="h-full bg-lucid-pink opacity-80 rounded-l-full" style={{ width: "20%" }}></div>
-                <div className="h-full bg-lucid-pink opacity-60" style={{ width: "20%" }}></div>
-                <div className="h-full bg-lucid-pink opacity-40" style={{ width: "20%" }}></div>
-                <div className="h-full bg-lucid-pink opacity-20" style={{ width: "20%" }}></div>
-                <div className="h-full bg-lucid-pink opacity-10 rounded-r-full" style={{ width: "20%" }}></div>
-              </div>
-              
-              {/* Active area indicator */}
-              <div 
-                className="absolute h-12 bg-lucid-pink opacity-20 top-0 rounded-full pointer-events-none"
-                style={{ 
-                  width: `${sliderPosition}%`,
-                  transition: isDragging ? 'none' : 'width 0.2s ease-out'
-                }}
-              />
-              
-              {/* Triangle indicator */}
-              <motion.div 
-                className="absolute w-8 h-8"
-                style={{ 
-                  left: `calc(${sliderPosition}% - 16px)`,
-                  top: '100%',
-                  transform: 'translateY(-50%)',
-                }}
-                animate={{ 
-                  x: 0, 
-                  scale: isDragging ? 1.2 : 1 
-                }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 500, 
-                  damping: isDragging ? 10 : 15 
-                }}
-              >
-                <img 
-                  src="/assets/figma/mood/mood-selection-triangle.svg" 
-                  alt="Slider indicator" 
-                  className="w-full h-full"
+                <div 
+                  ref={sliderRef}
+                  className="h-12 rounded-full overflow-hidden flex"
+                >
+                  <div className="h-full bg-lucid-pink opacity-80 rounded-l-full" style={{ width: "20%" }}></div>
+                  <div className="h-full bg-lucid-pink opacity-60" style={{ width: "20%" }}></div>
+                  <div className="h-full bg-lucid-pink opacity-40" style={{ width: "20%" }}></div>
+                  <div className="h-full bg-lucid-pink opacity-20" style={{ width: "20%" }}></div>
+                  <div className="h-full bg-lucid-pink opacity-10 rounded-r-full" style={{ width: "20%" }}></div>
+                </div>
+                
+                {/* Active area indicator */}
+                <div 
+                  className="absolute h-12 bg-lucid-pink opacity-20 top-12 rounded-full pointer-events-none"
+                  style={{ 
+                    width: `${sliderPosition}%`,
+                    transition: isDragging ? 'none' : 'width 0.2s ease-out'
+                  }}
                 />
-              </motion.div>
+                
+                {/* Triangle indicator */}
+                <motion.div 
+                  className="absolute w-8 h-8"
+                  style={{ 
+                    left: `calc(${sliderPosition}% - 16px)`,
+                    top: 'calc(100% - 18px)',
+                    transform: 'translateY(-50%)',
+                  }}
+                  animate={{ 
+                    x: 0, 
+                    scale: isDragging ? 1.2 : 1 
+                  }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 500, 
+                    damping: isDragging ? 10 : 15 
+                  }}
+                >
+                  <img 
+                    src="/assets/figma/mood/mood-selection-triangle.svg" 
+                    alt="Slider indicator" 
+                    className="w-full h-full"
+                  />
+                </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         </div>
