@@ -7,6 +7,8 @@ interface PostHogContextType {
   identify: (id: string, properties?: Record<string, unknown>) => void;
   resetIdentity: () => void;
   isReady: boolean;
+  isFeatureEnabled: (key: string) => boolean;
+  getFeatureFlag: (key: string) => string | boolean | undefined;
 }
 
 const PostHogContext = createContext<PostHogContextType | undefined>(undefined);
@@ -37,8 +39,14 @@ export function PostHogProvider({
       api_host: hostUrl,
       capture_pageview: true,
       capture_pageleave: true,
-      loaded: () => {
+      loaded: (ph) => {
         setIsReady(true);
+        // Ensure feature flags are loaded before considering PostHog ready for them
+        ph.onFeatureFlags(() => {
+          // You could set another state here if you need to react to flags being loaded
+          // For now, just logging, as isReady already covers general readiness
+          console.log('PostHog feature flags loaded.');
+        });
       },
       ...options,
     });
@@ -76,6 +84,22 @@ export function PostHogProvider({
     posthog.reset();
   };
 
+  const isFeatureEnabled = (key: string): boolean => {
+    if (!isReady) {
+      console.warn(`PostHog not ready, cannot check feature flag '${key}'. Returning false.`);
+      return false;
+    }
+    return posthog.isFeatureEnabled(key) || false; // Ensure it returns boolean
+  };
+
+  const getFeatureFlag = (key: string): string | boolean | undefined => {
+    if (!isReady) {
+      console.warn(`PostHog not ready, cannot get feature flag '${key}'. Returning undefined.`);
+      return undefined;
+    }
+    return posthog.getFeatureFlag(key);
+  };
+
   return (
     <PostHogContext.Provider
       value={{
@@ -83,7 +107,9 @@ export function PostHogProvider({
         track,
         identify,
         resetIdentity,
-        isReady
+        isReady,
+        isFeatureEnabled,
+        getFeatureFlag
       }}
     >
       {children}

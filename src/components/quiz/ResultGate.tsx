@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
@@ -30,62 +30,85 @@ declare global {
 
 const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   const { visitorId, answers, goToPrevStep, utmParams, currentStep, userAgeRange } = useQuiz();
-  const { track, identify } = usePostHog();
+  const { track, identify, isFeatureEnabled, isReady: posthogIsReady, posthog } = usePostHog();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [score, setScore] = useState<number | null>(null);
-  const [showEmailForm, setShowEmailForm] = useState(true);
+
+  const featureFlagKey = 'require-email-for-quiz-result';
+  const [showEmailForm, setShowEmailForm] = useState(() => {
+    if (!posthogIsReady) return true;
+    return isFeatureEnabled(featureFlagKey);
+  });
   const [showWellbeingChart, setShowWellbeingChart] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  useEffect(() => {
+    if (posthogIsReady) {
+      const shouldShowForm = isFeatureEnabled(featureFlagKey);
+      setShowEmailForm(shouldShowForm);
+
+      const unsubscribe = posthog.onFeatureFlags(() => {
+        setShowEmailForm(isFeatureEnabled(featureFlagKey));
+      });
+      return () => {
+        if (typeof unsubscribe === 'function') {
+          unsubscribe();
+        }
+      }; 
+    }
+  }, [posthogIsReady, isFeatureEnabled, posthog, featureFlagKey]);
+
+  useEffect(() => {
+    if (posthogIsReady && !showEmailForm && !isSubmitting && !result && !showWellbeingChart) {
+      handleSubmit(); 
+    }
+  }, [posthogIsReady, showEmailForm, isSubmitting, result, showWellbeingChart]);
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (isSubmitting) return;
     
     setIsSubmitting(true);
     
+    const submissionEmail = showEmailForm ? email : '';
+
     try {
-      // Store user email in the database
-      const userId = await storeUserEmail(email, visitorId);
-      
-      // Store email and user ID in localStorage for checkout page
-      if (userId) {
-        localStorage.setItem('user_email', email);
-        localStorage.setItem('user_id', userId);
-        
-        // Identify user in PostHog with both visitor ID and email
-        identify(visitorId, {
-          email,
-          user_id: userId
-        });
+      let userId = null;
+      if (submissionEmail) { 
+        userId = await storeUserEmail(submissionEmail, visitorId);
+        if (userId) {
+          localStorage.setItem('user_email', submissionEmail);
+          localStorage.setItem('user_id', userId);
+          identify(visitorId, {
+            email: submissionEmail,
+            user_id: userId
+          });
+        }
       }
       
-      // Submit results and get insight
       const response: QuizResult = await submitQuizResults(
         quizId, 
         visitorId, 
         answers, 
-        email, 
+        submissionEmail, 
         Object.fromEntries(
           Object.entries(utmParams).map(([key, value]) => [key, String(value)])
         ),
         userAgeRange
       );
       
-      // Show wellbeing chart and hide email form
       setResult(response.result);
       setScore(response.score);
-      setShowEmailForm(false);
+      setShowEmailForm(false); 
       setShowWellbeingChart(true);
       
-      // Track completion event in PostHog
       track('quiz_complete', {
         visitor_id: visitorId,
         quiz_id: quizId,
         quiz_title: quizTitle,
-        email,
+        email: submissionEmail, 
         score: response.score,
         result_id: response.result.id,
         result_title: response.result.title,
@@ -95,25 +118,23 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
         )
       });
       
-      // For backward compatibility, still support Amplitude if it exists
       try {
         if (typeof window !== 'undefined' && 'amplitude' in window) {
           window.amplitude?.track('quiz_complete', { 
             visitor_id: visitorId,
             quiz_id: quizId,
-            email: email,
+            email: submissionEmail, 
             ...Object.fromEntries(
               Object.entries(utmParams).map(([key, value]) => [key, String(value)])
             )
           });
         }
-      } catch (e) {
-        console.error('Analytics error:', e);
+      } catch (analyticsError) {
+        console.error('Analytics error:', analyticsError);
       }
       
     } catch (error) {
       console.error('Error submitting quiz:', error);
-      // Show a default result if submission fails
       setResult({
         id: '',
         quiz_id: quizId,
@@ -127,12 +148,11 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       setShowEmailForm(false);
       setShowWellbeingChart(true);
       
-      // Track error event
       track('quiz_submission_error', {
         visitor_id: visitorId,
         quiz_id: quizId,
         quiz_title: quizTitle,
-        email
+        email: submissionEmail
       });
     } finally {
       setIsSubmitting(false);
@@ -140,14 +160,12 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   };
 
   const handleBack = () => {
-    // Track back button usage
     track('quiz_back_button_clicked', {
       visitor_id: visitorId,
       quiz_id: quizId,
       from_step: currentStep
     });
     
-    // If we're somehow on the first step, navigate back to home
     if (currentStep === 0) {
       navigate('/');
     } else {
@@ -156,7 +174,6 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
   };
 
   const handleContinue = () => {
-    // Track checkout navigation
     track('checkout_navigation', {
       visitor_id: visitorId,
       quiz_id: quizId,
@@ -166,7 +183,6 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       result_id: result?.id
     });
     
-    // Navigate to checkout page instead of showing result content
     navigate('/checkout');
   };
 
@@ -235,10 +251,34 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
             </div>
           </div>
         </motion.div>
+      ) : isSubmitting ? (
+        <motion.div 
+          key="loading-auto-submit"
+          className="result-gate flex flex-col items-center justify-center p-8 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <svg className="animate-spin h-10 w-10 text-[#BC5867] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p className="text-xl font-semibold text-[#BC5867]">
+            Creating your personalized Well-being Management plan...
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            This will just take a moment.
+          </p>
+        </motion.div>
       ) : showWellbeingChart ? (
         <motion.div 
           key="wellbeing-chart"
           className="result-gate"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 }}
+          transition={{ duration: 0.4 }}
         >
           <WellbeingChart onContinue={handleContinue} />
         </motion.div>
