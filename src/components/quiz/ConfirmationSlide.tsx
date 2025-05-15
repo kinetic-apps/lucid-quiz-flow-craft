@@ -9,16 +9,16 @@ interface ConfirmationSlideProps {
 const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -50 }}
+      initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 50 }}
+      exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center h-full text-center bg-lucid-cream"
+      className="bg-lucid-cream min-h-screen flex flex-col justify-between text-center"
     >
-      <div className="p-4 max-w-sm mx-auto">
+      <div className="p-6 pt-12 flex-1 max-w-sm mx-auto">
         <motion.h2 
           className="text-3xl font-semibold text-lucid-pink whitespace-nowrap"
-          initial={{ opacity: 0, x: -100 }}
+          initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
@@ -26,7 +26,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
         </motion.h2>
         <motion.p 
           className="text-lucid-dark font-bold mb-8"
-          initial={{ opacity: 0, x: -100 }}
+          initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
@@ -35,7 +35,7 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
         
         <motion.div 
           className="relative my-12"
-          initial={{ opacity: 0, x: -100 }}
+          initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
@@ -93,16 +93,24 @@ const ConfirmationSlide: React.FC<ConfirmationSlideProps> = ({ onContinue }) => 
           </div>
         </motion.div>
         
-        <motion.button 
+      </div>
+      <motion.div 
+        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ 
+          duration: 0.5,
+          delay: 0.6
+        }}
+      >
+        <button
           onClick={onContinue}
-          className="w-full py-4 px-8 rounded-full bg-lucid-dark text-white font-dm-sans font-semibold text-lg"
-          initial={{ opacity: 0, x: -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          type="button"
+          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-dm-sans font-semibold text-xl"
         >
           Continue
-        </motion.button>
-      </div>
+        </button>
+      </motion.div>
     </motion.div>
   );
 };

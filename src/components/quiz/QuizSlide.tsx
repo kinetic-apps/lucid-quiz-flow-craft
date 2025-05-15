@@ -289,7 +289,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
               <motion.div
                 key={option.id}
                 className={`
-                  border rounded-xl p-4 cursor-pointer transition-colors flex items-center justify-center
+                  border rounded-xl p-4 cursor-pointer transition-colors flex items-center
                   ${selectedOptionId === option.id 
                     ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
                     : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
@@ -299,7 +299,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.1 }}
               >
-                <span className="font-lexend text-lg text-lucid-dark text-center">{option.text}</span>
+                <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
               </motion.div>
             ))}
           </div>
@@ -309,7 +309,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <motion.div
               className={`
-                border rounded-xl p-4 cursor-pointer flex items-center justify-center transition-colors
+                border rounded-xl p-4 cursor-pointer flex items-center transition-colors
                 ${selectedOption === true 
                   ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
                   : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
@@ -319,12 +319,12 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.1 }}
             >
-              <span className="font-lexend text-lg text-lucid-dark text-center">{
+              <span className="font-lexend text-lg text-lucid-dark text-left">{
               question.text === 'What is your age?' ? 'Under 20' : 'Yes'}</span>
             </motion.div>
             <motion.div
               className={`
-                border rounded-xl p-4 cursor-pointer flex items-center justify-center transition-colors
+                border rounded-xl p-4 cursor-pointer flex items-center transition-colors
                 ${selectedOption === false 
                   ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
                   : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
@@ -334,7 +334,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.1 }}
             >
-              <span className="font-lexend text-lg text-lucid-dark text-center">{
+              <span className="font-lexend text-lg text-lucid-dark text-left">{
               question.text === 'What is your age?' ? '20-30' : 'No'}</span>
             </motion.div>
           </div>
@@ -347,7 +347,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
               <motion.div
                 key={option.id}
                 className={`
-                  border rounded-xl p-4 cursor-pointer transition-colors flex items-center justify-center
+                  border rounded-xl p-4 cursor-pointer transition-colors flex items-center
                   ${selectedOptionId === option.id 
                     ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
                     : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
@@ -360,7 +360,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                 <div className="mr-3">
                   {getLikertIcon(option.value)}
                 </div>
-                <span className="font-lexend text-lg text-lucid-dark text-center">{option.text}</span>
+                <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
               </motion.div>
             ))}
           </div>
@@ -374,7 +374,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                   <motion.div
                     key={option.id}
                     className={`
-                      border rounded-xl p-3 cursor-pointer transition-colors flex items-center justify-center
+                      border rounded-xl p-3 cursor-pointer transition-colors flex items-center
                       ${selectedOptions.has(option.id) 
                         ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
                         : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
@@ -386,7 +386,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                     <div className="mr-2">
                       {getOptionIcon(option.text)}
                     </div>
-                    <span className="font-lexend text-md text-lucid-dark text-center">{option.text}</span>
+                    <span className="font-lexend text-md text-lucid-dark text-left">{option.text}</span>
                   </motion.div>
                 ))}
               </div>
@@ -395,7 +395,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
             <div className="mt-auto">
               <motion.button
                 className={`
-                  w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-center
+                  w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-left
                   ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
                 `}
                 onClick={handleSubmitMultiSelect}

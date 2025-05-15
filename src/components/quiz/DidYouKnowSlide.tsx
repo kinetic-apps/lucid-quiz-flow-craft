@@ -29,7 +29,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
         {/* Lightbulb Image */}
         <motion.div 
           className="mb-8"
-          initial={{ opacity: 0, x: -100 }}
+          initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ 
             duration: 0.5,
@@ -48,7 +48,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
         <div className="text-center">
           <motion.h2 
             className="text-4xl font-medium font-dm-sans text-lucid-dark mb-4"
-            initial={{ opacity: 0, x: -100 }}
+            initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ 
               duration: 0.5,
@@ -59,7 +59,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
           </motion.h2>
           <motion.p 
             className="text-xl font-medium font-dm-sans text-lucid-dark mb-4"
-            initial={{ opacity: 0, x: -100 }}
+            initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ 
               duration: 0.5,
@@ -70,7 +70,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
           </motion.p>
           <motion.p 
             className="text-sm font-semibold font-dm-sans text-lucid-gray mb-6"
-            initial={{ opacity: 0, x: -100 }}
+            initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ 
               duration: 0.5,
@@ -85,7 +85,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
       {/* Continue Button */}
       <motion.div 
         className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
-        initial={{ opacity: 0, x: -100 }}
+        initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ 
           duration: 0.5,

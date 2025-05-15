@@ -82,9 +82,9 @@ const MoodSelect: React.FC = () => {
   return (
     <div className="min-h-screen bg-lucid-cream flex flex-col">
       <motion.div
-        initial={{ opacity: 0, x: 50 }}
+        initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -50 }}
+        exit={{ opacity: 0, x: -100 }}
         transition={{ duration: 0.4 }}
         className="flex-1 flex flex-col"
       >

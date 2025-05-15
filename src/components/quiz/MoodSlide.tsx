@@ -112,15 +112,15 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -100 }}
+      initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
+      exit={{ opacity: 0, x: -100 }}
       transition={{ duration: 0.3 }}
-      className="mood-slide-container flex flex-col h-full bg-lucid-cream"
+      className="bg-lucid-cream min-h-screen flex flex-col justify-between"
     >
       {/* Main Content */}
-      <div className="flex-grow flex flex-col justify-between p-4 pt-8">
-        <div className="max-w-md w-full mx-auto">
+      <div className="flex-1 p-6 pt-12 flex flex-col">
+        <div className="max-w-md w-full mx-auto flex-grow flex flex-col">
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, x: 100 }}
@@ -209,25 +209,25 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
             </motion.div>
           </motion.div>
         </div>
-        
-        {/* Continue Button */}
-        <motion.div 
-          className="max-w-md w-full mx-auto mt-8"
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ 
-            duration: 0.4,
-            delay: 0.3
-          }}
-        >
-          <button
-            onClick={handleContinue}
-            className="w-full py-4 px-8 rounded-full bg-lucid-dark text-white font-dm-sans font-semibold text-lg"
-          >
-            Continue
-          </button>
-        </motion.div>
       </div>
+      {/* MODIFIED: Replaced button structure */}
+      <motion.div 
+        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ 
+          duration: 0.5,
+          delay: 0.6
+        }}
+      >
+        <button
+          onClick={handleContinue}
+          type="button"
+          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-dm-sans font-semibold text-xl"
+        >
+          Continue
+        </button>
+      </motion.div>
     </motion.div>
   );
 };
