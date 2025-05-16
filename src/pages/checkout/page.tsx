@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, memo, useCallback, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
@@ -158,6 +158,81 @@ interface PaymentIntent {
   currency: string;
 }
 
+// Stable wrapper for Express Checkout Elements
+const ExpressCheckoutWrapper = memo(function ExpressCheckoutWrapper({
+  clientSecret,
+  amount,
+  planName,
+  email,
+  onSuccess,
+  onError
+}: {
+  clientSecret: string;
+  amount: number;
+  planName: string;
+  email: string | null;
+  onSuccess: (paymentIntent: PaymentIntent) => void;
+  onError: (error: Error) => void;
+}) {
+  // Create stable elements options
+  const elementsOptions = useMemo(() => {
+    return {
+      clientSecret,
+      appearance: { theme: 'stripe' }
+    } as StripeElementsOptions;
+  }, [clientSecret]);
+
+  return (
+    <Elements stripe={stripePromise} options={elementsOptions}>
+      <PaymentRequestButton
+        amount={amount}
+        planName={planName}
+        email={email}
+        onSuccess={onSuccess}
+        onError={onError}
+      />
+    </Elements>
+  );
+});
+
+// Fix the error boundary component with proper TypeScript interface definitions
+interface StripeErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+interface StripeErrorBoundaryProps {
+  children: ReactNode;
+}
+
+class StripeErrorBoundary extends React.Component<StripeErrorBoundaryProps, StripeErrorBoundaryState> {
+  constructor(props: StripeErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): StripeErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    console.error("Stripe component error:", error, errorInfo);
+  }
+
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return (
+        <div className="text-center p-4 bg-red-50 rounded-lg">
+          <p className="text-red-500 font-medium">Payment options unavailable</p>
+          <p className="text-sm text-gray-600 mt-2">Please try refreshing the page or use the card payment option below.</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { visitorId } = useQuiz();
@@ -237,7 +312,7 @@ const CheckoutPage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Effect to fetch client secret for Express Checkout Element when plan/email changes
+  // Improve the client secret fetch effect to prevent memory leaks and infinite retries
   useEffect(() => {
     const planDetails = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan);
 
@@ -245,10 +320,8 @@ const CheckoutPage = () => {
       setExpressClientSecret(null);
       setExpressCheckoutError(null);
       attemptCompletedForCurrentParamsRef.current = false; 
-      // Clear last attempted refs so a new plan selection (if any) will trigger a fetch.
       lastAttemptPlanIdRef.current = null; 
       lastAttemptEmailRef.current = null;
-      // Also clear refs related to "last successful fetch" if plan becomes invalid
       expressClientSecretFetchedRef.current = false;
       lastFetchedPlanIdRef.current = null;
       lastFetchedUserEmailRef.current = null;
@@ -258,19 +331,24 @@ const CheckoutPage = () => {
     // If plan or email has changed from the last ATTEMPT, we need a new attempt.
     if (selectedPlan !== lastAttemptPlanIdRef.current || userEmail !== lastAttemptEmailRef.current) {
       attemptCompletedForCurrentParamsRef.current = false;
-      setExpressClientSecret(null); // Clear old secret for new params
-      setExpressCheckoutError(null); // Clear old error
-      expressClientSecretFetchedRef.current = false; // Invalidate old successful fetch state
+      setExpressClientSecret(null);
+      setExpressCheckoutError(null);
+      expressClientSecretFetchedRef.current = false;
     }
 
+    // Return early if we're already fetching or we've already completed an attempt
     if (attemptCompletedForCurrentParamsRef.current || isFetchingExpressClientSecret) {
-      // Already fetched (or tried to fetch and completed) for these exact params, or currently fetching.
-      return; 
+      return;
     }
+
+    let isMounted = true;
+    const controller = new AbortController();
+    const signal = controller.signal;
 
     const fetchExpressClientSecret = async () => {
+      if (!isMounted) return;
+      
       setIsFetchingExpressClientSecret(true);
-      // Clear previous error for this new attempt. clientSecret was cleared if params changed.
       setExpressCheckoutError(null);
 
       const attemptPlanId = selectedPlan;
@@ -286,36 +364,53 @@ const CheckoutPage = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount: Math.round(planDetails.discountedPrice * 100),
-            email: attemptUserEmail, // Use email for this attempt
+            email: attemptUserEmail,
           }),
+          signal, // Add AbortController signal
         });
+
+        if (!isMounted) return;
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Failed to fetch client secret for express checkout.' }));
           throw new Error(errorData.error || 'Network response was not ok for express client secret.');
         }
+        
         const { clientSecret: newClientSecret } = await response.json();
+        
+        if (!isMounted) return;
+        
         setExpressClientSecret(newClientSecret);
-        // Mark this fetch as successful for these specific parameters
         expressClientSecretFetchedRef.current = true;
         lastFetchedPlanIdRef.current = attemptPlanId;
         lastFetchedUserEmailRef.current = attemptUserEmail;
-        attemptCompletedForCurrentParamsRef.current = true; // Mark success for these current attempt params
-      } catch (error: unknown) {
+        attemptCompletedForCurrentParamsRef.current = true;
+      } catch (error) {
+        if (!isMounted) return;
+        
+        // Don't log aborted requests as errors
+        if (error.name === 'AbortError') return;
+        
         console.error("Failed to fetch clientSecret for Express Checkout:", error);
         const message = error instanceof Error ? error.message : 'Failed to initialize express payment options.';
         setExpressCheckoutError(message);
         setExpressClientSecret(null);
-        // Mark that fetch attempt completed (even if failed) for current attempt params
-        attemptCompletedForCurrentParamsRef.current = true; 
-        expressClientSecretFetchedRef.current = false; // No valid client secret from this attempt
-        // Do not update lastFetchedPlanIdRef/lastFetchedUserEmailRef on failure.
+        attemptCompletedForCurrentParamsRef.current = true;
+        expressClientSecretFetchedRef.current = false;
       } finally {
-        setIsFetchingExpressClientSecret(false);
+        if (isMounted) {
+          setIsFetchingExpressClientSecret(false);
+        }
       }
     };
 
     fetchExpressClientSecret();
+
+    // Clean up function
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [selectedPlan, userEmail]);
 
   const getPlanDetails = () => {
@@ -691,11 +786,12 @@ const CheckoutPage = () => {
                   {expressCheckoutError && <div className="text-red-500 text-sm text-center py-2">Error: {expressCheckoutError}</div>}
                   
                   {expressElementsOptions ? (
-                    <Elements stripe={stripePromise} options={expressElementsOptions}>
-                      <PaymentRequestButton
-                        amount={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.discountedPrice || 0} // Ensure amount is not undefined
+                    <StripeErrorBoundary>
+                      <ExpressCheckoutWrapper
+                        clientSecret={expressClientSecret!}
+                        amount={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.discountedPrice || 0}
                         planName={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.name || 'Selected Plan'}
-                        email={userEmail} // Pass userEmail, can be null
+                        email={userEmail}
                         onSuccess={(paymentIntent) => {
                           track('express_payment_successful', {
                             visitor_id: visitorId,
@@ -714,7 +810,7 @@ const CheckoutPage = () => {
                             variant: "destructive",
                             duration: 5000,
                           });
-                          setExpressCheckoutError(error.message); // Show error locally
+                          setExpressCheckoutError(error.message);
                           track('checkout_error', {
                             visitor_id: visitorId,
                             error_type: 'express_payment_error',
@@ -723,7 +819,7 @@ const CheckoutPage = () => {
                           });
                         }}
                       />
-                    </Elements>
+                    </StripeErrorBoundary>
                   ) : (
                     !expressCheckoutError && !isFetchingExpressClientSecret && <div className="text-center py-2 text-sm text-gray-500">Select a plan to see express payment options.</div>
                   )}
