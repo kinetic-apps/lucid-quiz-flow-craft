@@ -116,6 +116,13 @@ const ExpressEC = memo(function ExpressEC({ onSuccess, onError }: Omit<PaymentRe
         options={{
           paymentMethodOrder: ['apple_pay', 'google_pay', 'link', 'klarna'],
           layout: { maxColumns: 2, maxRows: 2 },
+          wallets: {
+            applePay: 'auto',
+            googlePay: 'auto'
+          },
+          business: {
+            name: 'Lucid'
+          }
         }}
         onConfirm={handleConfirm}
         onReady={() => setExpressElementMounted(true)}

@@ -178,7 +178,19 @@ const ExpressCheckoutWrapper = memo(function ExpressCheckoutWrapper({
   const elementsOptions = useMemo(() => {
     return {
       clientSecret,
-      appearance: { theme: 'stripe' }
+      appearance: { 
+        theme: 'stripe',
+        variables: {
+          colorPrimary: '#BC5867',
+          colorBackground: '#FFFFFF',
+          colorText: '#30313d',
+          colorDanger: '#df1b41',
+          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSizeBase: '16px',
+          borderRadius: '4px',
+        }
+      },
+      loader: 'auto'
     } as StripeElementsOptions;
   }, [clientSecret]);
 
@@ -328,6 +340,11 @@ const CheckoutPage = () => {
       return;
     }
 
+    // Check browser support for Apple Pay / Google Pay
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const potentiallySupportsApplePay = isMobileDevice && isSafari;
+    
     // If plan or email has changed from the last ATTEMPT, we need a new attempt.
     if (selectedPlan !== lastAttemptPlanIdRef.current || userEmail !== lastAttemptEmailRef.current) {
       attemptCompletedForCurrentParamsRef.current = false;
@@ -359,9 +376,16 @@ const CheckoutPage = () => {
       lastAttemptEmailRef.current = attemptUserEmail;
 
       try {
+        // Add a slight delay to ensure UI reflects loading state
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
         const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent-express', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Mobile-Device': isMobileDevice ? 'true' : 'false',
+            'X-Supports-Apple-Pay': potentiallySupportsApplePay ? 'true' : 'false'
+          },
           body: JSON.stringify({
             amount: Math.round(planDetails.discountedPrice * 100),
             email: attemptUserEmail,
@@ -782,7 +806,17 @@ const CheckoutPage = () => {
                 
                 {/* Express Checkout Section */}
                 <div className="mt-3">
-                  {isFetchingExpressClientSecret && <div className="text-center py-2">Loading payment options...</div>}
+                  {isFetchingExpressClientSecret && (
+                    <div className="text-center py-2 relative z-10">
+                      <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-lucid-pink" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Loading payment options...
+                      </div>
+                    </div>
+                  )}
                   {expressCheckoutError && <div className="text-red-500 text-sm text-center py-2">Error: {expressCheckoutError}</div>}
                   
                   {expressElementsOptions ? (
@@ -850,8 +884,8 @@ const CheckoutPage = () => {
 
                 <div className="flex justify-center gap-3 mt-2 mb-8">
                   {PAYMENT_METHODS.map((method) => (
-                    <div key={method.id} className="w-10 h-6 opacity-70">
-                      <div className="w-full h-full bg-lucid-lightGray rounded-sm flex items-center justify-center text-[8px] text-lucid-gray">
+                    <div key={method.id} className="w-12 h-8 opacity-80">
+                      <div className="w-full h-full bg-gray-100 rounded-sm flex items-center justify-center text-xs text-gray-700 font-medium">
                         {method.alt}
                       </div>
                     </div>

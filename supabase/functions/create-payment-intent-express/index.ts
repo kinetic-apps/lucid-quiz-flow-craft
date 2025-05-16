@@ -71,12 +71,16 @@ serve(async (req) => {
       }
     }
 
-    // Create a PaymentIntent
+    // Create a PaymentIntent with explicit payment method types including Apple Pay
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: 'usd',
       customer: customerId || undefined,
-      automatic_payment_methods: { enabled: true },
+      payment_method_types: ['card', 'apple_pay', 'google_pay'],
+      automatic_payment_methods: { 
+        enabled: true,
+        allow_redirects: 'always' 
+      },
       metadata: {
         integration_check: 'express_checkout_element'
       }
