@@ -40,12 +40,12 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { amount, email, payment_method_id } = await req.json()
+    const { amount, email } = await req.json()
 
     // Validate required fields
-    if (!amount || !payment_method_id) {
+    if (!amount) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }), 
+        JSON.stringify({ error: 'Missing required fields (amount)' }), 
         { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -66,7 +66,6 @@ serve(async (req) => {
       } else {
         const customer = await stripe.customers.create({
           email,
-          payment_method: payment_method_id,
         });
         customerId = customer.id;
       }
@@ -77,12 +76,9 @@ serve(async (req) => {
       amount: amount,
       currency: 'usd',
       customer: customerId || undefined,
-      payment_method: payment_method_id,
-      confirmation_method: 'manual',
-      confirm: true,
-      return_url: `${req.headers.get('origin') || 'https://lucid-quiz-flow-craft.vercel.app'}/checkout/success`,
+      automatic_payment_methods: { enabled: true },
       metadata: {
-        integration_check: 'payment_request_button'
+        integration_check: 'express_checkout_element'
       }
     });
 
