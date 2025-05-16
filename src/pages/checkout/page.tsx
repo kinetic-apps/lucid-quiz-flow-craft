@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
@@ -12,6 +12,8 @@ import EmbeddedCheckout from '@/components/EmbeddedCheckout';
 import { createStripePaymentIntent } from '@/integrations/stripe/client';
 import PaymentRequestButton from '@/components/PaymentRequestButton';
 import { supabase } from '@/lib/supabase';
+import { Elements } from '@stripe/react-stripe-js';
+import type { StripeElementsOptions } from '@stripe/stripe-js';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -166,9 +168,17 @@ const CheckoutPage = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   
-  // New state for embedded checkout
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  // State for the main embedded checkout (PaymentElement)
+  const [embeddedClientSecret, setEmbeddedClientSecret] = useState<string | null>(null);
+  const [isEmbeddedCheckoutOpen, setIsEmbeddedCheckoutOpen] = useState(false);
+
+  // New state for Express Checkout Element client secret
+  const [expressClientSecret, setExpressClientSecret] = useState<string | null>(null);
+  const [expressCheckoutError, setExpressCheckoutError] = useState<string | null>(null);
+  const [isFetchingExpressClientSecret, setIsFetchingExpressClientSecret] = useState(false);
+  const expressClientSecretFetchedRef = useRef(false);
+  const lastFetchedPlanIdRef = useRef<string | null>(null); // Track last plan for which fetch was attempted
+  const lastFetchedUserEmailRef = useRef<string | null>(null); // Track last email for which fetch was attempted
   
   // Countdown timer state
   const [countdown, setCountdown] = useState({ minutes: 10, seconds: 0 });
@@ -221,6 +231,69 @@ const CheckoutPage = () => {
     
     return () => clearInterval(timer);
   }, []);
+
+  // Effect to fetch client secret for Express Checkout Element when plan/email changes
+  // This should ideally run once when the necessary data (amount from plan, email) is available.
+  useEffect(() => {
+    const planDetails = SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan);
+
+    // Only proceed if we have plan details and a user email.
+    if (!planDetails || !userEmail) {
+      setExpressClientSecret(null); // Clear previous secret if details are missing
+      expressClientSecretFetchedRef.current = false; // Reset fetched status
+      lastFetchedPlanIdRef.current = null;
+      lastFetchedUserEmailRef.current = null;
+      return;
+    }
+
+    // If plan or email has changed since last fetch attempt, reset the fetched flag.
+    if (selectedPlan !== lastFetchedPlanIdRef.current || userEmail !== lastFetchedUserEmailRef.current) {
+      expressClientSecretFetchedRef.current = false;
+      setExpressClientSecret(null); // Clear old secret for new plan/email
+    }
+
+    // Prevent fetching if already fetched for the current plan/email combination or if currently fetching.
+    if (expressClientSecretFetchedRef.current || isFetchingExpressClientSecret) {
+      return;
+    }
+
+    const fetchExpressClientSecret = async () => {
+      setIsFetchingExpressClientSecret(true);
+      setExpressCheckoutError(null);
+      // Record what we are fetching for this attempt
+      lastFetchedPlanIdRef.current = selectedPlan;
+      lastFetchedUserEmailRef.current = userEmail;
+
+      try {
+        const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent-express', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: Math.round(planDetails.discountedPrice * 100),
+            email: userEmail,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Failed to fetch client secret for express checkout.' }));
+          throw new Error(errorData.error || 'Network response was not ok for express client secret.');
+        }
+        const { clientSecret: newClientSecret } = await response.json();
+        setExpressClientSecret(newClientSecret);
+        expressClientSecretFetchedRef.current = true; // Mark as fetched successfully for current plan/email
+      } catch (error: unknown) {
+        console.error("Failed to fetch clientSecret for Express Checkout:", error);
+        const message = error instanceof Error ? error.message : 'Failed to initialize express payment options.';
+        setExpressCheckoutError(message);
+        setExpressClientSecret(null); // Clear on error
+        expressClientSecretFetchedRef.current = false; // Allow retry if relevant conditions change
+      } finally {
+        setIsFetchingExpressClientSecret(false);
+      }
+    };
+
+    fetchExpressClientSecret();
+  }, [selectedPlan, userEmail, isFetchingExpressClientSecret]); // Removed expressClientSecret from deps
 
   const getPlanDetails = () => {
     const plan = STRIPE_PRODUCTS[selectedPlan];
@@ -287,17 +360,17 @@ const CheckoutPage = () => {
       });
       
       // Create a payment intent instead of checkout session
-      const { clientSecret, customerId } = await createStripePaymentIntent(
+      const { clientSecret: newEmbeddedClientSecret, customerId } = await createStripePaymentIntent(
         plan.priceId,
-        supabaseUserId || null, // Pass Supabase User ID
-        emailForStripe,      // Pass determined email for Stripe
+        supabaseUserId || null, 
+        emailForStripe,      
         selectedPlan,
-        nameForStripe || null // Pass determined name for Stripe
+        nameForStripe || null 
       );
       
       // Set the client secret and open the checkout
-      setClientSecret(clientSecret);
-      setIsCheckoutOpen(true);
+      setEmbeddedClientSecret(newEmbeddedClientSecret);
+      setIsEmbeddedCheckoutOpen(true);
       setIsProcessing(false);
       
       // Track embed checkout opened
@@ -341,8 +414,8 @@ const CheckoutPage = () => {
 
   // Handle cancellation
   const handleCancel = () => {
-    setIsCheckoutOpen(false);
-    setClientSecret(null);
+    setIsEmbeddedCheckoutOpen(false);
+    setEmbeddedClientSecret(null);
     
     track('checkout_canceled', {
       visitor_id: visitorId,
@@ -350,6 +423,12 @@ const CheckoutPage = () => {
       plan_id: selectedPlan
     });
   };
+
+  // Define options for the Elements provider for Express Checkout
+  const expressElementsOptions: StripeElementsOptions | undefined = expressClientSecret ? {
+    clientSecret: expressClientSecret,
+    appearance: { theme: 'stripe' }, // Optional: consistent appearance
+  } : undefined;
 
   return (
     <div className="min-h-screen bg-lucid-cream flex flex-col">
@@ -369,7 +448,7 @@ const CheckoutPage = () => {
                 {String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
               </span>
             </div>
-            {!isCheckoutOpen && (
+            {!isEmbeddedCheckoutOpen && (
               <button
                 className="bg-lucid-dark text-lucid-cream px-6 py-2 rounded-full font-medium"
                 onClick={handleGetPlan}
@@ -499,34 +578,25 @@ const CheckoutPage = () => {
             </div>
           </div>
 
-          {/* Subscription Plans Section */}
+          {/* Subscription Plans Section & Payment Buttons */}
           <div className="px-6 py-6 bg-lucid-cream border-t border-lucid-lightGray">
-            {isCheckoutOpen && clientSecret ? (
+            {isEmbeddedCheckoutOpen && embeddedClientSecret ? (
               <div className="mb-6">
                 <h3 className="text-xl font-semibold mb-4 text-lucid-dark">Complete your purchase</h3>
-                <EmbeddedCheckout 
-                  clientSecret={clientSecret}
-                  onSuccess={handlePaymentSuccess}
-                  onCancel={() => {
-                    setIsCheckoutOpen(false);
-                    setClientSecret(null);
-                    
-                    track('checkout_canceled', {
-                      visitor_id: visitorId,
-                      user_id: userId || undefined,
-                      plan_id: selectedPlan
-                    });
-                  }}
-                />
+                {/* Elements provider for Embedded Checkout */}
+                <Elements stripe={stripePromise} options={{ clientSecret: embeddedClientSecret, appearance: {theme: 'stripe'} }}>
+                  <EmbeddedCheckout 
+                    clientSecret={embeddedClientSecret} // Prop might be redundant if Elements takes it
+                    onSuccess={handlePaymentSuccess}
+                    onCancel={handleCancel} // Renamed for clarity
+                  />
+                </Elements>
                 
                 {/* Back button */}
                 <div className="mt-4 text-center">
                   <button 
                     className="text-lucid-gray text-sm"
-                    onClick={() => {
-                      setIsCheckoutOpen(false);
-                      setClientSecret(null);
-                    }}
+                    onClick={handleCancel}
                   >
                     ← Back to payment options
                   </button>
@@ -583,55 +653,67 @@ const CheckoutPage = () => {
                 
                 <button
                   className="w-full mt-6 bg-lucid-dark text-lucid-cream py-4 rounded-lg font-semibold text-lg"
-                  onClick={handleGetPlan}
+                  onClick={handleGetPlan} // This triggers Embedded Checkout flow
                   disabled={isProcessing}
                 >
                   {isProcessing ? 'PROCESSING...' : 'PURCHASE MY PLAN'}
                 </button>
                 
+                {/* Express Checkout Section */}
                 <div className="mt-3">
-                  <PaymentRequestButton
-                    amount={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.discountedPrice || 19.99}
-                    planName={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.name || '1-MONTH PLAN'}
-                    onSuccess={(paymentIntent) => {
-                      track('express_payment_successful', {
-                        visitor_id: visitorId,
-                        user_id: userId || undefined,
-                        plan_id: selectedPlan,
-                        payment_intent_id: paymentIntent.id,
-                        method: 'express_checkout'
-                      });
-                      
-                      navigate('/checkout/success');
-                    }}
-                    onError={(error) => {
-                      console.error('Express payment error:', error);
-                      toast({
-                        title: "Payment Failed",
-                        description: error.message || "There was an error processing your payment. Please try again.",
-                        variant: "destructive",
-                        duration: 5000,
-                      });
-                      
-                      track('checkout_error', {
-                        visitor_id: visitorId,
-                        error_type: 'express_payment_error',
-                        error_message: error.message || 'Unknown error',
-                        plan_id: selectedPlan
-                      });
-                    }}
-                  />
+                  {isFetchingExpressClientSecret && <div className="text-center py-2">Loading payment options...</div>}
+                  {expressCheckoutError && <div className="text-red-500 text-sm text-center py-2">Error: {expressCheckoutError}</div>}
+                  
+                  {expressElementsOptions ? (
+                    <Elements stripe={stripePromise} options={expressElementsOptions}>
+                      <PaymentRequestButton
+                        amount={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.discountedPrice || 0} // Ensure amount is not undefined
+                        planName={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.name || 'Selected Plan'}
+                        email={userEmail} // Pass userEmail
+                        onSuccess={(paymentIntent) => {
+                          track('express_payment_successful', {
+                            visitor_id: visitorId,
+                            user_id: userId || undefined,
+                            plan_id: selectedPlan,
+                            payment_intent_id: paymentIntent.id,
+                            method: 'express_checkout'
+                          });
+                          navigate('/checkout/success');
+                        }}
+                        onError={(error) => {
+                          console.error('Express payment error on page:', error);
+                          toast({
+                            title: "Payment Failed",
+                            description: error.message || "There was an error processing your payment via express options. Please try again.",
+                            variant: "destructive",
+                            duration: 5000,
+                          });
+                          setExpressCheckoutError(error.message); // Show error locally
+                          track('checkout_error', {
+                            visitor_id: visitorId,
+                            error_type: 'express_payment_error',
+                            error_message: error.message || 'Unknown error',
+                            plan_id: selectedPlan
+                          });
+                        }}
+                      />
+                    </Elements>
+                  ) : (
+                    !expressCheckoutError && !isFetchingExpressClientSecret && <div className="text-center py-2 text-sm text-gray-500">Select a plan and ensure email is available to see express payment options.</div>
+                  )}
                 </div>
                 
                 <div className="mt-2 text-center">
                   <button 
                     className="text-lucid-pink text-sm font-medium"
                     onClick={() => {
-                      setIsCheckoutOpen(true);
-                      handleGetPlan();
+                      // This button now explicitly opens the Embedded Checkout by calling handleGetPlan
+                      // which fetches client secret for EmbeddedCheckout and sets isEmbeddedCheckoutOpen
+                      handleGetPlan(); 
                     }}
+                    disabled={isProcessing} // Disable if already processing embedded checkout PI creation
                   >
-                    More payment options
+                    More payment options (Card, etc.)
                   </button>
                 </div>
 
