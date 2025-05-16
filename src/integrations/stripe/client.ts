@@ -11,11 +11,11 @@ export const STRIPE_PRODUCTS = {
     perDayPrice: 6.21
   },
   '1month': {
-    id: 'prod_SHPh2iwxiuTkPk',
-    priceId: 'price_1RMqrjQKcWZpjipTxRHY8jHS',
+    id: 'prod_SK2tedsiCtWTrG',
+    priceId: 'price_1RPOnuQKcWZpjipTXxRXBzeE',
     name: '1-MONTH PLAN',
-    totalPrice: 43.50,
-    perDayPrice: 1.45
+    totalPrice: 19.99,
+    perDayPrice: 0.67
   },
   '3month': {
     id: 'prod_SHPh3bBU9qM6Nf',
