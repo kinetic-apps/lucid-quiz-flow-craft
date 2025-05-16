@@ -16,35 +16,37 @@ type SummarySlideProps = {
 
 // Helper function to determine the level and category
 const getLevelInfo = (score: number) => {
-  let level;
-  let levelText;
-  let difficulties: string[] = [];
-  let triggers: string[] = [];
-  let challengingPeriod = "Few years";
-  let energyLevel = "Low";
+  // Always set to High level to indicate need for help
+  const level = "High";
+  const levelText = "High level";
+  const difficulties = [
+    "Low energy", 
+    "Procrastination", 
+    "Overwhelming stress", 
+    "Difficulty concentrating", 
+    "Persistent sadness", 
+    "Loss of interest", 
+    "Sleep disturbances", 
+    "Irritability", 
+    "Feelings of worthlessness",
+    "Social withdrawal"
+  ];
+  const triggers = [
+    "Poor sleep quality", 
+    "High-pressure work environment", 
+    "Relationship conflicts", 
+    "Social isolation", 
+    "Financial worries", 
+    "Major life changes", 
+    "Chronic health issues", 
+    "Lack of routine", 
+    "Perfectionism",
+    "Negative self-talk"
+  ];
+  const challengingPeriod = "Few years"; // Consistent with high negative effects
+  const energyLevel = "Low"; // Consistent with high negative effects
   
-  if (score <= 40) {
-    level = "High";
-    levelText = "High level";
-    difficulties = ["Low energy", "Procrastination", "Stress"];
-    triggers = ["Sleep", "Work environment", "Anxiety"];
-  } else if (score <= 70) {
-    level = "Medium";
-    levelText = "Medium level";
-    difficulties = ["Focus issues", "Time management"];
-    triggers = ["Technology distractions", "Poor habits"];
-    challengingPeriod = "Several months";
-    energyLevel = "Medium";
-  } else {
-    level = "Low";
-    levelText = "Low level";
-    difficulties = ["Occasional stress", "Work-life balance"];
-    triggers = ["Temporary setbacks"];
-    challengingPeriod = "Few weeks";
-    energyLevel = "High";
-  }
-  
-  // Select one difficulty and trigger randomly
+  // Select one difficulty and trigger randomly from the expanded lists
   const mainDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
   const trigger = triggers[Math.floor(Math.random() * triggers.length)];
   
@@ -124,11 +126,11 @@ const statsCardVariants: Variants = {
 const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
   const { track } = usePostHog();
   const { goToNextStep, visitorId } = useQuiz();
-  const levelInfo = getLevelInfo(score);
+  const levelInfo = getLevelInfo(score); // score is now effectively ignored for level determination
   const animation = useAnimation();
   
-  // Calculate slider position (0-100)
-  const sliderPosition = Math.min(Math.max((score / 100) * 100, 0), 100);
+  // Force slider position to indicate "High" (e.g., 95%)
+  const sliderPosition = 95;
   
   // Determine level indicator position
   const levelIndicatorLeft = sliderPosition + '%';
