@@ -157,7 +157,7 @@ const ExpressEC = memo(function ExpressEC({ onSuccess, onError }: Omit<PaymentRe
         options={{
           paymentMethodOrder: ['apple_pay', 'google_pay', 'link', 'klarna'],
           layout: { maxColumns: 2, maxRows: 2 },
-          wallets: {
+          paymentMethods: {
             applePay: 'auto',
             googlePay: 'auto'
           },

@@ -144,7 +144,7 @@ serve(async (req: Request) => {
       currency: 'usd',
       automatic_payment_methods: { 
         enabled: true,
-        allow_redirects: 'always' 
+        allow_redirects: 'never' 
       },
       metadata: {
         integration_check: 'express_checkout_element_v2' // Updated metadata
