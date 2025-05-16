@@ -128,6 +128,20 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
   const [questionViewTime, setQuestionViewTime] = useState<number>(Date.now());
   const navigate = useNavigate();
 
+  const optionVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.2,
+        ease: "easeOut"
+      }
+    }),
+    exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: "easeIn" } }
+  };
+
   // Track when question is viewed
   useEffect(() => {
     const timestamp = Date.now();
@@ -401,25 +415,45 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
             */}
             <div className="flex-grow overflow-y-auto pb-32">
               <div className="grid grid-cols-1 gap-3">
-                {(question.optionsData || []).map((option) => (
-                  <motion.div
-                    key={option.id}
-                    className={`
-                      border rounded-xl p-3 cursor-pointer transition-colors flex items-center
-                      ${selectedOptions.has(option.id) 
-                        ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
-                        : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
-                    `}
-                    onClick={() => handleToggleOption(option.id)}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.1 }}
-                  >
-                    <div className="mr-2">
-                      {getOptionIcon(option.text)}
-                    </div>
-                    <span className="font-lexend text-md text-lucid-dark text-left">{option.text}</span>
-                  </motion.div>
-                ))}
+                {(question.optionsData || []).map((option, index) => {
+                  const isSelected = selectedOptions.has(option.id);
+                  const isAnimating = animatingSelection === option.id;
+
+                  return (
+                    <motion.button
+                      key={option.id}
+                      onClick={() => handleToggleOption(option.id)}
+                      className={`
+                        w-full p-4 rounded-xl border-2 text-left transition-all duration-150 ease-in-out
+                        flex items-center justify-between text-sm sm:text-base
+                        ${
+                          isSelected
+                            ? 'bg-lucid-pink/20 border-lucid-pink text-lucid-pink'
+                            : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }
+                        ${isAnimating ? 'scale-95' : ''}
+                      `}
+                      whileHover={{ scale: isSelected ? 1 : 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <span className="font-medium">{option.text}</span>
+                      {question.type === 'multiselect' && (
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
+                          ${isSelected ? 'bg-lucid-pink border-lucid-pink' : 'border-gray-300'}
+                        `}>
+                          {isSelected && (
+                            <motion.div
+                              className="w-2.5 h-2.5 bg-white rounded-full"
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ duration: 0.15 }}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
             {/* Render Continue button via portal to avoid being affected by parent transforms */}
