@@ -393,8 +393,7 @@ const CheckoutPage = () => {
           headers: { 
             'Content-Type': 'application/json',
             'X-Mobile-Device': isMobileDevice ? 'true' : 'false',
-            'X-Supports-Apple-Pay': potentiallySupportsApplePay ? 'true' : 'false',
-            'Cache-Control': 'no-cache, no-store'
+            'X-Supports-Apple-Pay': potentiallySupportsApplePay ? 'true' : 'false'
           },
           body: JSON.stringify(requestData),
           mode: 'cors',
