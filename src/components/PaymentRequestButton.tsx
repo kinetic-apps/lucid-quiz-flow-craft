@@ -81,7 +81,7 @@ const PaymentRequestForm = ({ amount, planName, onSuccess, onError, email }: Pay
         setIsLoading(false);
         setClientSecret(null);
     }
-  }, [amount, email, onError]);
+  }, [amount, email]);
 
   // Inner component rendered only after clientSecret is ready and inside <Elements>
   const ExpressEC = () => {
