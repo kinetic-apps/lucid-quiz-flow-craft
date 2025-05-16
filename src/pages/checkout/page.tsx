@@ -11,6 +11,7 @@ import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
 import EmbeddedCheckout from '@/components/EmbeddedCheckout';
 import { createStripePaymentIntent } from '@/integrations/stripe/client';
 import PaymentRequestButton from '@/components/PaymentRequestButton';
+import { supabase } from '@/lib/supabase';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -248,23 +249,50 @@ const CheckoutPage = () => {
     
     try {
       const plan = getPlanDetails();
+
+      // Get Supabase user details for Stripe
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      const supabaseUserId = supabaseUser?.id;
+      const supabaseUserEmail = supabaseUser?.email;
+      // Assuming user_metadata might contain a name, adjust key if different
+      const supabaseUserFullName = supabaseUser?.user_metadata?.full_name || supabaseUser?.user_metadata?.name;
+
+      let emailForStripe: string;
+      let nameForStripe: string | undefined;
+
+      if (supabaseUserEmail) {
+        emailForStripe = supabaseUserEmail;
+      } else if (supabaseUserId) {
+        emailForStripe = `${supabaseUserId}@placeholder.dev`;
+      } else {
+        // Fallback if somehow no supabaseUserId (should not happen with current PostHogContext setup)
+        // Consider if a more robust error handling or default is needed here.
+        emailForStripe = `anonymous-${Date.now()}@placeholder.dev`; 
+      }
+
+      if (supabaseUserFullName) {
+        nameForStripe = supabaseUserFullName;
+      } else if (supabaseUserId) {
+        nameForStripe = `User ${supabaseUserId.substring(0, 8)}`;
+      } // If no name and no supabaseUserId, nameForStripe remains undefined
       
       // Track checkout initiated
       track('checkout_initiated', {
         visitor_id: visitorId,
-        user_id: userId || undefined,
-        user_email: userEmail || undefined,
+        user_id: supabaseUserId || undefined,
+        user_email: emailForStripe || undefined,
         plan_id: selectedPlan,
         plan_name: plan.name,
         plan_price: plan.totalPrice
       });
       
       // Create a payment intent instead of checkout session
-      const { clientSecret } = await createStripePaymentIntent(
+      const { clientSecret, customerId } = await createStripePaymentIntent(
         plan.priceId,
-        userId,
-        userEmail || 'temp@example.com', // Provide a fallback temporary email if not available
-        selectedPlan
+        supabaseUserId || null, // Pass Supabase User ID
+        emailForStripe,      // Pass determined email for Stripe
+        selectedPlan,
+        nameForStripe || null // Pass determined name for Stripe
       );
       
       // Set the client secret and open the checkout
@@ -275,7 +303,7 @@ const CheckoutPage = () => {
       // Track embed checkout opened
       track('embedded_checkout_opened', {
         visitor_id: visitorId,
-        user_id: userId || undefined,
+        user_id: supabaseUserId || undefined,
         plan_id: selectedPlan
       });
       

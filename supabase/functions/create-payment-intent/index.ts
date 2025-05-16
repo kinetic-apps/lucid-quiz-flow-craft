@@ -24,11 +24,11 @@ const STRIPE_PRODUCTS = {
     perDayPrice: 6.21
   },
   '1month': {
-    id: 'prod_SHPh2iwxiuTkPk',
-    priceId: 'price_1RMqrjQKcWZpjipTxRHY8jHS',
+    id: 'prod_SK2tedsiCtWTrG',
+    priceId: 'price_1RPOnuQKcWZpjipTXxRXBzeE',
     name: '1-MONTH PLAN',
-    totalPrice: 43.50,
-    perDayPrice: 1.45
+    totalPrice: 19.99,
+    perDayPrice: 0.67
   },
   '3month': {
     id: 'prod_SHPh3bBU9qM6Nf',
@@ -65,7 +65,7 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { priceId, userId, email, planId } = await req.json()
+    const { priceId, userId, email, planId, customerName } = await req.json()
 
     // Validate required fields - only check for priceId
     if (!priceId) {
@@ -89,20 +89,33 @@ serve(async (req) => {
       if (customers.data.length > 0) {
         // Use existing customer
         customer = customers.data[0]
+        // Optionally update name if a more specific one is provided now and it's not a generic fallback
+        if (customerName && customer.name !== customerName && !customerName.startsWith('User ')) {
+          await stripe.customers.update(customer.id, { name: customerName });
+        }
+        // Ensure supabase_user_id is in metadata if missing
+        if (userId && (!customer.metadata || customer.metadata.supabase_user_id !== userId)) {
+          await stripe.customers.update(customer.id, {
+            metadata: { ...customer.metadata, supabase_user_id: userId },
+          });
+        }
       } else {
-        // Create a new customer with email
+        // Create a new customer with email and name
         customer = await stripe.customers.create({
           email,
+          name: customerName, // Use the provided customerName
           metadata: {
-            userId: userId || '',
+            supabase_user_id: userId, // Store supabaseUserId
           },
         })
       }
     } else {
-      // Create an anonymous customer if email is not provided
+      // Create an anonymous customer if email is not provided (should be placeholder email now)
       customer = await stripe.customers.create({
+        name: customerName, // Use the provided customerName (likely a fallback like 'User ...')
+        email: email, // This will be the placeholder email
         metadata: {
-          userId: userId || '',
+          supabase_user_id: userId, // Store supabaseUserId
         },
       })
     }
@@ -132,9 +145,9 @@ serve(async (req) => {
         enabled: true,
       },
       metadata: {
-        userId,
         planId,
         productName: productDetails.name,
+        supabase_user_id: userId, // Ensure supabase_user_id is here
       },
     });
 

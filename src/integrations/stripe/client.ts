@@ -150,7 +150,8 @@ export async function createStripePaymentIntent(
   priceId: string,
   userId: string | null,
   email: string | null,
-  planId: string
+  planId: string,
+  customerName?: string | null
 ) {
   try {
     const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent', {
@@ -163,6 +164,7 @@ export async function createStripePaymentIntent(
         userId: userId || undefined,
         email: email || undefined,
         planId,
+        customerName: customerName || undefined
       }),
     });
 
