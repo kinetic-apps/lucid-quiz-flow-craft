@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import posthog from 'posthog-js';
+import { supabase } from '@/lib/supabase'; // Import Supabase client
+import type { User, Session } from '@supabase/supabase-js'; // Import Supabase types
 
 interface PostHogContextType {
   posthog: typeof posthog;
@@ -53,9 +55,85 @@ export function PostHogProvider({
 
     // Clean up on unmount
     return () => {
-      posthog.reset();
+      // posthog.reset(); // We will handle reset more granularly with Supabase auth
     };
   }, [apiKey, hostUrl, options]);
+
+  useEffect(() => {
+    if (!isReady) return; // Don't run until PostHog itself is ready
+
+    const identifyUser = (user: User | null | undefined) => {
+      if (user) {
+        const properties: Record<string, unknown> = {};
+        if (user.email) {
+          properties.email = user.email;
+        }
+        // You can add more user properties from user.user_metadata if needed
+        // For example: if (user.user_metadata?.name) properties.name = user.user_metadata.name;
+        posthog.identify(user.id, properties);
+      }
+    };
+
+    const handleAuthChange = async (event: string, session: Session | null) => {
+      console.log(`Supabase Auth Event: ${event}`, session);
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
+        if (session?.user) {
+          identifyUser(session.user);
+        } else if (event === 'INITIAL_SESSION' && !session) {
+          // No initial session, sign in anonymously
+          console.log('No initial Supabase session, signing in anonymously...');
+          const { data: anonSession, error: anonError } = await supabase.auth.signInAnonymously();
+          if (anonError) {
+            console.error('Error signing in anonymously:', anonError);
+          } else if (anonSession?.user) {
+            console.log('Signed in anonymously:', anonSession.user.id);
+            identifyUser(anonSession.user);
+          }
+        }
+      } else if (event === 'SIGNED_OUT') {
+        posthog.reset();
+        console.log('User signed out from Supabase, signing in anonymously again...');
+        const { data: anonSession, error: anonError } = await supabase.auth.signInAnonymously();
+        if (anonError) {
+          console.error('Error signing in anonymously after sign out:', anonError);
+        } else if (anonSession?.user) {
+          console.log('Re-signed in anonymously after sign out:', anonSession.user.id);
+          // The INITIAL_SESSION or SIGNED_IN event from signInAnonymously will handle identification
+        }
+      }
+    };
+
+    // Check initial session state
+    const initializeSession = async () => {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Error getting initial session:', sessionError);
+        // If there's an error getting the session, let onAuthStateChange handle it
+        return;
+      }
+
+      if (session?.user) {
+        console.log('Initial Supabase session found by getSession():', session.user.id);
+        identifyUser(session.user);
+      } else {
+        // If no session from getSession(), onAuthStateChange with INITIAL_SESSION event
+        // will handle the anonymous sign-in if necessary. We don't need to do it here.
+        console.log('No initial Supabase session found by getSession(). onAuthStateChange will handle anonymous sign-in if needed.');
+      }
+    };
+
+    initializeSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(handleAuthChange);
+
+    return () => {
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+      // Consider if posthog.reset() is needed here if the provider itself unmounts.
+      // Generally, onAuthStateChange handles transitions.
+    };
+  }, [isReady]); // Depend on isReady
 
   // Utility function to track events
   const track = (eventName: string, eventProperties?: Record<string, unknown>) => {
