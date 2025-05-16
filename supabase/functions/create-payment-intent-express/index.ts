@@ -14,33 +14,44 @@ const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
 })
 
-// Define CORS headers - include your Vercel domain explicitly
+// Define CORS headers - include all possible origins that might call this function
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey, content-type, X-Mobile-Device, X-Supports-Apple-Pay',
   'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req) => {
+  // Get the origin from the request headers
+  const origin = req.headers.get('Origin') || '*';
+  
+  // Create dynamic CORS headers with the requesting origin
+  const dynamicCorsHeaders = {
+    ...corsHeaders,
+    'Access-Control-Allow-Origin': origin
+  };
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
-      headers: corsHeaders
-    })
+      headers: dynamicCorsHeaders
+    });
   }
 
   // Only handle POST requests
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { 
       status: 405,
-      headers: corsHeaders 
-    })
+      headers: dynamicCorsHeaders 
+    });
   }
 
   try {
     // Parse the request body
-    const { amount, email } = await req.json()
+    const { amount, email } = await req.json();
+    
+    console.log(`Processing payment intent request: amount=${amount}, email=${email ? 'provided' : 'not provided'}`);
 
     // Validate required fields
     if (!amount) {
@@ -48,9 +59,9 @@ serve(async (req) => {
         JSON.stringify({ error: 'Missing required fields (amount)' }), 
         { 
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...dynamicCorsHeaders, 'Content-Type': 'application/json' }
         }
-      )
+      );
     }
 
     // Create or retrieve customer if email is provided
@@ -63,20 +74,26 @@ serve(async (req) => {
 
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
+        console.log(`Found existing customer: ${customerId}`);
       } else {
         const customer = await stripe.customers.create({
           email,
         });
         customerId = customer.id;
+        console.log(`Created new customer: ${customerId}`);
       }
     }
 
+    // Create payment methods object with explicit types for Apple Pay support
+    const paymentMethodTypes = ['card', 'apple_pay', 'google_pay'];
+    console.log(`Creating payment intent with methods: ${paymentMethodTypes.join(', ')}`);
+    
     // Create a PaymentIntent with explicit payment method types including Apple Pay
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: 'usd',
       customer: customerId || undefined,
-      payment_method_types: ['card', 'apple_pay', 'google_pay'],
+      payment_method_types: paymentMethodTypes,
       automatic_payment_methods: { 
         enabled: true,
         allow_redirects: 'always' 
@@ -86,6 +103,8 @@ serve(async (req) => {
       }
     });
 
+    console.log(`Payment intent created: ${paymentIntent.id}`);
+
     // Return the client secret to the client
     return new Response(
       JSON.stringify({ 
@@ -94,17 +113,17 @@ serve(async (req) => {
       }), 
       { 
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...dynamicCorsHeaders, 'Content-Type': 'application/json' }
       }
-    )
+    );
   } catch (error) {
-    console.error('Error creating payment intent:', error)
+    console.error('Error creating payment intent:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error', details: error.message }), 
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...dynamicCorsHeaders, 'Content-Type': 'application/json' }
       }
-    )
+    );
   }
-}) 
+}); 

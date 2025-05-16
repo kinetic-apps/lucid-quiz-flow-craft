@@ -25,6 +25,8 @@ const ExpressEC = memo(function ExpressEC({ onSuccess, onError }: Omit<PaymentRe
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [expressElementMounted, setExpressElementMounted] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
+  const [mountAttemptCount, setMountAttemptCount] = useState(0);
   
   const stripeInstance = useStripe(); 
   const elementsInstance = useElements();
@@ -50,6 +52,26 @@ const ExpressEC = memo(function ExpressEC({ onSuccess, onError }: Omit<PaymentRe
       mounted = false;
     };
   }, [stripeInstance, elementsInstance]);
+
+  // Add a fallback timer - if element doesn't mount in 5 seconds, show a message
+  useEffect(() => {
+    if (expressElementMounted || errorMessage || !stripeInstance || !elementsInstance) {
+      return;
+    }
+    
+    // Set a timeout to show fallback message if payment methods don't load in time
+    const fallbackTimer = setTimeout(() => {
+      if (!expressElementMounted && !errorMessage && mountAttemptCount >= 2) {
+        setShowFallback(true);
+        console.log("Express payment methods not available - showing fallback message");
+      } else if (!expressElementMounted && mountAttemptCount < 2) {
+        // Increment attempt count and try remounting
+        setMountAttemptCount(prev => prev + 1);
+      }
+    }, 5000);
+    
+    return () => clearTimeout(fallbackTimer);
+  }, [expressElementMounted, errorMessage, stripeInstance, elementsInstance, mountAttemptCount]);
 
   const handleConfirm: ExpressCheckoutElementProps['onConfirm'] = async () => {
     if (!stripeInstance || !elementsInstance) {
@@ -99,11 +121,30 @@ const ExpressEC = memo(function ExpressEC({ onSuccess, onError }: Omit<PaymentRe
 
   // Handle component loading state
   if (isLoading && !expressElementMounted) {
-    return <div className="text-center py-4">Loading payment options...</div>;
+    return (
+      <div className="text-center py-4">
+        <div className="flex items-center justify-center">
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-lucid-pink" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading payment options...
+        </div>
+      </div>
+    );
   }
   
   if (errorMessage) {
     return <div className="text-red-500 text-sm font-medium text-center py-2">Error: {errorMessage}</div>;
+  }
+  
+  if (showFallback) {
+    return (
+      <div className="text-center py-4 border border-gray-200 rounded-md bg-gray-50">
+        <p className="text-sm text-gray-600 mb-2">Express payment options unavailable</p>
+        <p className="text-xs text-gray-500">Please use the "More payment options" button below to continue with card payment.</p>
+      </div>
+    );
   }
   
   if (!stripeInstance || !elementsInstance) {
@@ -125,7 +166,11 @@ const ExpressEC = memo(function ExpressEC({ onSuccess, onError }: Omit<PaymentRe
           }
         }}
         onConfirm={handleConfirm}
-        onReady={() => setExpressElementMounted(true)}
+        onReady={() => {
+          console.log('Express Checkout Element ready');
+          setExpressElementMounted(true);
+          setShowFallback(false);
+        }}
         onLoadError={(e) => {
           console.error("Express Checkout Element load error:", e);
           const msg = e.error?.message || "Failed to load Stripe Express Checkout.";

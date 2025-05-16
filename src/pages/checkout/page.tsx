@@ -375,36 +375,60 @@ const CheckoutPage = () => {
       lastAttemptPlanIdRef.current = attemptPlanId;
       lastAttemptEmailRef.current = attemptUserEmail;
 
+      // Define the URL and request data outside the try block
+      const url = 'https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent-express';
+      const requestData = {
+        amount: Math.round(planDetails.discountedPrice * 100),
+        email: attemptUserEmail,
+      };
+
       try {
+        console.log(`Fetching payment intent for plan: ${attemptPlanId}, amount: ${requestData.amount}`);
+        
         // Add a slight delay to ensure UI reflects loading state
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent-express', {
+        const response = await fetch(url, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
             'X-Mobile-Device': isMobileDevice ? 'true' : 'false',
-            'X-Supports-Apple-Pay': potentiallySupportsApplePay ? 'true' : 'false'
+            'X-Supports-Apple-Pay': potentiallySupportsApplePay ? 'true' : 'false',
+            'Cache-Control': 'no-cache, no-store'
           },
-          body: JSON.stringify({
-            amount: Math.round(planDetails.discountedPrice * 100),
-            email: attemptUserEmail,
-          }),
+          body: JSON.stringify(requestData),
+          mode: 'cors',
+          credentials: 'omit',
           signal, // Add AbortController signal
         });
 
         if (!isMounted) return;
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Failed to fetch client secret for express checkout.' }));
-          throw new Error(errorData.error || 'Network response was not ok for express client secret.');
+          let errorMessage = 'Network response was not ok for express client secret.';
+          
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorData.details || errorMessage;
+          } catch (jsonError) {
+            console.error('Error parsing error response:', jsonError);
+            // If we can't parse JSON, use the status text
+            errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          }
+          
+          throw new Error(errorMessage);
         }
         
-        const { clientSecret: newClientSecret } = await response.json();
+        const data = await response.json();
+        console.log('Payment intent created successfully');
         
         if (!isMounted) return;
         
-        setExpressClientSecret(newClientSecret);
+        if (!data.clientSecret) {
+          throw new Error('Response did not contain a client secret');
+        }
+        
+        setExpressClientSecret(data.clientSecret);
         expressClientSecretFetchedRef.current = true;
         lastFetchedPlanIdRef.current = attemptPlanId;
         lastFetchedUserEmailRef.current = attemptUserEmail;
@@ -416,7 +440,19 @@ const CheckoutPage = () => {
         if (error.name === 'AbortError') return;
         
         console.error("Failed to fetch clientSecret for Express Checkout:", error);
-        const message = error instanceof Error ? error.message : 'Failed to initialize express payment options.';
+        
+        let errorMessage = 'Failed to initialize express payment options.';
+        
+        // Network errors and CORS issues often have specific error types
+        if (error instanceof TypeError) {
+          if (error.message.includes('failed') || error.message.includes('network')) {
+            errorMessage = 'Network connection issue. Please check your internet connection and try again.';
+          } else if (error.message.includes('CORS') || error.message.includes('access control')) {
+            errorMessage = 'Cross-origin request blocked. This appears to be a temporary issue with our payment processor.';
+          }
+        }
+        
+        const message = error instanceof Error ? (error.message || errorMessage) : errorMessage;
         setExpressCheckoutError(message);
         setExpressClientSecret(null);
         attemptCompletedForCurrentParamsRef.current = true;
@@ -428,7 +464,26 @@ const CheckoutPage = () => {
       }
     };
 
-    fetchExpressClientSecret();
+    // Add a retry mechanism for network errors
+    let retryCount = 0;
+    const maxRetries = 2;
+    const retryDelay = 1500; // 1.5 seconds
+    
+    const attemptFetchWithRetry = async () => {
+      try {
+        await fetchExpressClientSecret();
+      } catch (error) {
+        if (retryCount < maxRetries && isMounted && 
+            error instanceof Error && 
+            (error.message.includes('network') || error.message.includes('failed'))) {
+          retryCount++;
+          console.log(`Retrying fetch attempt ${retryCount} of ${maxRetries}...`);
+          setTimeout(attemptFetchWithRetry, retryDelay);
+        }
+      }
+    };
+    
+    attemptFetchWithRetry();
 
     // Clean up function
     return () => {
