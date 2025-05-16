@@ -7,6 +7,7 @@ import {
   useElements,
 } from '@stripe/react-stripe-js';
 import type { StripeElementsOptions } from '@stripe/stripe-js';
+import { useNavigate } from 'react-router-dom';
 
 // Initialize Stripe with the environment variable
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -26,6 +27,7 @@ interface CheckoutFormProps {
 const CheckoutForm = ({ onSuccess, onCancel }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -54,7 +56,7 @@ const CheckoutForm = ({ onSuccess, onCancel }: CheckoutFormProps) => {
         setIsLoading(false);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         setIsLoading(false);
-        onSuccess(paymentIntent as PaymentIntent);
+        navigate('/checkout/refund-notification');
       } else {
         setIsLoading(false);
         setErrorMessage('Payment status is pending or requires additional steps.');

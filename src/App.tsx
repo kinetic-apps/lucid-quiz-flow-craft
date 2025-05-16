@@ -11,6 +11,7 @@ import QuizLayout from "./pages/quiz/layout";
 import QuizPage from "./pages/quiz/[slug]/page";
 import CheckoutPage from "./pages/checkout/page";
 import CheckoutSuccessPage from "./pages/checkout/success";
+import RefundNotificationPage from "./pages/RefundNotificationPage";
 import { QuizProvider } from "./context/QuizContext";
 import { PostHogProvider } from "./context/PostHogContext";
 
@@ -41,6 +42,7 @@ const App = () => {
                     <CheckoutSuccessPage />
                   </QuizProvider>
                 } />
+                <Route path="refund-notification" element={<RefundNotificationPage />} />
                 <Route path="*" element={
                   <QuizProvider>
                     <CheckoutPage />
