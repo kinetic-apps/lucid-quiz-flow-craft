@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
@@ -177,8 +177,13 @@ const CheckoutPage = () => {
   const [expressCheckoutError, setExpressCheckoutError] = useState<string | null>(null);
   const [isFetchingExpressClientSecret, setIsFetchingExpressClientSecret] = useState(false);
   const expressClientSecretFetchedRef = useRef(false);
-  const lastFetchedPlanIdRef = useRef<string | null>(null); // Track last plan for which fetch was attempted
-  const lastFetchedUserEmailRef = useRef<string | null>(null); // Track last email for which fetch was attempted
+  const lastFetchedPlanIdRef = useRef<string | null>(null);
+  const lastFetchedUserEmailRef = useRef<string | null>(null);
+
+  // New refs to prevent looping on persistent failure for the exact same parameters
+  const lastAttemptPlanIdRef = useRef<string | null>(null);
+  const lastAttemptEmailRef = useRef<string | null>(null);
+  const attemptCompletedForCurrentParamsRef = useRef(false);
   
   // Countdown timer state
   const [countdown, setCountdown] = useState({ minutes: 10, seconds: 0 });
@@ -233,36 +238,47 @@ const CheckoutPage = () => {
   }, []);
 
   // Effect to fetch client secret for Express Checkout Element when plan/email changes
-  // This should ideally run once when the necessary data (amount from plan, email) is available.
   useEffect(() => {
-    const planDetails = SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan);
+    const planDetails = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan);
 
-    // Only proceed if we have plan details and a user email.
-    if (!planDetails || !userEmail) {
-      setExpressClientSecret(null); // Clear previous secret if details are missing
-      expressClientSecretFetchedRef.current = false; // Reset fetched status
+    if (!planDetails) {
+      setExpressClientSecret(null);
+      setExpressCheckoutError(null);
+      attemptCompletedForCurrentParamsRef.current = false; 
+      // Clear last attempted refs so a new plan selection (if any) will trigger a fetch.
+      lastAttemptPlanIdRef.current = null; 
+      lastAttemptEmailRef.current = null;
+      // Also clear refs related to "last successful fetch" if plan becomes invalid
+      expressClientSecretFetchedRef.current = false;
       lastFetchedPlanIdRef.current = null;
       lastFetchedUserEmailRef.current = null;
       return;
     }
 
-    // If plan or email has changed since last fetch attempt, reset the fetched flag.
-    if (selectedPlan !== lastFetchedPlanIdRef.current || userEmail !== lastFetchedUserEmailRef.current) {
-      expressClientSecretFetchedRef.current = false;
-      setExpressClientSecret(null); // Clear old secret for new plan/email
+    // If plan or email has changed from the last ATTEMPT, we need a new attempt.
+    if (selectedPlan !== lastAttemptPlanIdRef.current || userEmail !== lastAttemptEmailRef.current) {
+      attemptCompletedForCurrentParamsRef.current = false;
+      setExpressClientSecret(null); // Clear old secret for new params
+      setExpressCheckoutError(null); // Clear old error
+      expressClientSecretFetchedRef.current = false; // Invalidate old successful fetch state
     }
 
-    // Prevent fetching if already fetched for the current plan/email combination or if currently fetching.
-    if (expressClientSecretFetchedRef.current || isFetchingExpressClientSecret) {
-      return;
+    if (attemptCompletedForCurrentParamsRef.current || isFetchingExpressClientSecret) {
+      // Already fetched (or tried to fetch and completed) for these exact params, or currently fetching.
+      return; 
     }
 
     const fetchExpressClientSecret = async () => {
       setIsFetchingExpressClientSecret(true);
+      // Clear previous error for this new attempt. clientSecret was cleared if params changed.
       setExpressCheckoutError(null);
-      // Record what we are fetching for this attempt
-      lastFetchedPlanIdRef.current = selectedPlan;
-      lastFetchedUserEmailRef.current = userEmail;
+
+      const attemptPlanId = selectedPlan;
+      const attemptUserEmail = userEmail;
+
+      // Update last attempted refs *before* the async call
+      lastAttemptPlanIdRef.current = attemptPlanId;
+      lastAttemptEmailRef.current = attemptUserEmail;
 
       try {
         const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent-express', {
@@ -270,7 +286,7 @@ const CheckoutPage = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount: Math.round(planDetails.discountedPrice * 100),
-            email: userEmail,
+            email: attemptUserEmail, // Use email for this attempt
           }),
         });
 
@@ -280,20 +296,27 @@ const CheckoutPage = () => {
         }
         const { clientSecret: newClientSecret } = await response.json();
         setExpressClientSecret(newClientSecret);
-        expressClientSecretFetchedRef.current = true; // Mark as fetched successfully for current plan/email
+        // Mark this fetch as successful for these specific parameters
+        expressClientSecretFetchedRef.current = true;
+        lastFetchedPlanIdRef.current = attemptPlanId;
+        lastFetchedUserEmailRef.current = attemptUserEmail;
+        attemptCompletedForCurrentParamsRef.current = true; // Mark success for these current attempt params
       } catch (error: unknown) {
         console.error("Failed to fetch clientSecret for Express Checkout:", error);
         const message = error instanceof Error ? error.message : 'Failed to initialize express payment options.';
         setExpressCheckoutError(message);
-        setExpressClientSecret(null); // Clear on error
-        expressClientSecretFetchedRef.current = false; // Allow retry if relevant conditions change
+        setExpressClientSecret(null);
+        // Mark that fetch attempt completed (even if failed) for current attempt params
+        attemptCompletedForCurrentParamsRef.current = true; 
+        expressClientSecretFetchedRef.current = false; // No valid client secret from this attempt
+        // Do not update lastFetchedPlanIdRef/lastFetchedUserEmailRef on failure.
       } finally {
         setIsFetchingExpressClientSecret(false);
       }
     };
 
     fetchExpressClientSecret();
-  }, [selectedPlan, userEmail, isFetchingExpressClientSecret]); // Removed expressClientSecret from deps
+  }, [selectedPlan, userEmail]);
 
   const getPlanDetails = () => {
     const plan = STRIPE_PRODUCTS[selectedPlan];
@@ -425,10 +448,13 @@ const CheckoutPage = () => {
   };
 
   // Define options for the Elements provider for Express Checkout
-  const expressElementsOptions: StripeElementsOptions | undefined = expressClientSecret ? {
-    clientSecret: expressClientSecret,
-    appearance: { theme: 'stripe' }, // Optional: consistent appearance
-  } : undefined;
+  const expressElementsOptions: StripeElementsOptions | undefined = useMemo(() => {
+    if (!expressClientSecret) return undefined;
+    return {
+      clientSecret: expressClientSecret,
+      appearance: { theme: 'stripe' },
+    } as StripeElementsOptions;
+  }, [expressClientSecret]);
 
   return (
     <div className="min-h-screen bg-lucid-cream flex flex-col">
@@ -669,7 +695,7 @@ const CheckoutPage = () => {
                       <PaymentRequestButton
                         amount={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.discountedPrice || 0} // Ensure amount is not undefined
                         planName={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.name || 'Selected Plan'}
-                        email={userEmail} // Pass userEmail
+                        email={userEmail} // Pass userEmail, can be null
                         onSuccess={(paymentIntent) => {
                           track('express_payment_successful', {
                             visitor_id: visitorId,
@@ -699,7 +725,7 @@ const CheckoutPage = () => {
                       />
                     </Elements>
                   ) : (
-                    !expressCheckoutError && !isFetchingExpressClientSecret && <div className="text-center py-2 text-sm text-gray-500">Select a plan and ensure email is available to see express payment options.</div>
+                    !expressCheckoutError && !isFetchingExpressClientSecret && <div className="text-center py-2 text-sm text-gray-500">Select a plan to see express payment options.</div>
                   )}
                 </div>
                 
