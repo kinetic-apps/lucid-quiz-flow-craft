@@ -10,9 +10,9 @@
     <!-- Content Security Policy to allow Stripe and necessary features -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' https://js.stripe.com https://cdn.gpteng.co 'unsafe-eval' 'unsafe-inline';
+      script-src 'self' https://js.stripe.com https://cdn.gpteng.co https://us-assets.i.posthog.com 'unsafe-eval' 'unsafe-inline';
       frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
-      connect-src 'self' https://api.stripe.com https://r.stripe.com https://bsqmlzocdhummisrouzs.supabase.co wss://*.supabase.co https://*.posthog.com;
+      connect-src 'self' https://api.stripe.com https://r.stripe.com https://bsqmlzocdhummisrouzs.supabase.co wss://*.supabase.co https://*.posthog.com https://us-assets.i.posthog.com;
       img-src 'self' data: https://*.stripe.com;
       style-src 'self' 'unsafe-inline';
       font-src 'self' data:;
