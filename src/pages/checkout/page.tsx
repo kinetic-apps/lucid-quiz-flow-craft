@@ -175,6 +175,13 @@ const CheckoutPage = () => {
   // Allow scrolling on the checkout page since it has a lot of content
   useMobileScrollLock({ allowScroll: true });
 
+  // Determine gender and set image paths
+  const storedGender = typeof window !== 'undefined' ? localStorage.getItem('lucid_gender') : null;
+  const isFemale = storedGender === 'female';
+
+  const beforeImageSrc = isFemale ? '/images/female-sad.png' : '/assets/figma/before-man-checkout.png';
+  const afterImageSrc = isFemale ? '/images/female-happy-after.png' : '/assets/figma/after-man-checkoout.png'; // Note current typo 'checkoout' for male after image
+
   useEffect(() => {
     // Get the email associated with the visitor ID from local storage (set during quiz)
     const storedEmail = localStorage.getItem('user_email');
@@ -359,7 +366,7 @@ const CheckoutPage = () => {
               <div className="flex justify-center">
                 <div className="relative w-32 h-32 bg-lucid-cream rounded-full overflow-hidden">
                   <img 
-                    src="/assets/figma/before-man-checkout.png" 
+                    src={beforeImageSrc}
                     alt="Current state avatar" 
                     className="absolute top-0 left-0 w-full h-full object-contain" 
                   />
@@ -399,7 +406,7 @@ const CheckoutPage = () => {
               <div className="flex justify-center">
                 <div className="relative w-32 h-32 bg-lucid-cream rounded-full overflow-hidden">
                   <img 
-                    src="/assets/figma/after-man-checkoout.png" 
+                    src={afterImageSrc}
                     alt="Goal state avatar" 
                     className="absolute top-0 left-0 w-full h-full object-contain" 
                   />

@@ -4,6 +4,7 @@ import { useQuiz } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, ChevronRight } from 'lucide-react';
 import { usePostHog } from '@/context/PostHogContext';
+import { useParams } from 'react-router-dom';
 
 type SummarySlideProps = {
   quizId: string;
@@ -128,6 +129,15 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
   const { goToNextStep, visitorId } = useQuiz();
   const levelInfo = getLevelInfo(score); // score is now effectively ignored for level determination
   const animation = useAnimation();
+  const { slug } = useParams();
+  let isFemale = false;
+  if (slug && typeof slug === 'string') {
+    isFemale = slug.toLowerCase() === 'female';
+  } else {
+    const storedGender = typeof window !== 'undefined' ? localStorage.getItem('lucid_gender') : null;
+    isFemale = storedGender === 'female';
+  }
+  const profileImageSrc = isFemale ? '/images/female-sad.png' : '/male-before-image-new.svg';
   
   // Force slider position to indicate "High" (e.g., 95%)
   const sliderPosition = 95;
@@ -217,9 +227,9 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
             style={{ backgroundColor: '#FBF3ED' }}
           >
             <img 
-              src="/male-before-image-new.svg" 
+              src={profileImageSrc}
               alt="Profile" 
-              className="w-3/4 h-3/4"
+              className="w-3/4 h-3/4 object-contain"
             />
           </motion.div>
           
