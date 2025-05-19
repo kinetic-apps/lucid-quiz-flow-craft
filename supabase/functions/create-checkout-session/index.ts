@@ -17,23 +17,23 @@ const stripe = new Stripe(stripeSecretKey, {
 // Product IDs from our Stripe account
 const STRIPE_PRODUCTS = {
   '7day': {
-    id: 'prod_SHPfu4RexpUljs',
-    priceId: 'price_1RMqpsQKcWZpjipTe90RBITg',
-    name: '7-DAY PLAN',
+    id: 'prod_SLBc1BqDeFcEHa',
+    priceId: 'price_1RQVEuLFUMi6CEqxBMskP9TG',
+    name: 'LUCID-7-Day-Plan',
     totalPrice: 43.50,
     perDayPrice: 6.21
   },
   '1month': {
-    id: 'prod_SHPh2iwxiuTkPk',
-    priceId: 'price_1RMqrjQKcWZpjipTxRHY8jHS',
-    name: '1-MONTH PLAN',
+    id: 'prod_SLBZdyOg3nqT7A',
+    priceId: 'price_1RQVCkLFUMi6CEqx1EYMZu0I',
+    name: 'LUCID-1-Month-Plan',
     totalPrice: 43.50,
     perDayPrice: 1.45
   },
   '3month': {
-    id: 'prod_SHPh3bBU9qM6Nf',
-    priceId: 'price_1RMqsDQKcWZpjipTmyHqjt3f',
-    name: '3-MONTH PLAN',
+    id: 'prod_SLBbecdAtmmydE',
+    priceId: 'price_1RQVEPLFUMi6CEqxdE5xNYtT',
+    name: 'LUCID-3-Month-Plan',
     totalPrice: 79.99,
     perDayPrice: 0.88
   }
