@@ -846,10 +846,6 @@ const CheckoutPage = () => {
                   ))}
                 </div>
                 
-                <div className="mt-4 text-xs text-lucid-gray px-4">
-                  By clicking "Get My Plan", you agree to a 1-week trial at $10.50, converting to a $43.50/month auto-renewing subscription if not canceled. Cancel via the app or email: support@thelucid.com. See <a href="#" className="text-lucid-pink underline">Subscription Policy</a> for details.
-                </div>
-                
                 <button
                   className="w-full mt-6 bg-lucid-dark text-lucid-cream py-4 rounded-lg font-semibold text-lg"
                   onClick={handleGetPlan} // This triggers Embedded Checkout flow

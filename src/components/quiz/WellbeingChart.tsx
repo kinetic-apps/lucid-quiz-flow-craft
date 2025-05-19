@@ -10,12 +10,12 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
   
-  // Chart data points with more exponential progression (using percentages for positioning divs)
+  // Updated y-coordinates so all points are colinear, giving a perfectly straight line
   const weeks = [
-    { id: 1, label: 'WEEK 1', x: '20%', y: '80%' },  // Lower starting point
-    { id: 2, label: 'WEEK 2', x: '40%', y: '62%' },  // Adjusted for slower initial improvement
-    { id: 3, label: 'WEEK 3', x: '60%', y: '35%' },  // Faster improvement
-    { id: 4, label: 'WEEK 4', x: '80%', y: '18%' },  // Even higher end point for exponential look
+    { id: 1, label: 'WEEK 1', x: '20%', y: '80%' },  // Starting point
+    { id: 2, label: 'WEEK 2', x: '40%', y: '59.333%' },  // Exact linear interpolation
+    { id: 3, label: 'WEEK 3', x: '60%', y: '38.667%' },  // Exact linear interpolation
+    { id: 4, label: 'WEEK 4', x: '80%', y: '18%' },  // End point
   ];
 
   // Update chart dimensions when component mounts or window resizes
@@ -37,9 +37,10 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Calculate absolute coordinates for SVG paths
+  // Convert percentage-based coordinates to absolute pixel values without rounding to preserve
+  // sub-pixel precision (helps the SVG line align exactly with the visual dot centers).
   const getAbsoluteCoordinates = (percentage: string, dimension: number) => {
-    return Math.round((parseFloat(percentage) / 100) * dimension);
+    return (parseFloat(percentage) / 100) * dimension;
   };
 
   // Generate the path when dimensions are available
@@ -166,7 +167,7 @@ const WellbeingChart = ({ onContinue }: WellbeingChartProps = {}) => {
               stroke="url(#lineGradient)"
               strokeWidth="2.5"
               strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeLinejoin="miter"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: 1 }}
               transition={{ delay: 2.2, duration: 1, ease: "easeInOut" }}
