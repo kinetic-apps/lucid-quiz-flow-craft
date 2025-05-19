@@ -142,6 +142,7 @@ serve(async (req: Request) => {
     const paymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount: amount,
       currency: 'usd',
+      payment_method_configuration: 'pmc_1RQVeTLFUMi6CEqxYxhABwOs',
       automatic_payment_methods: { 
         enabled: true,
         allow_redirects: 'never' 

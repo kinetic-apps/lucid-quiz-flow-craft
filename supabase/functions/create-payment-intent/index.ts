@@ -141,6 +141,7 @@ serve(async (req) => {
       amount: Math.round(productDetails.totalPrice * 100), // convert to cents
       currency: 'usd',
       customer: customer.id,
+      payment_method_configuration: 'pmc_1RQVeTLFUMi6CEqxYxhABwOs',
       automatic_payment_methods: {
         enabled: true,
       },
