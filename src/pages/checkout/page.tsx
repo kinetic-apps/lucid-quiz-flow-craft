@@ -23,8 +23,8 @@ const SUBSCRIPTION_PLANS = [
     id: '7day',
     name: '7-DAY PLAN',
     originalPrice: 43.50,
-    discountedPrice: 10.50,
-    perDayPrice: 1.50,
+    discountedPrice: 2.99,
+    perDayPrice: 0.43,
     popular: false,
     label: 'Trial plan'
   },
@@ -32,8 +32,8 @@ const SUBSCRIPTION_PLANS = [
     id: '1month',
     name: '1-MONTH PLAN',
     originalPrice: 43.50,
-    discountedPrice: 19.99,
-    perDayPrice: 0.66,
+    discountedPrice: 8.99,
+    perDayPrice: 0.30,
     popular: true,
     label: 'Most popular'
   },
@@ -41,8 +41,8 @@ const SUBSCRIPTION_PLANS = [
     id: '3month',
     name: '3-MONTH PLAN',
     originalPrice: 79.99,
-    discountedPrice: 34.99,
-    perDayPrice: 0.38,
+    discountedPrice: 19.99,
+    perDayPrice: 0.22,
     popular: false,
     label: 'Best value'
   }

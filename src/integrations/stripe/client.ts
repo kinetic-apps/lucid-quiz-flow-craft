@@ -7,22 +7,22 @@ export const STRIPE_PRODUCTS = {
     id: 'prod_SLBc1BqDeFcEHa',
     priceId: 'price_1RQVEuLFUMi6CEqxBMskP9TG',
     name: 'LUCID-7-Day-Plan',
-    totalPrice: 43.50,
-    perDayPrice: 6.21
+    totalPrice: 2.99,
+    perDayPrice: 0.43
   },
   '1month': {
     id: 'prod_SLBZdyOg3nqT7A',
     priceId: 'price_1RQVCkLFUMi6CEqx1EYMZu0I',
     name: 'LUCID-1-Month-Plan',
-    totalPrice: 19.99,
-    perDayPrice: 0.67
+    totalPrice: 8.99,
+    perDayPrice: 0.30
   },
   '3month': {
     id: 'prod_SLBbecdAtmmydE',
     priceId: 'price_1RQVEPLFUMi6CEqxdE5xNYtT',
     name: 'LUCID-3-Month-Plan',
-    totalPrice: 79.99,
-    perDayPrice: 0.88
+    totalPrice: 19.99,
+    perDayPrice: 0.22
   }
 };
 
