@@ -1,7 +1,57 @@
-import React from 'react';
-import { Link } from 'react-router-dom'; // Assuming react-router-dom is used for navigation
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom'; // Assuming react-router-dom is used for navigation
+
+// Client-side representation of STRIPE_PRODUCTS for price lookup
+// Ideally, this would be fetched or managed in a shared config
+const STRIPE_PRODUCTS_CLIENT = {
+  'price_1RQVEuLFUMi6CEqxBMskP9TG': { // 7day
+    totalPrice: 2.99,
+  },
+  'price_1RQVCkLFUMi6CEqx1EYMZu0I': { // 1month
+    totalPrice: 8.99,
+  },
+  'price_1RQVEPLFUMi6CEqxdE5xNYtT': { // 3month
+    totalPrice: 19.99,
+  }
+};
+
+// More specific types for fbq arguments if needed, or use a simpler one
+interface FbqPurchaseParams {
+  value: number;
+  currency: string;
+  [key: string]: any; // Allow other standard or custom parameters
+}
+
+declare global {
+  interface Window {
+    fbq?: (
+      action: 'track' | 'init' | string, // Allow standard actions and others
+      eventNameOrPixelId: 'Purchase' | 'PageView' | string, // For 'track' or pixel ID for 'init'
+      params?: FbqPurchaseParams | Record<string, unknown> // Params for 'Purchase' or other events
+    ) => void;
+  }
+}
 
 const RefundNotificationPage: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const priceId = queryParams.get('priceId');
+
+    let purchaseValue = 0.00; // Default value
+    const currency = 'USD'; // Currency is fixed to USD as per backend
+
+    if (priceId && STRIPE_PRODUCTS_CLIENT[priceId as keyof typeof STRIPE_PRODUCTS_CLIENT]) {
+      purchaseValue = STRIPE_PRODUCTS_CLIENT[priceId as keyof typeof STRIPE_PRODUCTS_CLIENT].totalPrice;
+    }
+
+    if (window.fbq) {
+      // Send Purchase event to Facebook Pixel
+      window.fbq('track', 'Purchase', { value: purchaseValue, currency: currency });
+    }
+  }, [location.search]); // Rerun if query params change
+
   return (
     <div className="min-h-screen bg-lucid-cream flex flex-col justify-center items-center p-4">
       <div className="bg-lucid-offWhite shadow-xl rounded-lg p-8 md:p-12 max-w-lg w-full text-center">

@@ -605,7 +605,14 @@ const CheckoutPage = () => {
       payment_intent_id: paymentIntent.id
     });
     
-    navigate('/checkout/refund-notification');
+    const planDetails = STRIPE_PRODUCTS[selectedPlan];
+    if (planDetails) {
+      navigate(`/checkout/refund-notification?priceId=${planDetails.priceId}`);
+    } else {
+      // Fallback or error handling if planDetails is not found, though selectedPlan should always be valid
+      console.error("Selected plan details not found for navigation.");
+      navigate('/checkout/refund-notification'); 
+    }
   };
 
   // Handle cancellation
@@ -867,7 +874,13 @@ const CheckoutPage = () => {
                             payment_intent_id: paymentIntent.id,
                             method: 'express_checkout'
                           });
-                          navigate('/checkout/refund-notification');
+                          const planDetails = STRIPE_PRODUCTS[selectedPlan];
+                          if (planDetails) {
+                            navigate(`/checkout/refund-notification?priceId=${planDetails.priceId}`);
+                          } else {
+                             console.error("Selected plan details not found for express checkout navigation.");
+                             navigate('/checkout/refund-notification');
+                          }
                         }}
                         onError={(error) => {
                           console.error('Express payment error on page:', error);
