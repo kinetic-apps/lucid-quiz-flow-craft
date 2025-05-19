@@ -633,29 +633,12 @@ const CheckoutPage = () => {
     <div className="min-h-screen bg-lucid-cream flex flex-col">
       {/* Fixed header */}
       <div className="sticky top-0 z-10 w-full bg-white shadow-sm">
-        <div className="max-w-md mx-auto flex justify-between items-center p-4">
+        <div className="max-w-md mx-auto flex justify-center items-center p-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8">
               <img src="/assets/lucid-icon.svg" alt="Lucid Logo" className="w-full h-full" />
             </div>
             <span className="text-lucid-dark font-medium">Lucid</span>
-          </div>
-          <div className="flex items-center">
-            <div className="mr-4 text-sm">
-              <span className="text-lucid-gray">Discount is reserved for:</span> 
-              <span className="ml-2 text-lucid-pink font-semibold text-lg">
-                {String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
-              </span>
-            </div>
-            {!isEmbeddedCheckoutOpen && (
-              <button
-                className="bg-lucid-dark text-lucid-cream px-6 py-2 rounded-full font-medium"
-                onClick={handleGetPlan}
-                disabled={isProcessing}
-              >
-                {isProcessing ? 'PROCESSING...' : 'GET MY PLAN'}
-              </button>
-            )}
           </div>
         </div>
       </div>
