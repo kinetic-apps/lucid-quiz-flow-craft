@@ -926,25 +926,6 @@ const CheckoutPage = () => {
                     More payment options (Card, etc.)
                   </button>
                 </div>
-
-                <div className="mt-4 flex items-center justify-center">
-                  <div className="flex items-center text-lucid-gray text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-lucid-pink">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                    Pay Safe & Secure
-                  </div>
-                </div>
-
-                <div className="flex justify-center gap-3 mt-2 mb-8">
-                  {PAYMENT_METHODS.map((method) => (
-                    <div key={method.id} className="w-12 h-8 opacity-80">
-                      <div className="w-full h-full bg-gray-100 rounded-sm flex items-center justify-center text-xs text-gray-700 font-medium">
-                        {method.alt}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </>
             )}
           </div>
