@@ -253,6 +253,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
   const { goToNextStep } = useQuiz();
   const [currentBarIndex, setCurrentBarIndex] = useState(0);
+  const [showContinueButton, setShowContinueButton] = useState(false);
   
   // Data for each progress bar
   const progressBars = [
@@ -287,10 +288,11 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
       setTimeout(() => {
         setCurrentBarIndex(currentBarIndex + 1);
       }, 1000);
+    } else {
+      // Last bar has completed
+      setShowContinueButton(true);
     }
   };
-
-  const allBarsCompleted = currentBarIndex >= progressBars.length - 1 && progressBars.every((_, index) => index <= currentBarIndex);
 
   // Container animation
   const containerVariants: Variants = {
@@ -364,7 +366,7 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
         ))}
       </div>
 
-      {allBarsCompleted && (
+      {showContinueButton && (
         <motion.div
           variants={buttonVariants}
           initial="hidden"
