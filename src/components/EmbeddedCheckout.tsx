@@ -56,7 +56,7 @@ const CheckoutForm = ({ onSuccess, onCancel }: CheckoutFormProps) => {
         setIsLoading(false);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         setIsLoading(false);
-        navigate('/checkout/refund-notification');
+        onSuccess(paymentIntent as PaymentIntent);
       } else {
         setIsLoading(false);
         setErrorMessage('Payment status is pending or requires additional steps.');

@@ -605,7 +605,7 @@ const CheckoutPage = () => {
       payment_intent_id: paymentIntent.id
     });
     
-    navigate('/checkout/success');
+    navigate('/checkout/refund-notification');
   };
 
   // Handle cancellation
@@ -888,7 +888,7 @@ const CheckoutPage = () => {
                             payment_intent_id: paymentIntent.id,
                             method: 'express_checkout'
                           });
-                          navigate('/checkout/success');
+                          navigate('/checkout/refund-notification');
                         }}
                         onError={(error) => {
                           console.error('Express payment error on page:', error);
