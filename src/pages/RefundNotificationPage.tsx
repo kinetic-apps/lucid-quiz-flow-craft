@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom'; // Assuming react-router-dom is used for navigation
+import { usePostHog } from '@/context/PostHogContext'; // <-- ADDED
 
 // Client-side representation of STRIPE_PRODUCTS for price lookup
 // Ideally, this would be fetched or managed in a shared config
@@ -34,6 +35,7 @@ declare global {
 
 const RefundNotificationPage: React.FC = () => {
   const location = useLocation();
+  const { track } = usePostHog(); // <-- ADDED
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -44,13 +46,42 @@ const RefundNotificationPage: React.FC = () => {
 
     if (priceId && STRIPE_PRODUCTS_CLIENT[priceId as keyof typeof STRIPE_PRODUCTS_CLIENT]) {
       purchaseValue = STRIPE_PRODUCTS_CLIENT[priceId as keyof typeof STRIPE_PRODUCTS_CLIENT].totalPrice;
+    } else {
+      // It's useful to log if priceId is missing or not found
+      console.warn(`Facebook Pixel: priceId '${priceId}' not found or missing. Defaulting purchaseValue.`);
     }
 
     if (window.fbq) {
       // Send Purchase event to Facebook Pixel
       window.fbq('track', 'Purchase', { value: purchaseValue, currency: currency });
+      console.log('Facebook Pixel: Purchase event triggered with', { value: purchaseValue, currency: currency });
+    } else {
+      console.warn('Facebook Pixel: fbq not available when trying to track Purchase.');
     }
-  }, [location.search]); // Rerun if query params change
+
+    // PostHog purchase_successful event
+    const visitorId = localStorage.getItem('lucid_visitor_id');
+    const userId = localStorage.getItem('user_id');
+    const userEmail = localStorage.getItem('user_email');
+    // Attempt to get paymentIntentId from URL, assuming it will be added
+    const paymentIntentId = queryParams.get('paymentIntentId'); 
+
+    track('purchase_successful', {
+      visitor_id: visitorId || undefined,
+      user_id: userId || undefined,
+      user_email: userEmail || undefined,
+      session_id: paymentIntentId || undefined, // This is the Payment Intent ID
+      price_id: priceId || undefined // Keep priceId if available and useful
+    });
+    console.log('PostHog: purchase_successful event triggered', {
+      visitorId,
+      userId,
+      userEmail,
+      paymentIntentId,
+      priceId
+    });
+
+  }, [location.search, track]); // Rerun if query params change, and add track to dependencies
 
   return (
     <div className="min-h-screen bg-lucid-cream flex flex-col justify-center items-center p-4">
