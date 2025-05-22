@@ -283,6 +283,9 @@ const CheckoutPage = () => {
   const lastAttemptEmailRef = useRef<string | null>(null);
   const attemptCompletedForCurrentParamsRef = useRef(false);
   
+  // Ref to prevent duplicate AddToCart events
+  const addToCartEventFiredRef = useRef(false);
+  
   // Countdown timer state
   const [countdown, setCountdown] = useState({ minutes: 10, seconds: 0 });
   
@@ -317,10 +320,11 @@ const CheckoutPage = () => {
     });
 
     // Track AddToCart event with Facebook Pixel (paywall view)
-    if (window.fbq) {
+    if (window.fbq && !addToCartEventFiredRef.current) {
       window.fbq('track', 'AddToCart');
       console.log('Facebook Pixel: AddToCart event triggered (paywall view)');
-    } else {
+      addToCartEventFiredRef.current = true;
+    } else if (!window.fbq) {
       console.warn('Facebook Pixel: fbq not available when trying to track AddToCart.');
     }
   }, [visitorId, track]);
