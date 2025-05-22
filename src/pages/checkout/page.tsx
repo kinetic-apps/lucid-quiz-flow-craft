@@ -15,6 +15,17 @@ import { supabase } from '@/lib/supabase';
 import { Elements } from '@stripe/react-stripe-js';
 import type { StripeElementsOptions } from '@stripe/stripe-js';
 
+// Facebook Pixel type declarations
+declare global {
+  interface Window {
+    fbq?: (
+      action: 'track' | 'init' | string,
+      eventName: 'AddToCart' | 'Purchase' | 'PageView' | string,
+      params?: Record<string, unknown>
+    ) => void;
+  }
+}
+
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -298,12 +309,20 @@ const CheckoutPage = () => {
       setUserId(storedUserId);
     }
     
-    // Track checkout page view
+    // Track checkout page view with PostHog
     track('checkout_page_viewed', {
       visitor_id: visitorId,
       user_id: storedUserId || undefined,
       user_email: storedEmail || undefined
     });
+
+    // Track AddToCart event with Facebook Pixel (paywall view)
+    if (window.fbq) {
+      window.fbq('track', 'AddToCart');
+      console.log('Facebook Pixel: AddToCart event triggered (paywall view)');
+    } else {
+      console.warn('Facebook Pixel: fbq not available when trying to track AddToCart.');
+    }
   }, [visitorId, track]);
   
   // Countdown timer effect
