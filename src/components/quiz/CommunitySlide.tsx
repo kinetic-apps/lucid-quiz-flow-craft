@@ -36,13 +36,14 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4 }}
-      className="community-slide min-h-screen flex flex-col bg-lucid-cream relative"
+      className="community-slide h-full flex flex-col bg-lucid-cream"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex-1 p-4 pt-8 flex flex-col items-center pb-24 overflow-y-auto">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto p-4 pt-8">
         {/* Community Image */}
-        <div className="w-full max-w-xs mb-6 flex justify-center">
+        <div className="w-full max-w-xs mb-6 flex justify-center mx-auto">
           <img 
             src="/assets/image.png" 
             alt="Community of people" 
@@ -51,16 +52,18 @@ const CommunitySlide = ({ quizId }: CommunitySlideProps) => {
         </div>
 
         {/* Text Content */}
-        <h2 className="text-2xl font-bold text-center mb-3 text-lucid-dark">
-          Join over 1,000,000 people
-        </h2>
-        <p className="text-center text-lucid-dark/80 px-4 max-w-sm text-base">
-          Become part of a growing worldwide community and achieve your goals with us!
-        </p>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-center mb-3 text-lucid-dark">
+            Join over 1,000,000 people
+          </h2>
+          <p className="text-center text-lucid-dark/80 px-4 max-w-sm text-base mx-auto">
+            Become part of a growing worldwide community and achieve your goals with us!
+          </p>
+        </div>
       </div>
 
       {/* Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-lucid-cream z-10">
+      <div className="flex-shrink-0 p-4 bg-lucid-cream continue-button-container">
         <button
           onClick={goToNextStep}
           className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-medium text-lg"

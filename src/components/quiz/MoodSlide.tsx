@@ -215,9 +215,9 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
           </motion.div>
         </div>
       </div>
-      {/* MODIFIED: Replaced button structure */}
+      {/* Fixed button at bottom */}
       <motion.div 
-        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+        className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container"
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ 

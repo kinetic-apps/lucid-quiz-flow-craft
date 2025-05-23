@@ -100,10 +100,10 @@ const ProgressBarWrapper = () => {
 export default function QuizLayout() {
   return (
     <QuizProvider>
-      <div className="min-h-screen flex flex-col bg-lucid-cream">
+      <div className="h-screen flex flex-col bg-lucid-cream overflow-hidden">
         <ProgressBarWrapper />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container max-w-md mx-auto py-4 px-4">
+        <main className="flex-1 overflow-hidden">
+          <div className="h-full max-w-md mx-auto">
             <Outlet />
           </div>
         </main>

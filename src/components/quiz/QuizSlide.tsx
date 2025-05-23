@@ -315,106 +315,114 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
   // Render different question types
   const renderQuestionContent = () => {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full min-h-0">
         <motion.div 
-          className="mb-4"
+          className="mb-4 flex-shrink-0"
         >
           <h2 className="text-2xl font-medium text-lucid-dark mb-2">{question.text}</h2>
           <p className="text-sm text-lucid-gray">{getInstructionText()}</p>
         </motion.div>
 
         {question.type === 'radio' && (
-          <div className="grid grid-cols-1 gap-3">
-            {(question.optionsData || []).map((option) => (
-              <motion.div
-                key={option.id}
-                className={`
-                  border rounded-xl p-4 cursor-pointer transition-colors flex items-center
-                  ${selectedOptionId === option.id 
-                    ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
-                    : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
-                  ${animatingSelection === option.id ? 'opacity-75' : 'opacity-100'}
-                `}
-                onClick={() => handleSelectOption(option.value, option.id)}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.1 }}
-              >
-                <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
-              </motion.div>
-            ))}
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 gap-3 pb-4">
+              {(question.optionsData || []).map((option) => (
+                <motion.div
+                  key={option.id}
+                  className={`
+                    border rounded-xl p-4 cursor-pointer transition-colors flex items-center
+                    ${selectedOptionId === option.id 
+                      ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
+                      : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
+                    ${animatingSelection === option.id ? 'opacity-75' : 'opacity-100'}
+                  `}
+                  onClick={() => handleSelectOption(option.value, option.id)}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.1 }}
+                >
+                  <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
 
         {question.type === 'boolean' && (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <motion.div
-              className={`
-                border rounded-xl p-4 cursor-pointer flex items-center transition-colors
-                ${selectedOption === true 
-                  ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
-                  : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
-                ${animatingSelection === 'true' ? 'opacity-75' : 'opacity-100'}
-              `}
-              onClick={() => handleSelectOption(true, 'true')}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.1 }}
-            >
-              <span className="font-lexend text-lg text-lucid-dark text-left">{
-              question.text === 'What is your age?' ? 'Under 20' : 'Yes'}</span>
-            </motion.div>
-            <motion.div
-              className={`
-                border rounded-xl p-4 cursor-pointer flex items-center transition-colors
-                ${selectedOption === false 
-                  ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
-                  : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
-                ${animatingSelection === 'false' ? 'opacity-75' : 'opacity-100'}
-              `}
-              onClick={() => handleSelectOption(false, 'false')}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.1 }}
-            >
-              <span className="font-lexend text-lg text-lucid-dark text-left">{
-              question.text === 'What is your age?' ? '20-30' : 'No'}</span>
-            </motion.div>
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 pb-4">
+              <motion.div
+                className={`
+                  border rounded-xl p-4 cursor-pointer flex items-center transition-colors
+                  ${selectedOption === true 
+                    ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
+                    : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
+                  ${animatingSelection === 'true' ? 'opacity-75' : 'opacity-100'}
+                `}
+                onClick={() => handleSelectOption(true, 'true')}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.1 }}
+              >
+                <span className="font-lexend text-lg text-lucid-dark text-left">{
+                question.text === 'What is your age?' ? 'Under 20' : 'Yes'}</span>
+              </motion.div>
+              <motion.div
+                className={`
+                  border rounded-xl p-4 cursor-pointer flex items-center transition-colors
+                  ${selectedOption === false 
+                    ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
+                    : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
+                  ${animatingSelection === 'false' ? 'opacity-75' : 'opacity-100'}
+                `}
+                onClick={() => handleSelectOption(false, 'false')}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.1 }}
+              >
+                <span className="font-lexend text-lg text-lucid-dark text-left">{
+                question.text === 'What is your age?' ? '20-30' : 'No'}</span>
+              </motion.div>
+            </div>
           </div>
         )}
 
         {question.type === 'likert' && (
-          <div className="grid grid-cols-1 gap-3">
-            {/* Likert options sorted from Never to Always */}
-            {sortOptions(question.optionsData || []).map((option) => (
-              <motion.div
-                key={option.id}
-                className={`
-                  border rounded-xl p-4 cursor-pointer transition-colors flex items-center
-                  ${selectedOptionId === option.id 
-                    ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
-                    : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
-                  ${animatingSelection === option.id ? 'opacity-75' : 'opacity-100'}
-                `}
-                onClick={() => handleSelectOption(option.value, option.id)}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.1 }}
-              >
-                <div className="mr-3">
-                  {getLikertIcon(option.value)}
-                </div>
-                <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
-              </motion.div>
-            ))}
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 gap-3 pb-4">
+              {/* Likert options sorted from Never to Always */}
+              {sortOptions(question.optionsData || []).map((option) => (
+                <motion.div
+                  key={option.id}
+                  className={`
+                    border rounded-xl p-4 cursor-pointer transition-colors flex items-center
+                    ${selectedOptionId === option.id 
+                      ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
+                      : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
+                    ${animatingSelection === option.id ? 'opacity-75' : 'opacity-100'}
+                  `}
+                  onClick={() => handleSelectOption(option.value, option.id)}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.1 }}
+                >
+                  <div className="mr-3">
+                    {getLikertIcon(option.value)}
+                  </div>
+                  <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
 
         {question.type === 'multiselect' && (
           <>
-            {/*
-              The list of options gets its own scroll context. We add extra bottom
-              padding equal to (approx.) the button height + spacing so that the
-              last option isn't hidden underneath the fixed Continue button.
-            */}
-            <div className="flex-grow overflow-y-auto pb-32">
-              <div className="grid grid-cols-1 gap-3">
+            {/* Options container with explicit scrolling */}
+            <div 
+              className="overflow-y-scroll border border-gray-100 rounded-lg"
+              style={{ 
+                height: '400px',
+                WebkitOverflowScrolling: 'touch' // Enable smooth scrolling on iOS
+              }}
+            >
+              <div className="p-2 space-y-3">
                 {(question.optionsData || []).map((option, index) => {
                   const isSelected = selectedOptions.has(option.id);
                   const isAnimating = animatingSelection === option.id;
@@ -437,42 +445,38 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                       whileTap={{ scale: 0.98 }}
                     >
                       <span className="font-medium">{option.text}</span>
-                      {question.type === 'multiselect' && (
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
-                          ${isSelected ? 'bg-lucid-pink border-lucid-pink' : 'border-gray-300'}
-                        `}>
-                          {isSelected && (
-                            <motion.div
-                              className="w-2.5 h-2.5 bg-white rounded-full"
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ duration: 0.15 }}
-                            />
-                          )}
-                        </div>
-                      )}
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
+                        ${isSelected ? 'bg-lucid-pink border-lucid-pink' : 'border-gray-300'}
+                      `}>
+                        {isSelected && (
+                          <motion.div
+                            className="w-2.5 h-2.5 bg-white rounded-full"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.15 }}
+                          />
+                        )}
+                      </div>
                     </motion.button>
                   );
                 })}
               </div>
             </div>
-            {/* Render Continue button via portal to avoid being affected by parent transforms */}
-            {createPortal(
-              <div className="fixed inset-x-0 bottom-[10px] px-4 z-50">
-                <motion.button
-                  className={`
-                    w-full py-2.5 px-6 rounded-xl text-white text-lg font-medium text-center
-                    ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
-                  `}
-                  onClick={handleSubmitMultiSelect}
-                  disabled={selectedOptions.size === 0}
-                  whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
-                >
-                  Continue
-                </motion.button>
-              </div>,
-              document.body
-            )}
+
+            {/* Continue button below the scrollable area */}
+            <div className="mt-4 flex-shrink-0 continue-button-container">
+              <motion.button
+                className={`
+                  w-full py-3 px-6 rounded-xl text-white text-lg font-medium text-center
+                  ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
+                `}
+                onClick={handleSubmitMultiSelect}
+                disabled={selectedOptions.size === 0}
+                whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
+              >
+                Continue
+              </motion.button>
+            </div>
           </>
         )}
       </div>
@@ -493,7 +497,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.3 }}
-      className="quiz-slide flex-1 h-full pb-[10px]"
+      className="quiz-slide h-full flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

@@ -97,8 +97,9 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="plan-slide h-full flex flex-col bg-lucid-cream"
     >
+      {/* Scrollable content area */}
       <motion.div
-        className="flex flex-col p-4 h-full pb-24"
+        className="flex-1 overflow-y-auto p-4"
         variants={containerVariants}
         initial="hidden"
         animate={controls}
@@ -124,7 +125,8 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         {/* Progress Chart */}
         <motion.div
           variants={itemVariants}
-          className="flex-1 flex items-end justify-between gap-1 px-6 mb-1 mt-8 relative"
+          className="flex items-end justify-between gap-1 px-6 mb-1 mt-8 relative"
+          style={{ height: '200px' }}
         >
           {/* Goal label positioned above the highlighted bar */}
           <div 
@@ -191,7 +193,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         {/* Disclaimer */}
         <motion.p
           variants={itemVariants}
-          className="text-xs text-gray-400 text-center mt-2 mb-10"
+          className="text-xs text-gray-400 text-center mt-2 mb-6"
         >
           The chart is a non-customized illustration and results may vary
         </motion.p>
@@ -202,7 +204,7 @@ const PlanSlide = ({ quizId, predictedMonth = "July 2025" }: PlanSlideProps) => 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.2, duration: 0.4 }}
-        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+        className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container"
       >
         <button
           onClick={goToNextStep}

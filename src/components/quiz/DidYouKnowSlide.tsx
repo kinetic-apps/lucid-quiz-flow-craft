@@ -29,20 +29,20 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
   
   return (
     <motion.div 
-      className="bg-lucid-cream min-h-screen flex flex-col justify-between"
+      className="bg-lucid-cream h-full flex flex-col"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Content */}
+      {/* Scrollable content area */}
       <motion.div 
-        className="p-6 pt-12 flex-1 flex flex-col items-center"
+        className="flex-1 overflow-y-auto p-6 pt-12"
         initial="hidden"
         animate="visible"
         variants={contentAnimation}
       >
         {/* Lightbulb Image */}
-        <div className="mb-8">
+        <div className="mb-8 flex justify-center">
           <img 
             src="/assets/lightbulb.png" 
             alt="Lightbulb" 
@@ -52,7 +52,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
         </div>
 
         {/* Text Content */}
-        <div className="text-center">
+        <div className="text-center mb-6">
           <h2 className="text-4xl font-medium text-lucid-dark mb-4">
             Did you know?
           </h2>
@@ -67,7 +67,7 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
       
       {/* Continue Button */}
       <motion.div 
-        className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+        className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container"
         initial="hidden"
         animate="visible"
         variants={contentAnimation}

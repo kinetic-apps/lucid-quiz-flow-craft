@@ -21,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Step as QuizStep } from '@/context/QuizContext';
-import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Define types for better type safety
@@ -115,9 +114,6 @@ export default function QuizPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Prevent scrolling on the quiz page as all content fits within the viewport
-  useMobileScrollLock({ allowScroll: false });
-
   // Listen for back navigation events from the ProgressBar component
   useEffect(() => {
     const handleBackNavigation = (event: CustomEvent) => {
@@ -464,10 +460,11 @@ export default function QuizPage() {
 
   return (
     <div 
-      className="quiz-container animate-slide-left h-full p-2 max-w-md mx-auto flex flex-col"
+      className="quiz-container animate-slide-left h-screen max-w-md mx-auto flex flex-col p-2"
       style={{ 
         '--quiz-gradient-from': quiz.gradient_from,
         '--quiz-gradient-to': quiz.gradient_to,
+        overflow: 'hidden' // Prevent page scrolling while allowing internal scrolling
       } as React.CSSProperties}
     >
       <AnimatePresence mode="wait" initial={false}>

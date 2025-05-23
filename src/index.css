@@ -201,3 +201,76 @@ body.has-scroll-issues {
     padding-bottom: 120px; /* Provide extra space at the bottom */
   }
 }
+
+/* iOS Safe Area Support */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+  }
+  
+  .safe-bottom-large {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
+  }
+  
+  .continue-button-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 6rem);
+  }
+}
+
+/* Fallback for devices without safe-area-inset-bottom */
+@supports not (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: 3rem;
+  }
+  
+  .safe-bottom-large {
+    padding-bottom: 5rem;
+  }
+  
+  .continue-button-safe {
+    padding-bottom: 7rem;
+  }
+}
+
+/* Ensure continue buttons are always visible on iOS - More aggressive approach */
+.continue-button-container {
+  padding-bottom: 6rem !important;
+  min-height: 100px;
+}
+
+/* Apply safe area support */
+@supports (env(safe-area-inset-bottom)) {
+  .continue-button-container {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 6rem) !important;
+  }
+}
+
+/* iOS specific fixes - More aggressive padding */
+@media screen and (max-device-width: 414px) and (-webkit-min-device-pixel-ratio: 2) {
+  .continue-button-container {
+    padding-bottom: 8rem !important;
+  }
+  
+  @supports (env(safe-area-inset-bottom)) {
+    .continue-button-container {
+      padding-bottom: calc(env(safe-area-inset-bottom) + 8rem) !important;
+    }
+  }
+}
+
+/* iPhone X and newer with home indicator - Much more padding */
+@media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3),
+       only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2),
+       only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3),
+       only screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
+       only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+  .continue-button-container {
+    padding-bottom: 10rem !important;
+  }
+  
+  @supports (env(safe-area-inset-bottom)) {
+    .continue-button-container {
+      padding-bottom: calc(env(safe-area-inset-bottom) + 10rem) !important;
+    }
+  }
+}

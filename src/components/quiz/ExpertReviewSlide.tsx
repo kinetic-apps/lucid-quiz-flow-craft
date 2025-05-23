@@ -41,12 +41,12 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="expert-review-slide bg-lucid-cream h-screen flex flex-col relative"
+      className="expert-review-slide bg-lucid-cream h-full flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Content */}
-      <div className="flex-1 p-3 pt-6 flex flex-col items-center overflow-y-auto pb-20">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto p-3 pt-6">
         {/* Title and Description */}
         <div className="text-center mb-3">
           <h2 className="text-lg font-bold text-center mb-1 text-lucid-dark">
@@ -58,7 +58,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
         </div>
 
         {/* Brain Image with Labels */}
-        <div className="relative w-full max-w-xs mb-4">
+        <div className="relative w-full max-w-xs mb-4 mx-auto">
           <img 
             src="/assets/brain-image.png" 
             alt="Brain diagram showing thoughts, feelings, and behavior" 
@@ -67,7 +67,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
         </div>
 
         {/* Expert Card */}
-        <div className="w-full max-w-xs mb-2">
+        <div className="w-full max-w-xs mb-6 mx-auto">
           <div className="py-1 px-4 text-xs text-center rounded-t-lg font-medium">
             Content reviewed by an expert
           </div>
@@ -84,7 +84,7 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-3 pb-5 bg-lucid-cream z-10">
+      <div className="flex-shrink-0 p-3 bg-lucid-cream continue-button-container">
         <button
           onClick={goToNextStep}
           className="w-full bg-lucid-dark text-lucid-cream py-2.5 rounded-full font-medium text-base"

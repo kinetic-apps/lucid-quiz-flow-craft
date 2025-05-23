@@ -344,26 +344,29 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
       animate="visible"
       exit="exit"
       variants={containerVariants}
-      className="p-6 h-full flex flex-col pb-24 bg-lucid-cream"
+      className="h-full flex flex-col bg-lucid-cream"
     >
-      <motion.div variants={titleVariants} className="text-center mb-10">
-        <h1 className="text-xl font-bold text-[#BC5867]">Creating your</h1>
-        <h2 className="text-xl font-bold text-[#BC5867]">personalized Well-being Management plan</h2>
-      </motion.div>
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <motion.div variants={titleVariants} className="text-center mb-10">
+          <h1 className="text-xl font-bold text-[#BC5867]">Creating your</h1>
+          <h2 className="text-xl font-bold text-[#BC5867]">personalized Well-being Management plan</h2>
+        </motion.div>
 
-      <div className="flex-1 mt-2">
-        {progressBars.map((bar, index) => (
-          index <= currentBarIndex && (
-            <ProgressBar
-              key={bar.label}
-              label={bar.label}
-              onComplete={handleBarComplete}
-              delay={index * 0.5}
-              reviewData={bar.review}
-              question={bar.question}
-            />
-          )
-        ))}
+        <div className="mt-2 mb-6">
+          {progressBars.map((bar, index) => (
+            index <= currentBarIndex && (
+              <ProgressBar
+                key={bar.label}
+                label={bar.label}
+                onComplete={handleBarComplete}
+                delay={index * 0.5}
+                reviewData={bar.review}
+                question={bar.question}
+              />
+            )
+          ))}
+        </div>
       </div>
 
       {showContinueButton && (
@@ -371,7 +374,7 @@ const ProgressSlide: React.FC<ProgressSlideProps> = ({ quizId }) => {
           variants={buttonVariants}
           initial="hidden"
           animate="visible"
-          className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10"
+          className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container"
         >
           <button
             onClick={goToNextStep}

@@ -369,7 +369,7 @@ const SummarySlide = ({ quizId, score, result }: SummarySlideProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.8, duration: 0.4 }}
-        className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-lucid-cream z-10"
+        className="flex-shrink-0 p-4 bg-lucid-cream continue-button-container"
       >
         <button
           onClick={handleNextStep}

@@ -43,11 +43,12 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="info-slide bg-lucid-cream min-h-screen flex flex-col"
+      className="info-slide bg-lucid-cream h-full flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex-1 p-6 pt-12 flex flex-col items-center">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto p-6 pt-12">
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-bold text-lucid-dark mb-3">
             Lucid was developed using evidence-based psychological practices
@@ -57,7 +58,7 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
           </p>
         </div>
         
-        <div className="flex flex-col items-center space-y-6 mt-8 w-full max-w-md">
+        <div className="flex flex-col items-center space-y-6 mt-8 w-full max-w-md mx-auto pb-6">
           <div className="university-logo w-full rounded-lg p-4 flex justify-center">
             <img 
               src="/assets/harvard.png" 
@@ -77,7 +78,7 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
       </div>
 
       {/* Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 pb-8 bg-lucid-cream z-10">
+      <div className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container">
         <button
           onClick={goToNextStep}
           className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-medium text-xl"
