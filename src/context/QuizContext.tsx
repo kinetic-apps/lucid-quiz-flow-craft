@@ -234,6 +234,15 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
         track('quiz_progress_75_percent', { visitor_id: visitorId });
         setQuizProgress75Fired(true);
       }
+      
+      // Track quiz completion when user reaches the final step (100%)
+      if (nextStep === totalSteps - 1) {
+        track('quiz_complete', {
+          visitor_id: visitorId,
+          total_questions: answers.length,
+          ...utmParams
+        });
+      }
     }
   };
 

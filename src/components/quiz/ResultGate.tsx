@@ -113,7 +113,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
         }, 500);
       }
       
-      track('quiz_complete', {
+      track('quiz_results_processed', {
         visitor_id: visitorId,
         quiz_id: quizId,
         quiz_title: quizTitle,
@@ -129,7 +129,7 @@ const ResultGate = ({ quizId, quizTitle }: ResultGateProps) => {
       
       try {
         if (typeof window !== 'undefined' && 'amplitude' in window) {
-          window.amplitude?.track('quiz_complete', { 
+          window.amplitude?.track('quiz_results_processed', { 
             visitor_id: visitorId,
             quiz_id: quizId,
             email: submissionEmail, 
