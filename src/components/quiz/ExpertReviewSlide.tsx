@@ -41,12 +41,12 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="expert-review-slide bg-lucid-cream h-full flex flex-col"
+      className="quiz-slide-container bg-lucid-cream"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto p-3 pt-6">
+      <div className="quiz-content-scrollable quiz-content-with-button p-3 pt-6">
         {/* Title and Description */}
         <div className="text-center mb-3">
           <h2 className="text-lg font-bold text-center mb-1 text-lucid-dark">
@@ -83,13 +83,13 @@ const ExpertReviewSlide = ({ quizId }: ExpertReviewSlideProps) => {
         </div>
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex-shrink-0 p-3 bg-lucid-cream continue-button-container">
+      {/* Fixed Continue Button */}
+      <div className="continue-button-container">
         <button
           onClick={goToNextStep}
-          className="w-full bg-lucid-dark text-lucid-cream py-2.5 rounded-full font-medium text-base"
+          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-medium text-lg"
         >
-          Continue <ChevronRight className="w-4 h-4 ml-1 inline" />
+          Continue
         </button>
       </div>
     </motion.div>

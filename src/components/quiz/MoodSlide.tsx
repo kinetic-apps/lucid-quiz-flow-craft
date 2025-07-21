@@ -116,11 +116,11 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -100 }}
       transition={{ duration: 0.3 }}
-      className="bg-lucid-cream min-h-screen flex flex-col justify-between"
+      className="quiz-slide-container bg-lucid-cream"
     >
-      {/* Main Content */}
-      <div className="flex-1 p-6 pt-12 flex flex-col">
-        <div className="max-w-md w-full mx-auto flex-grow flex flex-col">
+      {/* Scrollable content area */}
+      <div className="quiz-content-scrollable quiz-content-with-button p-6 pt-12">
+        <div className="max-w-md w-full mx-auto">
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, x: 100 }}
@@ -215,11 +215,12 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
           </motion.div>
         </div>
       </div>
-      {/* Fixed button at bottom */}
+      
+      {/* Fixed Continue Button */}
       <motion.div 
-        className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container"
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
+        className="continue-button-container"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ 
           duration: 0.5,
           delay: 0.6
@@ -228,7 +229,7 @@ const MoodSlide: React.FC<MoodSlideProps> = ({ onComplete }) => {
         <button
           onClick={handleContinue}
           type="button"
-          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-semibold text-xl"
+          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-medium text-lg"
         >
           Continue
         </button>

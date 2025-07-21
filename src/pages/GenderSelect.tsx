@@ -30,7 +30,7 @@ const GenderSelect = () => {
       localStorage.removeItem('quiz_started');
       localStorage.removeItem('showing_did_you_know');
       // Navigate to the quiz with the preload=false parameter
-      navigate(`/quiz/${gender}`);
+      navigate('/quiz/mindfulness-assessment');
     }, 800);
   };
 

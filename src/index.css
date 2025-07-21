@@ -232,45 +232,49 @@ body.has-scroll-issues {
   }
 }
 
-/* Ensure continue buttons are always visible on iOS - More aggressive approach */
+/* Fixed Continue button container */
 .continue-button-container {
-  padding-bottom: 6rem !important;
-  min-height: 100px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: transparent;
+  padding: 1rem;
+  z-index: 50;
 }
 
-/* Apply safe area support */
-@supports (env(safe-area-inset-bottom)) {
+/* Apply safe area support for iOS devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
   .continue-button-container {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 6rem) !important;
-  }
-}
-
-/* iOS specific fixes - More aggressive padding */
-@media screen and (max-device-width: 414px) and (-webkit-min-device-pixel-ratio: 2) {
-  .continue-button-container {
-    padding-bottom: 8rem !important;
-  }
-  
-  @supports (env(safe-area-inset-bottom)) {
-    .continue-button-container {
-      padding-bottom: calc(env(safe-area-inset-bottom) + 8rem) !important;
-    }
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 }
 
-/* iPhone X and newer with home indicator - Much more padding */
-@media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3),
-       only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2),
-       only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3),
-       only screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
-       only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
-  .continue-button-container {
-    padding-bottom: 10rem !important;
+/* Ensure content doesn't get hidden behind fixed button */
+.quiz-content-with-button {
+  padding-bottom: 100px; /* Space for button container */
+}
+
+/* Apply safe area support for content */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .quiz-content-with-button {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
   }
-  
-  @supports (env(safe-area-inset-bottom)) {
-    .continue-button-container {
-      padding-bottom: calc(env(safe-area-inset-bottom) + 10rem) !important;
-    }
-  }
+}
+
+/* Full height layout for quiz slides */
+.quiz-slide-container {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scrollable content area */
+.quiz-content-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }

@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 
 type AgeGroup = {
   id: string;
-  range_text: string;
+  range: string;
   display_order: number;
 };
 
@@ -60,37 +60,39 @@ const AgeSelect = ({ onComplete }: AgeSelectProps) => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-      className="age-select-container"
-    >
-      <div className="mb-6">
-        <h2 className="text-2xl font-dm-sans font-medium text-lucid-dark mb-4">What's your age?</h2>
-        <p className="text-sm font-dm-sans text-lucid-gray">We only use your age to personalize your plan</p>
-      </div>
+    <div className="quiz-slide-container bg-lucid-cream">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
+        className="quiz-content-scrollable p-6 pt-12"
+      >
+        <div className="mb-6">
+          <h2 className="text-2xl font-dm-sans font-medium text-lucid-dark mb-4">What's your age?</h2>
+          <p className="text-sm font-dm-sans text-lucid-gray">We only use your age to personalize your plan</p>
+        </div>
 
-      <div className="grid grid-cols-1 gap-3">
-        {ageGroups.map((ageGroup) => (
-          <motion.div
-            key={ageGroup.id}
-            className={`
-              border rounded-xl p-4 cursor-pointer transition-colors flex items-center
-              ${selectedAge === ageGroup.range_text 
-                ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
-                : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
-            `}
-            onClick={() => handleSelectAge(ageGroup.range_text)}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.08 }}
-          >
-            <span className="font-lexend text-lg text-lucid-dark text-left">{ageGroup.range_text}</span>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
+        <div className="grid grid-cols-1 gap-3">
+          {ageGroups.map((ageGroup) => (
+            <motion.div
+              key={ageGroup.id}
+              className={`
+                border rounded-xl p-4 cursor-pointer transition-colors flex items-center
+                ${selectedAge === ageGroup.range 
+                  ? 'border-lucid-pink bg-lucid-pink bg-opacity-10' 
+                  : 'border-lucid-lightGray bg-lucid-offWhite hover:bg-gray-50'}
+              `}
+              onClick={() => handleSelectAge(ageGroup.range)}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.08 }}
+            >
+              <span className="font-lexend text-lg text-lucid-dark text-left">{ageGroup.range}</span>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

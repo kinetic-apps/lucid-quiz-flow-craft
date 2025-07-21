@@ -399,7 +399,7 @@ const CheckoutPage = () => {
       lastAttemptEmailRef.current = attemptUserEmail;
 
       // Define the URL and request data outside the try block
-      const url = 'https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent-express';
+      const url = 'https://tcmwpmjjutlziudlwiau.supabase.co/functions/v1/create-payment-intent-express';
       const requestData = {
         amount: Math.round(planDetails.discountedPrice * 100),
         email: attemptUserEmail,

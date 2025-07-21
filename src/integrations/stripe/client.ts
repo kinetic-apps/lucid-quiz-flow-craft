@@ -37,7 +37,7 @@ export async function createStripeCheckoutSession(
 ) {
   try {
     // Call our Supabase Edge Function to create a checkout session
-    const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-checkout-session', {
+    const response = await fetch('https://tcmwpmjjutlziudlwiau.supabase.co/functions/v1/create-checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ export async function createStripePaymentIntent(
   customerName?: string | null
 ) {
   try {
-    const response = await fetch('https://bsqmlzocdhummisrouzs.supabase.co/functions/v1/create-payment-intent', {
+    const response = await fetch('https://tcmwpmjjutlziudlwiau.supabase.co/functions/v1/create-payment-intent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

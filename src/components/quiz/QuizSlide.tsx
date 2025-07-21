@@ -314,18 +314,85 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
 
   // Render different question types
   const renderQuestionContent = () => {
+    // For multiselect questions, we need a different layout
+    if (question.type === 'multiselect') {
+      return (
+        <>
+          <div className="quiz-content-scrollable p-6 pt-12">
+            <motion.div className="mb-4">
+              <h2 className="text-2xl font-medium text-lucid-dark mb-2">{question.text}</h2>
+              <p className="text-sm text-lucid-gray">{getInstructionText()}</p>
+            </motion.div>
+            
+            <div className="space-y-3">
+              {(question.optionsData || []).map((option, index) => {
+                const isSelected = selectedOptions.has(option.id);
+                const isAnimating = animatingSelection === option.id;
+
+                return (
+                  <motion.button
+                    key={option.id}
+                    onClick={() => handleToggleOption(option.id)}
+                    className={`
+                      w-full p-4 rounded-xl border-2 text-left transition-all duration-150 ease-in-out
+                      flex items-center justify-between text-sm sm:text-base
+                      ${
+                        isSelected
+                          ? 'bg-lucid-pink/20 border-lucid-pink text-lucid-pink'
+                          : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }
+                      ${isAnimating ? 'scale-95' : ''}
+                    `}
+                    whileHover={{ scale: isSelected ? 1 : 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="font-medium">{option.text}</span>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
+                      ${isSelected ? 'bg-lucid-pink border-lucid-pink' : 'border-gray-300'}
+                    `}>
+                      {isSelected && (
+                        <motion.div
+                          className="w-2.5 h-2.5 bg-white rounded-full"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.15 }}
+                        />
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Fixed Continue Button for multiselect */}
+          <div className="continue-button-container">
+            <motion.button
+              className={`
+                w-full py-3 px-6 rounded-full text-white text-lg font-medium text-center
+                ${selectedOptions.size > 0 ? 'bg-lucid-dark' : 'bg-gray-300 cursor-not-allowed'}
+              `}
+              onClick={handleSubmitMultiSelect}
+              disabled={selectedOptions.size === 0}
+              whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
+            >
+              Continue
+            </motion.button>
+          </div>
+        </>
+      );
+    }
+
+    // For other question types (radio, boolean, likert)
     return (
-      <div className="flex flex-col h-full min-h-0">
-        <motion.div 
-          className="mb-4 flex-shrink-0"
-        >
+      <div className="quiz-content-scrollable quiz-content-with-button p-6 pt-12">
+        <motion.div className="mb-4">
           <h2 className="text-2xl font-medium text-lucid-dark mb-2">{question.text}</h2>
           <p className="text-sm text-lucid-gray">{getInstructionText()}</p>
         </motion.div>
 
         {question.type === 'radio' && (
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 gap-3 pb-4">
+          <div className="grid grid-cols-1 gap-3">
               {(question.optionsData || []).map((option) => (
                 <motion.div
                   key={option.id}
@@ -343,13 +410,11 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                   <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
                 </motion.div>
               ))}
-            </div>
           </div>
         )}
 
         {question.type === 'boolean' && (
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 pb-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <motion.div
                 className={`
                   border rounded-xl p-4 cursor-pointer flex items-center transition-colors
@@ -380,13 +445,11 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                 <span className="font-lexend text-lg text-lucid-dark text-left">{
                 question.text === 'What is your age?' ? '20-30' : 'No'}</span>
               </motion.div>
-            </div>
           </div>
         )}
 
         {question.type === 'likert' && (
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 gap-3 pb-4">
+          <div className="grid grid-cols-1 gap-3">
               {/* Likert options sorted from Never to Always */}
               {sortOptions(question.optionsData || []).map((option) => (
                 <motion.div
@@ -408,76 +471,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
                   <span className="font-lexend text-lg text-lucid-dark text-left">{option.text}</span>
                 </motion.div>
               ))}
-            </div>
           </div>
-        )}
-
-        {question.type === 'multiselect' && (
-          <>
-            {/* Options container with explicit scrolling */}
-            <div 
-              className="overflow-y-scroll border border-gray-100 rounded-lg"
-              style={{ 
-                height: '400px',
-                WebkitOverflowScrolling: 'touch' // Enable smooth scrolling on iOS
-              }}
-            >
-              <div className="p-2 space-y-3">
-                {(question.optionsData || []).map((option, index) => {
-                  const isSelected = selectedOptions.has(option.id);
-                  const isAnimating = animatingSelection === option.id;
-
-                  return (
-                    <motion.button
-                      key={option.id}
-                      onClick={() => handleToggleOption(option.id)}
-                      className={`
-                        w-full p-4 rounded-xl border-2 text-left transition-all duration-150 ease-in-out
-                        flex items-center justify-between text-sm sm:text-base
-                        ${
-                          isSelected
-                            ? 'bg-lucid-pink/20 border-lucid-pink text-lucid-pink'
-                            : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }
-                        ${isAnimating ? 'scale-95' : ''}
-                      `}
-                      whileHover={{ scale: isSelected ? 1 : 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <span className="font-medium">{option.text}</span>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
-                        ${isSelected ? 'bg-lucid-pink border-lucid-pink' : 'border-gray-300'}
-                      `}>
-                        {isSelected && (
-                          <motion.div
-                            className="w-2.5 h-2.5 bg-white rounded-full"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.15 }}
-                          />
-                        )}
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Continue button below the scrollable area */}
-            <div className="mt-4 flex-shrink-0 continue-button-container">
-              <motion.button
-                className={`
-                  w-full py-3 px-6 rounded-xl text-white text-lg font-medium text-center
-                  ${selectedOptions.size > 0 ? 'bg-lucid-pink' : 'bg-gray-300 cursor-not-allowed'}
-                `}
-                onClick={handleSubmitMultiSelect}
-                disabled={selectedOptions.size === 0}
-                whileTap={selectedOptions.size > 0 ? { scale: 0.98 } : {}}
-              >
-                Continue
-              </motion.button>
-            </div>
-          </>
         )}
       </div>
     );
@@ -497,7 +491,7 @@ const QuizSlide = ({ question, quizId, stepIndex }: QuizSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.3 }}
-      className="quiz-slide h-full flex flex-col"
+      className="quiz-slide-container"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

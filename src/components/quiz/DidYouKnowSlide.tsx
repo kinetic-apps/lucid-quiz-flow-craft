@@ -29,14 +29,14 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
   
   return (
     <motion.div 
-      className="bg-lucid-cream h-full flex flex-col"
+      className="quiz-slide-container bg-lucid-cream"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
       {/* Scrollable content area */}
       <motion.div 
-        className="flex-1 overflow-y-auto p-6 pt-12"
+        className="quiz-content-scrollable quiz-content-with-button p-6 pt-12"
         initial="hidden"
         animate="visible"
         variants={contentAnimation}
@@ -65,17 +65,17 @@ const DidYouKnowSlide = ({ onContinue }: DidYouKnowSlideProps) => {
         </div>
       </motion.div>
       
-      {/* Continue Button */}
+      {/* Fixed Continue Button */}
       <motion.div 
-        className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container"
-        initial="hidden"
-        animate="visible"
-        variants={contentAnimation}
+        className="continue-button-container"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
       >
         <button
           onClick={onContinue}
           type="button"
-          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-semibold text-xl"
+          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-medium text-lg"
         >
           Continue
         </button>

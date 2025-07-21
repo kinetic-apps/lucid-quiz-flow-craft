@@ -43,12 +43,12 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
-      className="info-slide bg-lucid-cream h-full flex flex-col"
+      className="quiz-slide-container bg-lucid-cream"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto p-6 pt-12">
+      <div className="quiz-content-scrollable quiz-content-with-button p-6 pt-12">
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-bold text-lucid-dark mb-3">
             Lucid was developed using evidence-based psychological practices
@@ -77,13 +77,13 @@ const InfoSlide = ({ title, content, quizId }: InfoSlideProps) => {
         </div>
       </div>
 
-      {/* Continue Button */}
-      <div className="flex-shrink-0 p-6 bg-lucid-cream continue-button-container">
+      {/* Fixed Continue Button */}
+      <div className="continue-button-container">
         <button
           onClick={goToNextStep}
-          className="w-full bg-lucid-dark text-lucid-cream py-4 rounded-full font-medium text-xl"
+          className="w-full bg-lucid-dark text-lucid-cream py-3 rounded-full font-medium text-lg"
         >
-          Continue <ChevronRight className="w-4 h-4 ml-1 inline" />
+          Continue
         </button>
       </div>
     </motion.div>
