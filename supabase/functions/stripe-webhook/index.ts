@@ -7,16 +7,18 @@ import Stripe from 'https://esm.sh/stripe@14.1.0'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+
+// Support both test and live Stripe keys
 const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY') || ''
+const stripeTestSecretKey = Deno.env.get('STRIPE_TEST_SECRET_KEY') || stripeSecretKey
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || ''
+const stripeTestWebhookSecret = Deno.env.get('STRIPE_TEST_WEBHOOK_SECRET') || stripeWebhookSecret
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2023-10-16',
-})
 
 // Product configuration - using the Lucid Access product from mobile app
 const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn'
+const LUCID_ACCESS_TEST_PRODUCT_ID = Deno.env.get('STRIPE_TEST_PRODUCT_ID') || 'prod_test_lucid_access'
 
 // Helper function to update user subscription details
 async function updateUserSubscription(
@@ -125,11 +127,24 @@ serve(async (req) => {
       return new Response('Unauthorized', { status: 401 })
     }
 
+    // Detect if this is a test webhook based on the signature
+    const isTestWebhook = signature.includes('test_') || reqBody.includes('"livemode": false')
+    
+    // Create appropriate Stripe instance
+    const stripe = new Stripe(isTestWebhook ? stripeTestSecretKey : stripeSecretKey, {
+      apiVersion: '2023-10-16',
+    })
+    
+    // Use appropriate webhook secret
+    const webhookSecret = isTestWebhook ? stripeTestWebhookSecret : stripeWebhookSecret
+    
+    console.log(`Processing ${isTestWebhook ? 'TEST' : 'LIVE'} webhook`)
+
     // Verify the webhook signature using the async method
     const event = await stripe.webhooks.constructEventAsync(
       reqBody,
       signature,
-      stripeWebhookSecret
+      webhookSecret
     )
 
     console.log(`Received Stripe webhook event: ${event.type}`)
@@ -166,6 +181,32 @@ serve(async (req) => {
             startDate,
             endDate
           )
+        }
+        break
+      }
+      
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        
+        // For one-time payments that should activate subscriptions
+        if (paymentIntent.metadata?.supabase_user_id) {
+          const userId = paymentIntent.metadata.supabase_user_id
+          const planId = paymentIntent.metadata.planId
+          
+          // Mark payment as completed for phone verification flow
+          const { error } = await supabase
+            .from('users')
+            .update({
+              payment_completed: true,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', userId)
+          
+          if (error) {
+            console.error('Error marking payment completed:', error)
+          } else {
+            console.log(`Payment marked as completed for user ${userId}`)
+          }
         }
         break
       }

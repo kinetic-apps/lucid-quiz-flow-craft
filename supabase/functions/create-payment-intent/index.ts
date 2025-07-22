@@ -7,15 +7,17 @@ import Stripe from 'https://esm.sh/stripe@14.1.0'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+
+// Support both test and live Stripe keys
 const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY') || ''
+const stripeTestSecretKey = Deno.env.get('STRIPE_TEST_SECRET_KEY') || stripeSecretKey
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2023-10-16',
-})
 
 // Product configuration - using the Lucid Access product from mobile app
+// Support different product IDs for test/live modes
 const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn';
+const LUCID_ACCESS_TEST_PRODUCT_ID = Deno.env.get('STRIPE_TEST_PRODUCT_ID') || 'prod_test_lucid_access';
 
 // Plan configurations with pricing
 const PLAN_CONFIG = {
@@ -62,7 +64,20 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { priceId, userId, email, planId, customerName } = await req.json()
+    const { priceId, userId, email, planId, customerName, testMode } = await req.json()
+    
+    // Determine if we're in test mode
+    const isTestMode = testMode || (stripeTestSecretKey && stripeTestSecretKey.startsWith('sk_test_'))
+    
+    // Create appropriate Stripe instance
+    const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {
+      apiVersion: '2023-10-16',
+    })
+    
+    // Use appropriate product ID
+    const productId = isTestMode ? LUCID_ACCESS_TEST_PRODUCT_ID : LUCID_ACCESS_PRODUCT_ID
+    
+    console.log(`Using ${isTestMode ? 'TEST' : 'LIVE'} mode with product ID: ${productId}`)
 
     // Use planId if provided, otherwise try to extract from priceId
     const selectedPlanId = planId || (priceId && Object.keys(PLAN_CONFIG).find(key => 
@@ -141,7 +156,7 @@ serve(async (req) => {
       items: [{
         price_data: {
           currency: 'usd',
-          product: LUCID_ACCESS_PRODUCT_ID,
+          product: productId, // Use the appropriate product ID based on mode
           recurring: {
             interval: selectedPlanId === '7day' ? 'week' : 'month',
             interval_count: selectedPlanId === '3month' ? 3 : 1,

@@ -116,6 +116,31 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
 
       if (updateError) throw updateError;
 
+      // Update Stripe customer with phone number
+      try {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-stripe-customer-phone`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            userId,
+            phoneNumber,
+            ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to update Stripe customer with phone');
+        } else {
+          console.log('Successfully updated Stripe customer with phone number');
+        }
+      } catch (error) {
+        console.error('Error calling update-stripe-customer-phone:', error);
+        // Continue anyway - the phone is verified in our database
+      }
+
       // Success animation before callback
       await new Promise(resolve => setTimeout(resolve, 500));
       onSuccess();

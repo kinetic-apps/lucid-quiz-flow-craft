@@ -403,6 +403,7 @@ const CheckoutPage = () => {
       const requestData = {
         amount: Math.round(planDetails.discountedPrice * 100),
         email: attemptUserEmail,
+        ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
       };
 
       try {

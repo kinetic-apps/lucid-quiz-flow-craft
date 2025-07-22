@@ -1,5 +1,6 @@
 // Stripe client integration
 import { supabase } from '@/lib/supabase';
+import { getTestModeFlag } from '@/lib/stripe-utils';
 
 // Product IDs from our Stripe account
 // Using the Lucid Access product ID from mobile app
@@ -52,6 +53,7 @@ export async function createStripeCheckoutSession(
         planId,
         successUrl,
         cancelUrl,
+        ...getTestModeFlag(), // Include testMode flag if in test mode
       }),
     });
 
@@ -167,7 +169,8 @@ export async function createStripePaymentIntent(
         userId: userId || undefined,
         email: email || undefined,
         planId,
-        customerName: customerName || undefined
+        customerName: customerName || undefined,
+        ...getTestModeFlag(), // Include testMode flag if in test mode
       }),
     });
 

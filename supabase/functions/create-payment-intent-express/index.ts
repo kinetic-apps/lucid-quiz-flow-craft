@@ -21,23 +21,24 @@ function getEnvVar(name: string): string {
 let supabaseUrl: string;
 let supabaseServiceKey: string;
 let stripeSecretKey: string;
+let stripeTestSecretKey: string;
 let supabase: SupabaseClient;
-let stripe: Stripe;
 
 
 try {
   supabaseUrl = getEnvVar('SUPABASE_URL');
   supabaseServiceKey = getEnvVar('SUPABASE_SERVICE_ROLE_KEY');
   stripeSecretKey = getEnvVar('STRIPE_SECRET_KEY');
+  
+  // Try to get test key, fall back to main key
+  try {
+    stripeTestSecretKey = Deno.env.get('STRIPE_TEST_SECRET_KEY') || stripeSecretKey;
+  } catch {
+    stripeTestSecretKey = stripeSecretKey;
+  }
 
   supabase = createClient(supabaseUrl, supabaseServiceKey);
   console.log("Supabase client initialized.");
-
-  stripe = new Stripe(stripeSecretKey, {
-    apiVersion: '2023-10-16',
-    // It's good practice to set httpAgent for production if needed, but keep it simple for now.
-  });
-  console.log("Stripe client initialized.");
 } catch (e) {
   console.error("Initialization error:", e);
   // If initialization fails, the serve function might not even run correctly,
@@ -83,9 +84,18 @@ serve(async (req: Request) => {
 
   try {
     console.log("Processing POST request...");
-    const { amount, email } = await req.json();
+    const { amount, email, testMode } = await req.json();
     
-    console.log(`Request body: amount=${amount}, email=${email ? 'provided' : 'not provided'}`);
+    console.log(`Request body: amount=${amount}, email=${email ? 'provided' : 'not provided'}, testMode=${testMode}`);
+    
+    // Determine if we're in test mode
+    const isTestMode = testMode || (stripeTestSecretKey && stripeTestSecretKey.startsWith('sk_test_'));
+    
+    // Create appropriate Stripe instance
+    const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {
+      apiVersion: '2023-10-16',
+    });
+    console.log(`Stripe client initialized in ${isTestMode ? 'TEST' : 'LIVE'} mode`);
 
     // Validate required fields
     if (!amount) {
