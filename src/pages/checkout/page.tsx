@@ -167,6 +167,7 @@ interface PaymentIntent {
   status: string;
   amount: number;
   currency: string;
+  customer?: string; // Optional customer ID
 }
 
 // Stable wrapper for Express Checkout Elements
@@ -621,7 +622,9 @@ const CheckoutPage = () => {
   };
 
   // Handle successful payment
-  const handlePaymentSuccess = (paymentIntent: PaymentIntent) => {
+  const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
+    console.log("Payment succeeded, paymentIntent:", paymentIntent);
+    
     track('payment_successful', {
       visitor_id: visitorId,
       user_id: userId || undefined,
@@ -629,14 +632,136 @@ const CheckoutPage = () => {
       payment_intent_id: paymentIntent.id
     });
     
-    const planDetails = STRIPE_PRODUCTS[selectedPlan];
-    if (planDetails) {
-      navigate(`/checkout/refund-notification?priceId=${planDetails.priceId}`);
-    } else {
-      // Fallback or error handling if planDetails is not found, though selectedPlan should always be valid
-      console.error("Selected plan details not found for navigation.");
-      navigate('/checkout/refund-notification'); 
+    // Try to get user ID
+    let finalUserId = userId || localStorage.getItem('user_id');
+    
+    // Always create a user after successful payment if we don't have one
+    if (!finalUserId) {
+      try {
+        console.log("Creating user after successful payment");
+        
+        // Get the Stripe customer ID - it might be in the paymentIntent already
+        let stripeCustomerId = (typeof paymentIntent.customer === 'string' ? paymentIntent.customer : null) || null;
+        
+        // If not in the paymentIntent, fetch it from our backend
+        if (!stripeCustomerId) {
+          try {
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-payment-intent`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              },
+              body: JSON.stringify({
+                paymentIntentId: paymentIntent.id,
+                ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+              }),
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              stripeCustomerId = data.customerId;
+              console.log("Retrieved Stripe customer ID:", stripeCustomerId);
+            }
+          } catch (err) {
+            console.error("Error fetching payment intent details:", err);
+          }
+        } else {
+          console.log("Stripe customer ID from paymentIntent:", stripeCustomerId);
+        }
+        
+        // Get email from localStorage or create a placeholder
+        const storedEmail = localStorage.getItem('user_email');
+        const emailToUse = storedEmail || userEmail || `${visitorId}@placeholder.lucid.app`;
+        
+        // First, try to find existing user by visitor_id
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .eq('visitor_id', visitorId)
+          .maybeSingle();
+        
+        if (existingUser) {
+          // Update existing user with payment info
+          const { data: updatedUser, error: updateError } = await supabase
+            .from('users')
+            .update({
+              payment_completed: true,
+              is_premium: true,
+              payment_intent_id: paymentIntent.id,
+              stripe_customer_id: stripeCustomerId || existingUser.stripe_customer_id,
+              stripe_product_id: 'prod_SefSK4P6W4Wzvn',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingUser.id)
+            .select()
+            .single();
+          
+          if (updatedUser && !updateError) {
+            finalUserId = updatedUser.id;
+            console.log("Updated existing user with ID:", finalUserId);
+          } else {
+            console.error("Error updating user:", updateError);
+          }
+        } else {
+          // Create new user without email since it's nullable
+          const { data, error } = await supabase
+            .from('users')
+            .insert({
+              visitor_id: visitorId,
+              payment_completed: true,
+              is_premium: true,
+              payment_intent_id: paymentIntent.id,
+              stripe_customer_id: stripeCustomerId || undefined,
+              stripe_product_id: 'prod_SefSK4P6W4Wzvn',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .maybeSingle();
+          
+          if (data && !error) {
+            finalUserId = data.id;
+            console.log("Created user with ID:", finalUserId);
+            console.log("User stripe_customer_id:", data.stripe_customer_id);
+          } else if (error?.code === '23505') {
+            // Unique constraint violation - user with email already exists
+            console.log("User with email already exists, trying to update by email");
+            const { data: updatedUser } = await supabase
+              .from('users')
+              .update({
+                visitor_id: visitorId,
+                payment_completed: true,
+                is_premium: true,
+                payment_intent_id: paymentIntent.id,
+                stripe_customer_id: stripeCustomerId || undefined,
+                stripe_product_id: 'prod_SefSK4P6W4Wzvn',
+                updated_at: new Date().toISOString()
+              })
+              .eq('email', emailToUse)
+              .select()
+              .single();
+            
+            if (updatedUser) {
+              finalUserId = updatedUser.id;
+              console.log("Updated existing user by email with ID:", finalUserId);
+            }
+          } else if (error) {
+            console.error("Error creating user:", error);
+          }
+        }
+        
+        if (finalUserId) {
+          localStorage.setItem('user_id', finalUserId);
+        }
+      } catch (err) {
+        console.error("Error creating user:", err);
+      }
     }
+    
+    // Always navigate to phone verification
+    console.log("Navigating to phone verification with userId:", finalUserId);
+    navigate(`/checkout/verify-phone?userId=${finalUserId || ''}&payment_intent=${paymentIntent.id}`);
   };
 
   // Handle cancellation
@@ -898,13 +1023,8 @@ const CheckoutPage = () => {
                             payment_intent_id: paymentIntent.id,
                             method: 'express_checkout'
                           });
-                          const planDetails = STRIPE_PRODUCTS[selectedPlan];
-                          if (planDetails) {
-                            navigate(`/checkout/refund-notification?priceId=${planDetails.priceId}`);
-                          } else {
-                             console.error("Selected plan details not found for express checkout navigation.");
-                             navigate('/checkout/refund-notification');
-                          }
+                          // Use the same payment success handler as the embedded checkout
+                          handlePaymentSuccess(paymentIntent);
                         }}
                         onError={(error) => {
                           console.error('Express payment error on page:', error);

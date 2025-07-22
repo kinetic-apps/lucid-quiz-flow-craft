@@ -39,6 +39,7 @@ const App = () => {
                 } />
                 <Route path="refund-notification" element={<RefundNotificationPage />} />
                 <Route path="verify-phone" element={<VerifyPhonePage />} />
+                <Route path="success" element={<VerifyPhonePage />} />
                 <Route path="*" element={
                   <QuizProvider>
                     <CheckoutPage />

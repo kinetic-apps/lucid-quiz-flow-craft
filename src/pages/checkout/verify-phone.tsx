@@ -21,47 +21,126 @@ export default function VerifyPhonePage() {
 
   const checkPaymentStatus = async () => {
     try {
-      // TEMPORARY: Skip checks for testing
-      if (process.env.NODE_ENV === 'development') {
-        setStep('phone');
-        setUserId('test-user-id');
-        setUserEmail('test@example.com');
-        return;
-      }
+      // Skip checks for local development only
+      // Comment out these lines for production testing
+      // if (process.env.NODE_ENV === 'development') {
+      //   setStep('phone');
+      //   setUserId('test-user-id');
+      //   setUserEmail('test@example.com');
+      //   return;
+      // }
       
       // Get user ID from URL params (passed from checkout success)
       const paramUserId = searchParams.get('userId');
       const sessionId = searchParams.get('session_id');
+      const paymentIntent = searchParams.get('payment_intent');
+      const paymentIntentClientSecret = searchParams.get('payment_intent_client_secret');
+      const redirectStatus = searchParams.get('redirect_status');
       
-      if (!paramUserId && !sessionId) {
-        console.error('No user ID or session ID provided');
+      // Log all params for debugging
+      console.log('Verify phone params:', {
+        userId: paramUserId,
+        sessionId,
+        paymentIntent,
+        paymentIntentClientSecret,
+        redirectStatus,
+        allParams: Object.fromEntries(searchParams.entries())
+      });
+      
+      let userData: any = null;
+      
+      // If we have payment intent from Stripe redirect, get user from localStorage
+      if (paymentIntent && !paramUserId) {
+        const storedUserId = localStorage.getItem('user_id');
+        if (storedUserId) {
+          console.log('Using stored user ID:', storedUserId);
+          const { data: user } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', storedUserId)
+            .single();
+          
+          userData = user;
+        }
+      } else if (!paramUserId && !sessionId && !paymentIntent) {
+        console.error('No user ID, session ID, or payment intent provided');
         navigate('/');
         return;
       }
 
-      let userData;
-
-      // If we have a session ID, look up the user by that
-      if (sessionId) {
-        const { data: users } = await supabase
-          .from('users')
-          .select('*')
-          .eq('subscription_id', sessionId);
-        
-        userData = users?.[0];
-      } else {
-        // Otherwise use the user ID
-        const { data: user } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', paramUserId)
-          .single();
-        
-        userData = user;
+      // Only fetch userData if we haven't already set it from payment intent flow
+      if (!userData) {
+        // If we have a session ID, look up the user by that
+        if (sessionId) {
+          const { data: users } = await supabase
+            .from('users')
+            .select('*')
+            .eq('subscription_id', sessionId);
+          
+          userData = users?.[0];
+        } else if (paramUserId) {
+          // Otherwise use the user ID
+          const { data: user } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', paramUserId)
+            .single();
+          
+          userData = user;
+        }
       }
 
-      if (!userData || !userData.is_premium) {
-        console.error('User not found or not premium');
+      // If we have a payment intent but no user data, wait for user to be created
+      if (!userData && paymentIntent) {
+        console.log('No user data found but payment intent exists');
+        
+        // Try to find user by payment intent ID
+        const { data: userByPayment, error: paymentError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('payment_intent_id', paymentIntent)
+          .maybeSingle();
+        
+        if (userByPayment && !paymentError) {
+          userData = userByPayment;
+          console.log('Found user by payment intent ID:', userData.id);
+          localStorage.setItem('user_id', userData.id);
+        } else {
+          // Try to find by visitor ID as fallback
+          const visitorId = localStorage.getItem('lucid_visitor_id');
+          if (visitorId) {
+            const { data: userByVisitor } = await supabase
+              .from('users')
+              .select('*')
+              .eq('visitor_id', visitorId)
+              .eq('payment_completed', true)
+              .maybeSingle();
+            
+            if (userByVisitor) {
+              userData = userByVisitor;
+              console.log('Found user by visitor ID:', userData.id);
+              localStorage.setItem('user_id', userData.id);
+            } else {
+              // User might still be creating, proceed with temporary data
+              userData = {
+                id: paramUserId || 'temp-' + Date.now(),
+                is_premium: true,
+                payment_completed: true
+              };
+              console.log('Using temporary user data');
+            }
+          } else {
+            // User might still be creating, proceed with temporary data
+            userData = {
+              id: paramUserId || 'temp-' + Date.now(),
+              is_premium: true,
+              payment_completed: true
+            };
+            console.log('Using temporary user data');
+          }
+        }
+      } else if (!userData || (!userData.is_premium && !userData.payment_completed)) {
+        console.error('User not found or payment not completed');
         navigate('/');
         return;
       }

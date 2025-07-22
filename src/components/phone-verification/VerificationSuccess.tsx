@@ -2,12 +2,83 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Smartphone, Download } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { supabase } from '@/lib/supabase';
 
 export const VerificationSuccess: React.FC = () => {
   const iosLink = "https://apps.apple.com/app/lucid/id[YOUR_APP_ID]";
   const androidLink = "https://play.google.com/store/apps/details?id=com.lucid";
 
   useEffect(() => {
+    // Ensure user record is properly updated after verification
+    const ensureUserRecord = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.phone) {
+          // Try to get existing user ID
+          let userId = localStorage.getItem('user_id');
+          
+          // If it's a temporary ID or missing, try to find/create user
+          if (!userId || userId.startsWith('temp-')) {
+            const visitorId = localStorage.getItem('lucid_visitor_id');
+            const userEmail = localStorage.getItem('user_email');
+            
+            // First try to find user by visitor ID
+            if (visitorId) {
+              const { data: existingUser } = await supabase
+                .from('users')
+                .select('*')
+                .eq('visitor_id', visitorId)
+                .single();
+              
+              if (existingUser) {
+                userId = existingUser.id;
+                localStorage.setItem('user_id', userId);
+              }
+            }
+            
+            // If still no user, create one
+            if (!userId || userId.startsWith('temp-')) {
+              const { data: newUser, error } = await supabase
+                .from('users')
+                .insert({
+                  email: userEmail || undefined,
+                  visitor_id: visitorId || undefined,
+                  phone_number: session.user.phone,
+                  phone_verified: true,
+                  phone_verified_at: new Date().toISOString(),
+                  payment_completed: true,
+                  is_premium: true
+                })
+                .select()
+                .single();
+              
+              if (newUser && !error) {
+                userId = newUser.id;
+                localStorage.setItem('user_id', userId);
+                console.log('Created user record after phone verification:', userId);
+              }
+            }
+          }
+          
+          // Update existing user with phone if we have a valid ID
+          if (userId && !userId.startsWith('temp-')) {
+            await supabase
+              .from('users')
+              .update({
+                phone_number: session.user.phone,
+                phone_verified: true,
+                phone_verified_at: new Date().toISOString()
+              })
+              .eq('id', userId);
+          }
+        }
+      } catch (error) {
+        console.error('Error ensuring user record:', error);
+      }
+    };
+    
+    ensureUserRecord();
+    
     // Trigger confetti animation on mount
     const duration = 2 * 1000;
     const animationEnd = Date.now() + duration;

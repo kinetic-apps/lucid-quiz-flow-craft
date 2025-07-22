@@ -23,11 +23,11 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, phoneNumber, testMode } = await req.json()
+    const { userId, phoneNumber, testMode, email, visitorId } = await req.json()
     
-    if (!userId || !phoneNumber) {
+    if (!phoneNumber) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }), 
+        JSON.stringify({ error: 'Missing phone number' }), 
         { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -59,11 +59,46 @@ serve(async (req) => {
     console.log(`Using ${isTestMode ? 'TEST' : 'LIVE'} mode with product ID: ${productId}`)
     
     // Get user's Stripe customer ID
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('stripe_customer_id')
-      .eq('id', userId)
-      .single()
+    let user = null
+    let userError = null
+    
+    // Try to find user by ID first
+    if (userId) {
+      const result = await supabase
+        .from('users')
+        .select('stripe_customer_id, id')
+        .eq('id', userId)
+        .maybeSingle() // Use maybeSingle to avoid 406 errors
+      
+      user = result.data
+      userError = result.error
+    }
+    
+    // If no user found by ID, try by email
+    if ((!user || userError) && email) {
+      console.log('No user found by ID, trying by email:', email)
+      const result = await supabase
+        .from('users')
+        .select('stripe_customer_id, id')
+        .eq('email', email)
+        .maybeSingle() // Use maybeSingle to avoid 406 errors
+      
+      user = result.data
+      userError = result.error
+    }
+    
+    // If still no user, try by visitor ID
+    if ((!user || userError) && visitorId) {
+      console.log('No user found by email, trying by visitor ID:', visitorId)
+      const result = await supabase
+        .from('users')
+        .select('stripe_customer_id, id')
+        .eq('visitor_id', visitorId)
+        .maybeSingle() // Use maybeSingle to avoid 406 errors
+      
+      user = result.data
+      userError = result.error
+    }
     
     if (userError || !user?.stripe_customer_id) {
       console.error('Error fetching user or no Stripe customer ID:', userError)

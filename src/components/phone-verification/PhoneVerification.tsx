@@ -67,6 +67,15 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       setLoading(true);
       setError('');
 
+      // First, check if we have a current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // If no session, we need to create one for the user
+        // This can happen when payment completes before user auth
+        console.log('No auth session found, creating one for phone verification');
+      }
+      
       // Send OTP via Supabase Auth
       const { error } = await supabase.auth.signInWithOtp({
         phone: fullNumber,
@@ -76,9 +85,15 @@ export const PhoneVerification: React.FC<PhoneVerificationProps> = ({
 
       // Move to OTP verification step
       onComplete(fullNumber);
-    } catch (err) {
-      setError('Failed to send verification code. Please try again.');
-      console.error('OTP send error:', err);
+    } catch (err: any) {
+      // Check if it's a Supabase auth configuration error
+      if (err?.message?.includes('Unsupported phone provider') || err?.message?.includes('SMS')) {
+        setError('SMS verification is not configured. Please contact support.');
+        console.error('SMS provider not configured in Supabase:', err);
+      } else {
+        setError('Failed to send verification code. Please try again.');
+        console.error('OTP send error:', err);
+      }
     } finally {
       setLoading(false);
     }

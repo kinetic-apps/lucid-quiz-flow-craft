@@ -17,6 +17,7 @@ interface PaymentIntent {
   status: string;
   amount: number;
   currency: string;
+  customer?: string;
 }
 
 interface CheckoutFormProps {
@@ -42,10 +43,16 @@ const CheckoutForm = ({ onSuccess, onCancel }: CheckoutFormProps) => {
     setIsLoading(true);
 
     try {
+      // Get user ID from localStorage for the return URL
+      const userId = localStorage.getItem('user_id');
+      const returnUrl = userId 
+        ? `${window.location.origin}/checkout/verify-phone?userId=${userId}`
+        : `${window.location.origin}/checkout/verify-phone`;
+      
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: window.location.origin + '/checkout/success',
+          return_url: returnUrl,
         },
         redirect: 'if_required',
       });
@@ -56,6 +63,7 @@ const CheckoutForm = ({ onSuccess, onCancel }: CheckoutFormProps) => {
         setIsLoading(false);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         setIsLoading(false);
+        console.log('Full paymentIntent object:', paymentIntent);
         onSuccess(paymentIntent as PaymentIntent);
       } else {
         setIsLoading(false);

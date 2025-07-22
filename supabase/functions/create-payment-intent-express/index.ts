@@ -7,43 +7,14 @@ import Stripe from 'https://esm.sh/stripe@14.1.0'
 
 console.log("Function script evaluating...");
 
-// Environment variable retrieval with logging
-function getEnvVar(name: string): string {
-  const value = Deno.env.get(name);
-  if (!value) {
-    console.error(`Error: Environment variable ${name} is not set.`);
-    throw new Error(`Environment variable ${name} is not set.`);
-  }
-  console.log(`Retrieved ${name}: ${name === 'STRIPE_SECRET_KEY' ? '********' : value}`);
-  return value;
-}
+// Simple environment variable retrieval
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
+const stripeTestSecretKey = Deno.env.get('STRIPE_TEST_SECRET_KEY') || stripeSecretKey;
 
-let supabaseUrl: string;
-let supabaseServiceKey: string;
-let stripeSecretKey: string;
-let stripeTestSecretKey: string;
-let supabase: SupabaseClient;
-
-
-try {
-  supabaseUrl = getEnvVar('SUPABASE_URL');
-  supabaseServiceKey = getEnvVar('SUPABASE_SERVICE_ROLE_KEY');
-  stripeSecretKey = getEnvVar('STRIPE_SECRET_KEY');
-  
-  // Try to get test key, fall back to main key
-  try {
-    stripeTestSecretKey = Deno.env.get('STRIPE_TEST_SECRET_KEY') || stripeSecretKey;
-  } catch {
-    stripeTestSecretKey = stripeSecretKey;
-  }
-
-  supabase = createClient(supabaseUrl, supabaseServiceKey);
-  console.log("Supabase client initialized.");
-} catch (e) {
-  console.error("Initialization error:", e);
-  // If initialization fails, the serve function might not even run correctly,
-  // but we log it here just in case.
-}
+// Initialize Supabase client
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 
 // Define CORS headers - include all possible origins that might call this function
@@ -151,7 +122,6 @@ serve(async (req: Request) => {
     const paymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount: amount,
       currency: 'usd',
-      payment_method_configuration: 'pmc_1RQVeTLFUMi6CEqxYxhABwOs',
       automatic_payment_methods: { 
         enabled: true,
         allow_redirects: 'never' 

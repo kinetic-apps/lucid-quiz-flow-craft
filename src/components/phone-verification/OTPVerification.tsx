@@ -94,47 +94,162 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
     setLoading(true);
     setError('');
 
+    console.log('Verifying OTP:', {
+      phoneNumber,
+      code,
+      userId
+    });
+
     try {
       // Verify OTP with Supabase
-      const { error } = await supabase.auth.verifyOtp({
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
         phone: phoneNumber,
         token: code,
         type: 'sms',
       });
 
-      if (error) throw error;
+      if (verifyError) {
+        console.error('OTP verification error:', verifyError);
+        console.error('Error details:', {
+          message: verifyError.message,
+          status: verifyError.status,
+          phoneNumber,
+          code
+        });
+        throw verifyError;
+      }
+
+      console.log('OTP verified successfully:', data);
+      console.log('Current userId:', userId);
+      console.log('Phone number to update:', phoneNumber);
 
       // Update user record with verified phone
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          phone_number: phoneNumber,
-          phone_verified: true,
-          phone_verified_at: new Date().toISOString()
-        })
-        .eq('id', userId);
+      // Only update if we have a valid userId (not temporary)
+      if (userId && !userId.startsWith('temp-')) {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            phone_number: phoneNumber,
+            phone_verified: true,
+            phone_verified_at: new Date().toISOString()
+          })
+          .eq('id', userId);
 
-      if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Error updating user record:', updateError);
+          // Don't throw here - the phone is verified in Supabase Auth
+        }
+      } else {
+        console.log('Skipping user record update - temporary or missing userId');
+      }
 
       // Update Stripe customer with phone number
+      // We need to find the Stripe customer even if we have a temporary userId
+      console.log('=== Starting Stripe phone update ===');
+      console.log('userId:', userId);
+      console.log('phoneNumber:', phoneNumber);
+      
       try {
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-stripe-customer-phone`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            userId,
-            phoneNumber,
-            ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
-          }),
-        });
+        // First, try to find the user by visitor ID or email if we have a temp ID
+        let actualUserId = userId;
+        if (userId && userId.startsWith('temp-')) {
+          const visitorId = localStorage.getItem('lucid_visitor_id');
+          const userEmail = localStorage.getItem('user_email');
+          
+          // Try to find user by visitor ID first
+          if (visitorId) {
+            const { data: usersByVisitor, error: visitorError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('visitor_id', visitorId)
+              .maybeSingle();
+            
+            if (usersByVisitor && !visitorError) {
+              actualUserId = usersByVisitor.id;
+              console.log('Found user by visitor ID:', actualUserId);
+            } else if (userEmail) {
+              // Try by email if visitor ID didn't work
+              const { data: usersByEmail, error: emailError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', userEmail)
+                .maybeSingle();
+              
+              if (usersByEmail && !emailError) {
+                actualUserId = usersByEmail.id;
+                console.log('Found user by email:', actualUserId);
+              } else {
+                // Try by payment intent ID as last resort
+                const searchParams = new URLSearchParams(window.location.search);
+                const paymentIntent = searchParams.get('payment_intent');
+                
+                if (paymentIntent) {
+                  const { data: userByPayment } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('payment_intent_id', paymentIntent)
+                    .maybeSingle();
+                  
+                  if (userByPayment) {
+                    actualUserId = userByPayment.id;
+                    console.log('Found user by payment intent:', actualUserId);
+                  } else {
+                    console.log('No users found with visitor ID, email, or payment intent');
+                  }
+                } else {
+                  console.log('No users found with visitor ID or email');
+                }
+              }
+            }
+          }
+        }
+        
+        console.log('Final actualUserId for Stripe update:', actualUserId);
+        
+        // If we still have a valid user ID, update Stripe
+        if (actualUserId && !actualUserId.startsWith('temp-')) {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-stripe-customer-phone`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              userId: actualUserId,
+              phoneNumber,
+              ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+            }),
+          });
 
-        if (!response.ok) {
-          console.error('Failed to update Stripe customer with phone');
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Failed to update Stripe customer with phone:', errorText);
+          } else {
+            console.log('Successfully updated Stripe customer with phone number');
+          }
         } else {
-          console.log('Successfully updated Stripe customer with phone number');
+          // If we still don't have a valid user ID, try to update by phone number
+          console.log('No valid user ID found, attempting to update Stripe by phone number');
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-stripe-customer-phone`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              phoneNumber,
+              visitorId: localStorage.getItem('lucid_visitor_id'),
+              email: localStorage.getItem('user_email'),
+              ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Failed to update Stripe customer with phone (no user ID):', errorText);
+          } else {
+            console.log('Successfully updated Stripe customer with phone number (found by email/visitor)');
+          }
         }
       } catch (error) {
         console.error('Error calling update-stripe-customer-phone:', error);
@@ -144,8 +259,18 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
       // Success animation before callback
       await new Promise(resolve => setTimeout(resolve, 500));
       onSuccess();
-    } catch (err) {
-      setError('Invalid verification code. Please try again.');
+    } catch (err: any) {
+      console.error('Verification error:', err);
+      
+      // Provide more specific error messages
+      if (err?.message?.includes('Token has expired')) {
+        setError('Verification code has expired. Please request a new one.');
+      } else if (err?.message?.includes('Invalid')) {
+        setError('Invalid verification code. Please check and try again.');
+      } else {
+        setError('Verification failed. Please try again.');
+      }
+      
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } finally {
