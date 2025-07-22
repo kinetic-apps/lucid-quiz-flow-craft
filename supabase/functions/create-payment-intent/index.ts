@@ -14,26 +14,23 @@ const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
 })
 
-// Product IDs from our Stripe account - same as in create-checkout-session
-const STRIPE_PRODUCTS = {
+// Product configuration - using the Lucid Access product from mobile app
+const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn';
+
+// Plan configurations with pricing
+const PLAN_CONFIG = {
   '7day': {
-    id: 'prod_SLBc1BqDeFcEHa',
-    priceId: 'price_1RQVEuLFUMi6CEqxBMskP9TG',
-    name: 'LUCID-7-Day-Plan',
+    name: 'Lucid Access - 7 Day',
     totalPrice: 2.99,
     perDayPrice: 0.43
   },
   '1month': {
-    id: 'prod_SLBZdyOg3nqT7A',
-    priceId: 'price_1RQVCkLFUMi6CEqx1EYMZu0I',
-    name: 'LUCID-1-Month-Plan',
+    name: 'Lucid Access - 1 Month',
     totalPrice: 8.99,
     perDayPrice: 0.30
   },
   '3month': {
-    id: 'prod_SLBbecdAtmmydE',
-    priceId: 'price_1RQVEPLFUMi6CEqxdE5xNYtT',
-    name: 'LUCID-3-Month-Plan',
+    name: 'Lucid Access - 3 Months',
     totalPrice: 19.99,
     perDayPrice: 0.22
   }
@@ -67,8 +64,13 @@ serve(async (req) => {
     // Parse the request body
     const { priceId, userId, email, planId, customerName } = await req.json()
 
-    // Validate required fields - only check for priceId
-    if (!priceId) {
+    // Use planId if provided, otherwise try to extract from priceId
+    const selectedPlanId = planId || (priceId && Object.keys(PLAN_CONFIG).find(key => 
+      priceId.includes(key)
+    )) || '1month';
+
+    // Validate required fields
+    if (!selectedPlanId) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }), 
         { 
@@ -120,14 +122,12 @@ serve(async (req) => {
       })
     }
 
-    // Get the product details
-    const productDetails = Object.values(STRIPE_PRODUCTS).find(
-      (product) => product.priceId === priceId
-    )
-
-    if (!productDetails) {
+    // Get the plan configuration
+    const planConfig = PLAN_CONFIG[selectedPlanId as keyof typeof PLAN_CONFIG]
+    
+    if (!planConfig) {
       return new Response(
-        JSON.stringify({ error: 'Invalid price ID' }), 
+        JSON.stringify({ error: 'Invalid plan ID' }), 
         { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -135,28 +135,38 @@ serve(async (req) => {
       )
     }
 
-    // Create a payment intent for one-time payment
-    // Or use subscriptions.create for recurring payments
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(productDetails.totalPrice * 100), // convert to cents
-      currency: 'usd',
+    // Create a subscription instead of a one-time payment
+    const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      payment_method_configuration: 'pmc_1RQVeTLFUMi6CEqxYxhABwOs',
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      items: [{
+        price_data: {
+          currency: 'usd',
+          product: LUCID_ACCESS_PRODUCT_ID,
+          recurring: {
+            interval: selectedPlanId === '7day' ? 'week' : 'month',
+            interval_count: selectedPlanId === '3month' ? 3 : 1,
+          },
+          unit_amount: Math.round(planConfig.totalPrice * 100), // convert to cents
+        },
+      }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
       metadata: {
-        planId,
-        productName: productDetails.name,
-        supabase_user_id: userId, // Ensure supabase_user_id is here
+        planId: selectedPlanId,
+        productName: planConfig.name,
+        supabase_user_id: userId,
       },
     });
+
+    const paymentIntent = subscription.latest_invoice.payment_intent;
 
     // Return the client secret to the client
     return new Response(
       JSON.stringify({ 
         clientSecret: paymentIntent.client_secret,
-        customerId: customer.id
+        customerId: customer.id,
+        subscriptionId: subscription.id
       }), 
       { 
         status: 200,

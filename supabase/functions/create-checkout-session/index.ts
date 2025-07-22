@@ -14,28 +14,31 @@ const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
 })
 
-// Product IDs from our Stripe account
-const STRIPE_PRODUCTS = {
+// Product configuration - using the Lucid Access product from mobile app
+const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn';
+
+// Plan configurations with dynamic pricing
+const PLAN_CONFIG = {
   '7day': {
-    id: 'prod_SLBc1BqDeFcEHa',
-    priceId: 'price_1RQVEuLFUMi6CEqxBMskP9TG',
-    name: 'LUCID-7-Day-Plan',
-    totalPrice: 2.99,
-    perDayPrice: 0.43
+    name: 'Lucid Access - 7 Day',
+    price: 299, // $2.99 in cents
+    interval: 'week',
+    intervalCount: 1,
+    trialDays: 0
   },
   '1month': {
-    id: 'prod_SLBZdyOg3nqT7A',
-    priceId: 'price_1RQVCkLFUMi6CEqx1EYMZu0I',
-    name: 'LUCID-1-Month-Plan',
-    totalPrice: 8.99,
-    perDayPrice: 0.30
+    name: 'Lucid Access - 1 Month', 
+    price: 899, // $8.99 in cents
+    interval: 'month',
+    intervalCount: 1,
+    trialDays: 0
   },
   '3month': {
-    id: 'prod_SLBbecdAtmmydE',
-    priceId: 'price_1RQVEPLFUMi6CEqxdE5xNYtT',
-    name: 'LUCID-3-Month-Plan',
-    totalPrice: 19.99,
-    perDayPrice: 0.22
+    name: 'Lucid Access - 3 Months',
+    price: 1999, // $19.99 in cents
+    interval: 'month',
+    intervalCount: 3,
+    trialDays: 0
   }
 };
 
@@ -64,11 +67,16 @@ serve(async (req) => {
   }
 
   try {
-    // Parse the request body
+    // Parse the request body - now accepting planId instead of priceId
     const { priceId, userId, email, planId, successUrl, cancelUrl } = await req.json()
 
+    // Use planId if provided, otherwise fall back to extracting from priceId
+    const selectedPlanId = planId || (priceId && Object.entries(PLAN_CONFIG).find(([_, config]) => 
+      priceId.includes(config.name.toLowerCase().replace(/\s+/g, '_'))
+    )?.[0]) || '1month';
+
     // Validate required fields
-    if (!priceId || !successUrl || !cancelUrl) {
+    if (!successUrl || !cancelUrl || !selectedPlanId) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }), 
         { 
@@ -107,14 +115,12 @@ serve(async (req) => {
       })
     }
 
-    // Get the product details
-    const productDetails = Object.values(STRIPE_PRODUCTS).find(
-      (product) => product.priceId === priceId
-    )
-
-    if (!productDetails) {
+    // Get the plan configuration
+    const planConfig = PLAN_CONFIG[selectedPlanId as keyof typeof PLAN_CONFIG]
+    
+    if (!planConfig) {
       return new Response(
-        JSON.stringify({ error: 'Invalid price ID' }), 
+        JSON.stringify({ error: 'Invalid plan ID' }), 
         { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -122,13 +128,24 @@ serve(async (req) => {
       )
     }
 
-    // Create the checkout session
+    // Create price data for the checkout session
+    const priceData = {
+      currency: 'usd',
+      product: LUCID_ACCESS_PRODUCT_ID,
+      recurring: {
+        interval: planConfig.interval as 'day' | 'week' | 'month' | 'year',
+        interval_count: planConfig.intervalCount,
+      },
+      unit_amount: planConfig.price,
+    }
+
+    // Create the checkout session with dynamic pricing
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       payment_method_configuration: 'pmc_1RQVeTLFUMi6CEqxYxhABwOs',
       line_items: [
         {
-          price: priceId,
+          price_data: priceData,
           quantity: 1,
         },
       ],
@@ -137,8 +154,8 @@ serve(async (req) => {
       cancel_url: `${cancelUrl}`,
       metadata: {
         userId,
-        planId,
-        productName: productDetails.name,
+        planId: selectedPlanId,
+        productName: planConfig.name,
       },
     })
 

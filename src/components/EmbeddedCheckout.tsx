@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { getStripe } from '@/lib/stripe';
 import {
   Elements,
   PaymentElement,
@@ -9,8 +9,8 @@ import {
 import type { StripeElementsOptions } from '@stripe/stripe-js';
 import { useNavigate } from 'react-router-dom';
 
-// Initialize Stripe with the environment variable
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+// Initialize Stripe with error handling
+const stripePromise = getStripe();
 
 interface PaymentIntent {
   id: string;

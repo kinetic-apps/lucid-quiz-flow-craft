@@ -24,6 +24,7 @@ let stripeSecretKey: string;
 let supabase: SupabaseClient;
 let stripe: Stripe;
 
+
 try {
   supabaseUrl = getEnvVar('SUPABASE_URL');
   supabaseServiceKey = getEnvVar('SUPABASE_SERVICE_ROLE_KEY');
@@ -134,9 +135,7 @@ serve(async (req: Request) => {
       // Stripe will create a guest customer if `customer` is not provided in paymentIntent
     }
 
-    // Create payment methods object with explicit types for Apple Pay support
-    const paymentMethodTypes = ['card', 'apple_pay', 'google_pay'];
-    console.log(`Attempting to create payment intent with amount: ${amount}, customer: ${customerId || 'guest'}, methods: ${paymentMethodTypes.join(', ')}`);
+    console.log(`Attempting to create payment intent with amount: ${amount}, customer: ${customerId || 'guest'}`);
     
     // Create a PaymentIntent with explicit payment method types including Apple Pay
     const paymentIntentParams: Stripe.PaymentIntentCreateParams = {
@@ -148,7 +147,7 @@ serve(async (req: Request) => {
         allow_redirects: 'never' 
       },
       metadata: {
-        integration_check: 'express_checkout_element_v2' // Updated metadata
+        integration_check: 'express_checkout_element_v2'
       }
     };
     if (customerId) {

@@ -5,7 +5,7 @@ import { useQuiz } from '@/context/QuizContext';
 import { updateUserSubscription } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { STRIPE_PRODUCTS } from '@/integrations/stripe/client';
-import { loadStripe } from '@stripe/stripe-js';
+import { getStripe } from '@/lib/stripe';
 import { usePostHog } from '@/context/PostHogContext';
 import { useMobileScrollLock } from '@/hooks/use-mobile-scroll-lock';
 import EmbeddedCheckout from '@/components/EmbeddedCheckout';
@@ -26,8 +26,8 @@ declare global {
   }
 }
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+// Initialize Stripe with error handling
+const stripePromise = getStripe();
 
 const SUBSCRIPTION_PLANS = [
   {

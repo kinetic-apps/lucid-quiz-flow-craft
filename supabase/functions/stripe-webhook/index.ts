@@ -15,6 +15,9 @@ const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
 })
 
+// Product configuration - using the Lucid Access product from mobile app
+const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn'
+
 // Helper function to update user subscription details
 async function updateUserSubscription(
   userId: string,
@@ -34,6 +37,7 @@ async function updateUserSubscription(
         subscription_start_date: startDate,
         subscription_end_date: endDate,
         is_premium: true,
+        payment_completed: true, // Mark payment as completed
         updated_at: new Date().toISOString()
       })
       .eq('id', userId);

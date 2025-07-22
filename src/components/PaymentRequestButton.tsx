@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { getStripe } from '@/lib/stripe';
 import {
   Elements,
   ExpressCheckoutElement,
@@ -9,8 +9,8 @@ import {
 import type { ExpressCheckoutElementProps } from '@stripe/react-stripe-js'; // For onConfirm type, remove LayoutOption
 import type { StripeError, PaymentIntent } from '@stripe/stripe-js'; // For error types and PaymentIntent
 
-// Initialize Stripe with the environment variable
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+// Initialize Stripe with error handling
+const stripePromise = getStripe();
 
 interface PaymentRequestButtonProps {
   amount: number;

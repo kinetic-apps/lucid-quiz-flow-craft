@@ -2,25 +2,28 @@
 import { supabase } from '@/lib/supabase';
 
 // Product IDs from our Stripe account
+// Using the Lucid Access product ID from mobile app
+const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn';
+
 export const STRIPE_PRODUCTS = {
   '7day': {
-    id: 'prod_SLBc1BqDeFcEHa',
-    priceId: 'price_1RQVEuLFUMi6CEqxBMskP9TG',
-    name: 'LUCID-7-Day-Plan',
+    id: LUCID_ACCESS_PRODUCT_ID,
+    priceId: 'price_7day', // These will need to be created in Stripe
+    name: 'Lucid Access - 7 Day',
     totalPrice: 2.99,
     perDayPrice: 0.43
   },
   '1month': {
-    id: 'prod_SLBZdyOg3nqT7A',
-    priceId: 'price_1RQVCkLFUMi6CEqx1EYMZu0I',
-    name: 'LUCID-1-Month-Plan',
+    id: LUCID_ACCESS_PRODUCT_ID,
+    priceId: 'price_1month', // These will need to be created in Stripe
+    name: 'Lucid Access - 1 Month',
     totalPrice: 8.99,
     perDayPrice: 0.30
   },
   '3month': {
-    id: 'prod_SLBbecdAtmmydE',
-    priceId: 'price_1RQVEPLFUMi6CEqxdE5xNYtT',
-    name: 'LUCID-3-Month-Plan',
+    id: LUCID_ACCESS_PRODUCT_ID,
+    priceId: 'price_3month', // These will need to be created in Stripe
+    name: 'Lucid Access - 3 Months',
     totalPrice: 19.99,
     perDayPrice: 0.22
   }
