@@ -416,7 +416,7 @@ const CheckoutPage = () => {
       const requestData = {
         amount: Math.round(planDetails.discountedPrice * 100),
         email: attemptUserEmail,
-        ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+        // Don't send testMode - let the edge function decide based on its own keys
       };
 
       try {
@@ -673,6 +673,7 @@ const CheckoutPage = () => {
         console.log("Creating user after successful payment");
         
         // Get the Stripe customer ID - it might be in the paymentIntent already
+        console.log("Payment intent customer field:", paymentIntent.customer);
         let stripeCustomerId = (typeof paymentIntent.customer === 'string' ? paymentIntent.customer : null) || null;
         
         // If not in the paymentIntent, fetch it from our backend
@@ -686,7 +687,7 @@ const CheckoutPage = () => {
               },
               body: JSON.stringify({
                 paymentIntentId: paymentIntent.id,
-                ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+                // Don't send testMode - let the edge function decide based on its own keys
               }),
             });
             
@@ -694,6 +695,8 @@ const CheckoutPage = () => {
               const data = await response.json();
               stripeCustomerId = data.customerId;
               console.log("Retrieved Stripe customer ID:", stripeCustomerId);
+            } else {
+              console.error("Failed to get payment intent:", response.status, await response.text());
             }
           } catch (err) {
             console.error("Error fetching payment intent details:", err);

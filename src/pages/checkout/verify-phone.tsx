@@ -80,13 +80,15 @@ export default function VerifyPhonePage() {
           userData = users?.[0];
         } else if (paramUserId) {
           // Otherwise use the user ID
-          const { data: user } = await supabase
+          const { data: user, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', paramUserId)
-            .single();
+            .maybeSingle();
           
-          userData = user;
+          if (user && !userError) {
+            userData = user;
+          }
         }
       }
 

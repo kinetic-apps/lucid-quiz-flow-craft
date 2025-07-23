@@ -6,5 +6,6 @@ export const isStripeTestMode = (): boolean => {
 
 // Get test mode flag for API calls
 export const getTestModeFlag = () => {
-  return isStripeTestMode() ? { testMode: true } : {};
+  // Don't send testMode - let edge functions decide based on their own keys
+  return {};
 };

@@ -17,7 +17,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 // Product configuration - using the Lucid Access product from mobile app
 // Support different product IDs for test/live modes
 const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn';
-const LUCID_ACCESS_TEST_PRODUCT_ID = Deno.env.get('STRIPE_TEST_PRODUCT_ID') || 'prod_test_lucid_access';
+const LUCID_ACCESS_TEST_PRODUCT_ID = 'prod_Sc48SvuQ7H71fb';
 
 // Plan configurations with dynamic pricing
 const PLAN_CONFIG = {
@@ -72,10 +72,10 @@ serve(async (req) => {
     // Parse the request body - now accepting planId instead of priceId
     const { priceId, userId, email, planId, successUrl, cancelUrl, testMode } = await req.json()
     
-    // Determine if we're in test mode
-    const isTestMode = testMode || (stripeTestSecretKey && stripeTestSecretKey.startsWith('sk_test_'))
+    // Determine if we're in test mode - ONLY if explicitly requested
+    const isTestMode = testMode === true
     
-    // Create appropriate Stripe instance
+    // Create appropriate Stripe instance - use live key by default
     const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {
       apiVersion: '2023-10-16',
     })
@@ -192,4 +192,4 @@ serve(async (req) => {
       }
     )
   }
-}) 
+})

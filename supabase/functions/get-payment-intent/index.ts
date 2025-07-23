@@ -38,8 +38,8 @@ serve(async (req) => {
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY') || ''
     const stripeTestSecretKey = Deno.env.get('STRIPE_TEST_SECRET_KEY') || stripeSecretKey
     
-    // Determine if we're in test mode
-    const isTestMode = testMode || (stripeTestSecretKey && stripeTestSecretKey.startsWith('sk_test_'))
+    // Determine if we're in test mode - ONLY if explicitly requested
+    const isTestMode = testMode === true
     
     // Create appropriate Stripe instance
     const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {

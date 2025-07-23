@@ -43,8 +43,8 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
-    // Determine if we're in test mode
-    const isTestMode = testMode || (stripeTestSecretKey && stripeTestSecretKey.startsWith('sk_test_'))
+    // Determine if we're in test mode - ONLY if explicitly requested
+    const isTestMode = testMode === true
     
     // Create appropriate Stripe instance
     const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {
@@ -52,9 +52,7 @@ serve(async (req) => {
     })
     
     // Use appropriate product ID
-    const productId = isTestMode ? 
-      (Deno.env.get('STRIPE_TEST_PRODUCT_ID') || 'prod_test_lucid_access') : 
-      'prod_SefSK4P6W4Wzvn'
+    const productId = isTestMode ? 'prod_Sc48SvuQ7H71fb' : 'prod_SefSK4P6W4Wzvn'
     
     console.log(`Using ${isTestMode ? 'TEST' : 'LIVE'} mode with product ID: ${productId}`)
     

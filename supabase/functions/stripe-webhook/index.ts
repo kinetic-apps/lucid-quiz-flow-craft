@@ -18,7 +18,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 // Product configuration - using the Lucid Access product from mobile app
 const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn'
-const LUCID_ACCESS_TEST_PRODUCT_ID = Deno.env.get('STRIPE_TEST_PRODUCT_ID') || 'prod_test_lucid_access'
+const LUCID_ACCESS_TEST_PRODUCT_ID = 'prod_Sc48SvuQ7H71fb'
 
 // Helper function to update user subscription details
 async function updateUserSubscription(

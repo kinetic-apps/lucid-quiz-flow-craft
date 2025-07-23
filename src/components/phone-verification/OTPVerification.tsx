@@ -232,7 +232,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
             body: JSON.stringify({
               userId: actualUserId,
               phoneNumber,
-              ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+              // Don't send testMode - let the edge function decide based on its own keys
             }),
           });
 
@@ -255,7 +255,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
               phoneNumber,
               visitorId: localStorage.getItem('lucid_visitor_id'),
               email: localStorage.getItem('user_email'),
-              ...(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_') && { testMode: true }),
+              // Don't send testMode - let the edge function decide based on its own keys
             }),
           });
 
