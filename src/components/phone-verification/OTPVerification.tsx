@@ -38,7 +38,22 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
   }, [countdown]);
 
   const handleChange = (index: number, value: string) => {
-    // Only allow digits
+    // Handle SMS autofill - when the browser fills all inputs at once
+    if (value.length > 1) {
+      // This is likely an autofill event with the full code
+      const digits = value.replace(/\D/g, '').slice(0, 6).split('');
+      if (digits.length === 6) {
+        setOtp(digits);
+        setError('');
+        // Focus last input
+        inputRefs.current[5]?.focus();
+        // Auto-verify
+        handleVerify(digits.join(''));
+        return;
+      }
+    }
+    
+    // Only allow single digits for manual entry
     if (value && !/^\d$/.test(value)) return;
     
     const newOtp = [...otp];
@@ -340,7 +355,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
             type="text"
             inputMode="numeric"
             pattern="\d*"
-            maxLength={1}
+            maxLength={6} // Allow full code length for autofill
             value={digit}
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
@@ -356,7 +371,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
               ${loading ? 'opacity-50' : ''}
             `}
             disabled={loading}
-            autoComplete="one-time-code"
+            autoComplete={index === 0 ? "one-time-code" : "off"}
+            name={index === 0 ? "one-time-code" : `otp-${index}`}
+            id={`otp-${index}`}
           />
         ))}
       </div>

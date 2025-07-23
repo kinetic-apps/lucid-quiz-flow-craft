@@ -5,8 +5,8 @@ import confetti from 'canvas-confetti';
 import { supabase } from '@/lib/supabase';
 
 export const VerificationSuccess: React.FC = () => {
-  const iosLink = "https://apps.apple.com/app/lucid/id[YOUR_APP_ID]";
-  const androidLink = "https://play.google.com/store/apps/details?id=com.lucid";
+  const iosLink = "https://apps.apple.com/us/app/lucid-know-yourself/id6746735774";
+  const androidLink = "https://play.google.com/store/apps/details?id=com.kinetic.lucid&pli=1";
 
   useEffect(() => {
     // Ensure user record is properly updated after verification
