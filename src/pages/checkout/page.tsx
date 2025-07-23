@@ -321,13 +321,25 @@ const CheckoutPage = () => {
     });
 
     // Track AddToCart event with Facebook Pixel (paywall view)
-    if (window.fbq && !addToCartEventFiredRef.current) {
-      window.fbq('track', 'AddToCart');
-      console.log('Facebook Pixel: AddToCart event triggered (paywall view)');
-      addToCartEventFiredRef.current = true;
-    } else if (!window.fbq) {
-      console.warn('Facebook Pixel: fbq not available when trying to track AddToCart.');
-    }
+    // Add a small delay to ensure Facebook Pixel is loaded
+    const trackAddToCart = () => {
+      if (window.fbq && !addToCartEventFiredRef.current) {
+        window.fbq('track', 'AddToCart', {
+          content_type: 'product',
+          content_ids: ['lucid_access'],
+          value: 0, // Set to 0 since they haven't selected a plan yet
+          currency: 'USD'
+        });
+        console.log('Facebook Pixel: AddToCart event triggered (paywall view)');
+        addToCartEventFiredRef.current = true;
+      } else if (!window.fbq) {
+        console.warn('Facebook Pixel: fbq not available when trying to track AddToCart.');
+      }
+    };
+
+    // Try immediately and with a delay as fallback
+    trackAddToCart();
+    setTimeout(trackAddToCart, 500);
   }, [visitorId, track]);
   
   // Countdown timer effect
@@ -622,15 +634,35 @@ const CheckoutPage = () => {
   };
 
   // Handle successful payment
-  const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
+  const handlePaymentSuccess = async (paymentIntent: PaymentIntent, method: 'regular_checkout' | 'express_checkout' = 'regular_checkout') => {
     console.log("Payment succeeded, paymentIntent:", paymentIntent);
     
-    track('payment_successful', {
+    const plan = STRIPE_PRODUCTS[selectedPlan];
+    const purchasePrice = plan?.price || 0;
+    
+    // Track purchase with PostHog
+    track('purchase_successful', {
       visitor_id: visitorId,
       user_id: userId || undefined,
+      user_email: userEmail || undefined,
       plan_id: selectedPlan,
-      payment_intent_id: paymentIntent.id
+      plan_name: plan?.name || selectedPlan,
+      plan_price: purchasePrice,
+      payment_intent_id: paymentIntent.id,
+      method: method,
+      timestamp: new Date().toISOString()
     });
+    
+    // Track Purchase event with Facebook Pixel
+    if (window.fbq) {
+      window.fbq('track', 'Purchase', { 
+        value: purchasePrice / 100, // Convert cents to dollars
+        currency: 'USD',
+        content_ids: [selectedPlan],
+        content_type: 'product'
+      });
+      console.log('Facebook Pixel: Purchase event triggered', { value: purchasePrice / 100, currency: 'USD' });
+    }
     
     // Try to get user ID
     let finalUserId = userId || localStorage.getItem('user_id');
@@ -1016,15 +1048,8 @@ const CheckoutPage = () => {
                         planName={SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)?.name || 'Selected Plan'}
                         email={userEmail}
                         onSuccess={(paymentIntent) => {
-                          track('express_payment_successful', {
-                            visitor_id: visitorId,
-                            user_id: userId || undefined,
-                            plan_id: selectedPlan,
-                            payment_intent_id: paymentIntent.id,
-                            method: 'express_checkout'
-                          });
                           // Use the same payment success handler as the embedded checkout
-                          handlePaymentSuccess(paymentIntent);
+                          handlePaymentSuccess(paymentIntent, 'express_checkout');
                         }}
                         onError={(error) => {
                           console.error('Express payment error on page:', error);

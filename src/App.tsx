@@ -10,7 +10,6 @@ import NotFound from "./pages/NotFound";
 import QuizLayout from "./pages/quiz/layout";
 import QuizPage from "./pages/quiz/[slug]/page";
 import CheckoutPage from "./pages/checkout/page";
-import RefundNotificationPage from "./pages/RefundNotificationPage";
 import VerifyPhonePage from "./pages/checkout/verify-phone";
 import { QuizProvider } from "./context/QuizContext";
 import { PostHogProvider } from "./context/PostHogContext";
@@ -37,7 +36,6 @@ const App = () => {
                     <CheckoutPage />
                   </QuizProvider>
                 } />
-                <Route path="refund-notification" element={<RefundNotificationPage />} />
                 <Route path="verify-phone" element={<VerifyPhonePage />} />
                 <Route path="success" element={<VerifyPhonePage />} />
                 <Route path="*" element={

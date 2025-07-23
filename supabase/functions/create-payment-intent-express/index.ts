@@ -59,14 +59,18 @@ serve(async (req: Request) => {
     
     console.log(`Request body: amount=${amount}, email=${email ? 'provided' : 'not provided'}, testMode=${testMode}`);
     
-    // Determine if we're in test mode
-    const isTestMode = testMode || (stripeTestSecretKey && stripeTestSecretKey.startsWith('sk_test_'));
+    // Debug: Log the keys being used (first few chars only for security)
+    console.log('STRIPE_SECRET_KEY starts with:', stripeSecretKey.substring(0, 10));
+    console.log('STRIPE_TEST_SECRET_KEY starts with:', stripeTestSecretKey.substring(0, 10));
+    
+    // Determine if we're in test mode - ONLY if explicitly requested
+    const isTestMode = testMode === true;
     
     // Create appropriate Stripe instance
     const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
-    console.log(`Stripe client initialized in ${isTestMode ? 'TEST' : 'LIVE'} mode`);
+    console.log(`Stripe client initialized in ${isTestMode ? 'TEST' : 'LIVE'} mode with key starting: ${(isTestMode ? stripeTestSecretKey : stripeSecretKey).substring(0, 10)}`);
 
     // Validate required fields
     if (!amount) {
