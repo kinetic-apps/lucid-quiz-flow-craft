@@ -638,7 +638,7 @@ const CheckoutPage = () => {
     console.log("Payment succeeded, paymentIntent:", paymentIntent);
     
     const plan = STRIPE_PRODUCTS[selectedPlan];
-    const purchasePrice = plan?.price || 0;
+    const purchasePrice = plan?.totalPrice || 0;
     
     // Track purchase with PostHog
     track('purchase_successful', {
@@ -650,18 +650,23 @@ const CheckoutPage = () => {
       plan_price: purchasePrice,
       payment_intent_id: paymentIntent.id,
       method: method,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      // PostHog standard revenue properties
+      revenue: purchasePrice,
+      currency: 'USD',
+      amount: purchasePrice,
+      $revenue: purchasePrice
     });
     
     // Track Purchase event with Facebook Pixel
     if (window.fbq) {
       window.fbq('track', 'Purchase', { 
-        value: purchasePrice / 100, // Convert cents to dollars
+        value: purchasePrice, // Already in dollars
         currency: 'USD',
         content_ids: [selectedPlan],
         content_type: 'product'
       });
-      console.log('Facebook Pixel: Purchase event triggered', { value: purchasePrice / 100, currency: 'USD' });
+      console.log('Facebook Pixel: Purchase event triggered', { value: purchasePrice, currency: 'USD' });
     }
     
     // Try to get user ID
