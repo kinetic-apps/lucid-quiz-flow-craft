@@ -52,7 +52,7 @@ serve(async (req) => {
     })
     
     // Use appropriate product ID
-    const productId = isTestMode ? 'prod_Sc48SvuQ7H71fb' : 'prod_SefSK4P6W4Wzvn'
+    const productId = isTestMode ? 'prod_Sc48SvuQ7H71fb' : 'prod_SoEesIWpfzi1AQ'
     
     console.log(`Using ${isTestMode ? 'TEST' : 'LIVE'} mode with product ID: ${productId}`)
     
