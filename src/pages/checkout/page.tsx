@@ -416,6 +416,7 @@ const CheckoutPage = () => {
       const requestData = {
         amount: Math.round(planDetails.discountedPrice * 100),
         email: attemptUserEmail,
+        planId: attemptPlanId,
         // Don't send testMode - let the edge function decide based on its own keys
       };
 
@@ -730,7 +731,7 @@ const CheckoutPage = () => {
               is_premium: true,
               payment_intent_id: paymentIntent.id,
               stripe_customer_id: stripeCustomerId || existingUser.stripe_customer_id,
-              stripe_product_id: 'prod_SefSK4P6W4Wzvn',
+              stripe_product_id: 'prod_SoEesIWpfzi1AQ',
               updated_at: new Date().toISOString()
             })
             .eq('id', existingUser.id)
@@ -753,7 +754,7 @@ const CheckoutPage = () => {
               is_premium: true,
               payment_intent_id: paymentIntent.id,
               stripe_customer_id: stripeCustomerId || undefined,
-              stripe_product_id: 'prod_SefSK4P6W4Wzvn',
+              stripe_product_id: 'prod_SoEesIWpfzi1AQ',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
@@ -775,7 +776,7 @@ const CheckoutPage = () => {
                 is_premium: true,
                 payment_intent_id: paymentIntent.id,
                 stripe_customer_id: stripeCustomerId || undefined,
-                stripe_product_id: 'prod_SefSK4P6W4Wzvn',
+                stripe_product_id: 'prod_SoEesIWpfzi1AQ',
                 updated_at: new Date().toISOString()
               })
               .eq('email', emailToUse)

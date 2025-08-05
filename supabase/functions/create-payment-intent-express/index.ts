@@ -16,6 +16,41 @@ const stripeTestSecretKey = Deno.env.get('STRIPE_TEST_SECRET_KEY') || stripeSecr
 // Initialize Supabase client
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// Product configuration - using the new Lucid Web Access product
+const LUCID_ACCESS_PRODUCT_ID = 'prod_SoEesIWpfzi1AQ';
+const LUCID_ACCESS_TEST_PRODUCT_ID = 'prod_Sc48SvuQ7H71fb';
+
+// Plan configurations with pricing
+const PLAN_CONFIG = {
+  '7day': {
+    name: 'Lucid Access - 7 Day',
+    totalPrice: 2.99,
+    perDayPrice: 0.43
+  },
+  '1month': {
+    name: 'Lucid Access - 1 Month', 
+    totalPrice: 8.99,
+    perDayPrice: 0.30
+  },
+  '3month': {
+    name: 'Lucid Access - 3 Months',
+    totalPrice: 19.99,
+    perDayPrice: 0.22
+  }
+};
+
+// Helper function to determine plan ID from amount
+function getPlanIdFromAmount(amount: number): string {
+  // Amount is in cents
+  const dollarAmount = amount / 100;
+  
+  if (Math.abs(dollarAmount - 2.99) < 0.01) return '7day';
+  if (Math.abs(dollarAmount - 8.99) < 0.01) return '1month';
+  if (Math.abs(dollarAmount - 19.99) < 0.01) return '3month';
+  
+  // Default to 1month if amount doesn't match
+  return '1month';
+}
 
 // Define CORS headers - include all possible origins that might call this function
 const corsHeaders = {
@@ -55,23 +90,10 @@ serve(async (req: Request) => {
 
   try {
     console.log("Processing POST request...");
-    const { amount, email, testMode } = await req.json();
+    const { amount, email, planId, testMode } = await req.json();
     
-    console.log(`Request body: amount=${amount}, email=${email ? 'provided' : 'not provided'}, testMode=${testMode}`);
+    console.log(`Request body: amount=${amount}, email=${email ? 'provided' : 'not provided'}, planId=${planId}, testMode=${testMode}`);
     
-    // Debug: Log the keys being used (first few chars only for security)
-    console.log('STRIPE_SECRET_KEY starts with:', stripeSecretKey.substring(0, 10));
-    console.log('STRIPE_TEST_SECRET_KEY starts with:', stripeTestSecretKey.substring(0, 10));
-    
-    // Determine if we're in test mode - ONLY if explicitly requested
-    const isTestMode = testMode === true;
-    
-    // Create appropriate Stripe instance
-    const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {
-      apiVersion: '2023-10-16',
-    });
-    console.log(`Stripe client initialized in ${isTestMode ? 'TEST' : 'LIVE'} mode with key starting: ${(isTestMode ? stripeTestSecretKey : stripeSecretKey).substring(0, 10)}`);
-
     // Validate required fields
     if (!amount) {
       console.warn("Missing required fields (amount)");
@@ -94,9 +116,43 @@ serve(async (req: Request) => {
       );
     }
 
+    // Determine plan ID from amount or use provided planId
+    const selectedPlanId = planId || getPlanIdFromAmount(amount);
+    const planConfig = PLAN_CONFIG[selectedPlanId as keyof typeof PLAN_CONFIG];
+    
+    if (!planConfig) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid plan configuration' }), 
+        { 
+          status: 400,
+          headers: { ...dynamicCorsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // IMPORTANT: Use the STRIPE_SECRET_KEY environment variable directly
+    // This should be configured to match your frontend's publishable key
+    // In development: both should be test keys
+    // In production: both should be live keys
+    const activeStripeKey = stripeSecretKey;
+    
+    // Create Stripe instance with the active key
+    const stripe = new Stripe(activeStripeKey, {
+      apiVersion: '2023-10-16',
+    });
+    
+    // Detect if we're in test mode based on the key prefix
+    const isTestEnvironment = activeStripeKey.startsWith('sk_test_');
+    
+    console.log(`Stripe initialized with ${isTestEnvironment ? 'TEST' : 'LIVE'} key starting with: ${activeStripeKey.substring(0, 10)}`);
+    
+    // Use appropriate product ID based on the environment
+    const productId = isTestEnvironment ? LUCID_ACCESS_TEST_PRODUCT_ID : LUCID_ACCESS_PRODUCT_ID;
+    
+    console.log(`Using ${isTestEnvironment ? 'TEST' : 'LIVE'} environment with product ID: ${productId} for plan: ${selectedPlanId}`);
 
     // Create or retrieve customer if email is provided
-    let customerId = '';
+    let customer;
     if (email) {
       console.log(`Looking for customer with email: ${email}`);
       const customers = await stripe.customers.list({
@@ -105,48 +161,74 @@ serve(async (req: Request) => {
       });
 
       if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-        console.log(`Found existing customer: ${customerId}`);
+        customer = customers.data[0];
+        console.log(`Found existing customer: ${customer.id}`);
       } else {
         console.log(`Creating new customer for email: ${email}`);
-        const customer = await stripe.customers.create({
+        customer = await stripe.customers.create({
           email,
+          metadata: {
+            source: 'express_checkout'
+          }
         });
-        customerId = customer.id;
-        console.log(`Created new customer: ${customerId}`);
+        console.log(`Created new customer: ${customer.id}`);
       }
     } else {
-      console.log("No email provided, proceeding without customer or creating anonymous if necessary.");
-      // Stripe will create a guest customer if `customer` is not provided in paymentIntent
+      console.log("No email provided, creating anonymous customer");
+      // Create anonymous customer for express checkout
+      customer = await stripe.customers.create({
+        metadata: {
+          source: 'express_checkout',
+          anonymous: 'true'
+        }
+      });
+      console.log(`Created anonymous customer: ${customer.id}`);
     }
 
-    console.log(`Attempting to create payment intent with amount: ${amount}, customer: ${customerId || 'guest'}`);
+    console.log(`Creating subscription for customer: ${customer.id}, plan: ${selectedPlanId}, amount: ${amount}`);
     
-    // Create a PaymentIntent with explicit payment method types including Apple Pay
-    const paymentIntentParams: Stripe.PaymentIntentCreateParams = {
-      amount: amount,
-      currency: 'usd',
-      automatic_payment_methods: { 
-        enabled: true,
-        allow_redirects: 'never' 
+    // Create a subscription instead of a one-time payment
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [{
+        price_data: {
+          currency: 'usd',
+          product: productId,
+          recurring: {
+            interval: selectedPlanId === '7day' ? 'week' : 'month',
+            interval_count: selectedPlanId === '3month' ? 3 : 1,
+          },
+          unit_amount: amount, // amount is already in cents
+        },
+      }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { 
+        save_default_payment_method: 'on_subscription',
+        payment_method_types: ['card'] // Only card for express checkout
       },
+      expand: ['latest_invoice.payment_intent'],
       metadata: {
-        integration_check: 'express_checkout_element_v2'
-      }
-    };
-    if (customerId) {
-      paymentIntentParams.customer = customerId;
-    }
-    
-    const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
+        planId: selectedPlanId,
+        productName: planConfig.name,
+        source: 'express_checkout'
+      },
+    });
 
-    console.log(`Payment intent created successfully: ${paymentIntent.id}, Client Secret: ${paymentIntent.client_secret ? 'OK' : 'MISSING'}`);
+    const paymentIntent = subscription.latest_invoice.payment_intent;
+
+    if (!paymentIntent || !paymentIntent.client_secret) {
+      throw new Error('Failed to create payment intent for subscription');
+    }
+
+    console.log(`Subscription created successfully: ${subscription.id}, Payment Intent: ${paymentIntent.id}`);
 
     // Return the client secret to the client
     return new Response(
       JSON.stringify({ 
         clientSecret: paymentIntent.client_secret,
         id: paymentIntent.id,
+        subscriptionId: subscription.id,
+        customerId: customer.id
       }), 
       { 
         status: 200,
@@ -154,7 +236,7 @@ serve(async (req: Request) => {
       }
     );
   } catch (error) {
-    console.error('Error creating payment intent:', error);
+    console.error('Error creating subscription:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     const errorStack = error instanceof Error ? error.stack : 'No stack trace available';
     return new Response(
@@ -169,4 +251,4 @@ serve(async (req: Request) => {
       }
     );
   }
-}); 
+});

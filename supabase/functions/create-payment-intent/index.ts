@@ -16,7 +16,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 // Product configuration - using the Lucid Access product from mobile app
 // Support different product IDs for test/live modes
-const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn';
+const LUCID_ACCESS_PRODUCT_ID = 'prod_SoEesIWpfzi1AQ';
 const LUCID_ACCESS_TEST_PRODUCT_ID = 'prod_Sc48SvuQ7H71fb';
 
 // Plan configurations with pricing

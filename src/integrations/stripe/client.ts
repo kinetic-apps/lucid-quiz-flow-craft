@@ -4,7 +4,7 @@ import { getTestModeFlag } from '@/lib/stripe-utils';
 
 // Product IDs from our Stripe account
 // Using the Lucid Access product ID from mobile app
-const LUCID_ACCESS_PRODUCT_ID = 'prod_SefSK4P6W4Wzvn';
+const LUCID_ACCESS_PRODUCT_ID = 'prod_SoEesIWpfzi1AQ';
 
 export const STRIPE_PRODUCTS = {
   '7day': {
